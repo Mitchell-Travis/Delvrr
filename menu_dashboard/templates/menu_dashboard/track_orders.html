@@ -1,0 +1,264 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Order Tracking | RestaurantName</title>
+    <link rel="stylesheet" href="styles.css">
+    <script src="https://kit.fontawesome.com/your-fontawesome-kit.js" crossorigin="anonymous"></script>
+
+    <style type="text/css">
+        :root {
+    --primary-color: #4A90E2;
+    --secondary-color: #50E3C2;
+    --background-color: #F5F7FA;
+    --text-color: #333;
+    --completed-color: #5cb85c;
+}
+
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+}
+
+body {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    line-height: 1.6;
+    color: var(--text-color);
+    background-color: var(--background-color);
+}
+
+.container {
+    max-width: 600px;
+    margin: 2rem auto;
+    padding: 2rem;
+    background-color: #fff;
+    border-radius: 12px;
+    box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+}
+
+header {
+    text-align: center;
+    margin-bottom: 2rem;
+}
+
+h1 {
+    color: var(--primary-color);
+    margin-bottom: 1rem;
+}
+
+.order-info {
+    display: flex;
+    justify-content: space-around;
+    flex-wrap: wrap;
+}
+
+.info-item {
+    display: flex;
+    align-items: center;
+    margin: 0.5rem;
+}
+
+.info-item i {
+    margin-right: 0.5rem;
+    color: var(--primary-color);
+}
+
+.progress-bar {
+    height: 8px;
+    background-color: #e9ecef;
+    border-radius: 4px;
+    overflow: hidden;
+    margin-bottom: 2rem;
+}
+
+.progress {
+    height: 100%;
+    background-color: var(--secondary-color);
+    transition: width 0.5s ease;
+}
+
+.order-status {
+    list-style-type: none;
+}
+
+.order-status li {
+    display: flex;
+    align-items: flex-start;
+    margin-bottom: 1.5rem;
+    position: relative;
+}
+
+.status-icon {
+    width: 40px;
+    height: 40px;
+    background-color: #e9ecef;
+    border-radius: 50%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    margin-right: 1rem;
+}
+
+.completed .status-icon {
+    background-color: var(--completed-color);
+    color: #fff;
+}
+
+.current .status-icon {
+    background-color: var(--primary-color);
+    color: #fff;
+}
+
+.status-info h3 {
+    margin-bottom: 0.25rem;
+}
+
+.status-info p {
+    color: #6c757d;
+    font-size: 0.9rem;
+}
+
+.time {
+    font-size: 0.8rem;
+    color: #6c757d;
+}
+
+footer {
+    display: flex;
+    justify-content: space-between;
+    margin-top: 2rem;
+}
+
+.btn-primary, .btn-secondary {
+    padding: 0.5rem 1rem;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+}
+
+.btn-primary {
+    background-color: var(--primary-color);
+    color: #fff;
+}
+
+.btn-secondary {
+    background-color: #e9ecef;
+    color: var(--text-color);
+}
+
+.btn-primary:hover, .btn-secondary:hover {
+    opacity: 0.9;
+}
+
+@media (max-width: 480px) {
+    .container {
+        padding: 1rem;
+    }
+    
+    .order-info {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+    
+    footer {
+        flex-direction: column;
+    }
+    
+    .btn-primary, .btn-secondary {
+        width: 100%;
+        margin-bottom: 1rem;
+    }
+}
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>Order Status</h1>
+            <div class="order-info">
+                <div class="info-item">
+                    <i class="fas fa-clock"></i>
+                    <span>Estimated Time: 30 minutes</span>
+                </div>
+                <div class="info-item">
+                    <i class="fas fa-hashtag"></i>
+                    <span>Order #2482011</span>
+                </div>
+            </div>
+        </header>
+        <main>
+            <div class="progress-bar">
+                <div class="progress" style="width: 60%;"></div>
+            </div>
+            <ul class="order-status">
+                <li class="completed">
+                    <div class="status-icon">
+                        <i class="fas fa-clipboard-check"></i>
+                    </div>
+                    <div class="status-info">
+                        <h3>Order Placed</h3>
+                        <p>We've received your order.</p>
+                        <span class="time">12:05 PM</span>
+                    </div>
+                </li>
+                <li class="completed">
+                    <div class="status-icon">
+                        <i class="fas fa-user-check"></i>
+                    </div>
+                    <div class="status-info">
+                        <h3>Order Confirmed</h3>
+                        <p>Your order has been confirmed.</p>
+                        <span class="time">12:07 PM</span>
+                    </div>
+                </li>
+                <li class="current">
+                    <div class="status-icon">
+                        <i class="fas fa-utensils"></i>
+                    </div>
+                    <div class="status-info">
+                        <h3>Preparing</h3>
+                        <p>We're preparing your delicious meal.</p>
+                        <span class="time">12:15 PM</span>
+                    </div>
+                </li>
+                <li>
+                    <div class="status-icon">
+                        <i class="fas fa-concierge-bell"></i>
+                    </div>
+                    <div class="status-info">
+                        <h3>Ready to Serve</h3>
+                        <p>Your order will be served shortly.</p>
+                    </div>
+                </li>
+            </ul>
+        </main>
+        <footer>
+            <button class="btn-primary">View Order Details</button>
+            <button class="btn-secondary">Need Help?</button>
+        </footer>
+    </div>
+    <script src="script.js">
+        
+    </script>
+    <script type="text/javascript">
+        document.addEventListener('DOMContentLoaded', function() {
+    const progressBar = document.querySelector('.progress');
+    const orderItems = document.querySelectorAll('.order-status li');
+    
+    function updateProgress() {
+        const completedItems = document.querySelectorAll('.order-status li.completed').length;
+        const totalItems = orderItems.length;
+        const progress = (completedItems / totalItems) * 100;
+        progressBar.style.width = `${progress}%`;
+    }
+    
+    updateProgress();
+    
+    // You can call updateProgress() whenever the order status changes
+});
+    </script>
+</body>
+</html>

@@ -1,0 +1,204 @@
+<!DOCTYPE html>
+<html lang="en">
+   <head>
+      <!-- Required meta tags -->
+      <meta charset="utf-8" />
+      <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no" />
+      <meta content="Codescandy" name="author" />
+      <title>Add Product</title>
+      <link href="../../../static/menu_dashboard/libs/dropzone/dist/min/dropzone.min.css" rel="stylesheet" />
+      <!-- Favicon icon-->
+      <link rel="shortcut icon" type="image/x-icon" href="../../../static/menu_dashboard/images/favicon/favicon.ico" />
+
+      <!-- Libs CSS -->
+      <link href="../../../static/menu_dashboard/libs/bootstrap-icons/font/bootstrap-icons.min.css" rel="stylesheet" />
+      <link href="../../../static/menu_dashboard/libs/feather-webfont/dist/feather-icons.css" rel="stylesheet" />
+      <link href="../../../static/menu_dashboard/libs/simplebar/dist/simplebar.min.css" rel="stylesheet" />
+
+      <!-- Theme CSS -->
+      <link rel="stylesheet" href="../../../static/menu_dashboard/css/theme.min.css" />
+   </head>
+
+   <body>
+      <!-- main wrapper -->
+
+      <!-- navbar -->
+      {% include 'menu_dashboard/dash_nav.html' %}
+
+      <div class="main-wrapper">
+         <!-- navbar vertical -->
+         {% include 'menu_dashboard/dash_sidebar.html' %}
+
+         <!-- main -->
+         <main class="main-content-wrapper">
+            <!-- container -->
+            <div class="container">
+               <!-- row -->
+               <div class="row mb-8">
+                  <div class="col-md-12">
+                     <div class="d-md-flex justify-content-between align-items-center">
+                        <!-- page header -->
+                        <div>
+                           <h2>Add New Product</h2>
+                           <!-- breacrumb -->
+                           <nav aria-label="breadcrumb">
+                              <ol class="breadcrumb mb-0">
+                                 <li class="breadcrumb-item"><a href="#" class="text-inherit">Dashboard</a></li>
+                                 <li class="breadcrumb-item"><a href="#" class="text-inherit">Products</a></li>
+                                 <li class="breadcrumb-item active" aria-current="page">Add New Product</li>
+                              </ol>
+                           </nav>
+                        </div>
+                        <!-- button -->
+                        <div>
+                           <a href="{% url 'admin-dashboard' %}" class="btn btn-light">Back to Product</a>
+                        </div>
+                     </div>
+                  </div>
+               </div>
+
+   <form method="post" action="{% url 'create_menu' %}" enctype="multipart/form-data">
+    {% csrf_token %}
+    <!-- row -->
+    <div class="row">
+        <div class="col-lg-8 col-12">
+            <!-- card -->
+            <div class="card mb-6 card-lg">
+                <!-- card body -->
+                <div class="card-body p-6">
+                    <h4 class="mb-4 h5">Product Information</h4>
+                    <div class="row">
+                        <!-- input -->
+                        <div class="mb-3 col-lg-6">
+                            <label class="form-label">Title</label>
+                            <input type="text" class="form-control" name="name" placeholder="Product Name" required>
+                        </div>
+                        <!-- input -->
+                        <div class="mb-3 col-lg-6">
+                            <label class="form-label">Product Category</label>
+                            <input type="text" class="form-control" name="category" placeholder="Enter Category Name">
+                        </div>
+                        <div>
+                            <div class="mb-3 col-lg-12 mt-5">
+                                <!-- heading -->
+                                <h4 class="mb-3 h5">Product Images</h4>
+
+                                <!-- input -->
+                                <div class="d-block dropzone border-dashed rounded-2">
+                                    <div class="fallback">
+                                        <input name="product_image" type="file" multiple>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <!-- input -->
+                        <div class="mb-3 col-lg-12 mt-5">
+                            <h4 class="mb-3 h5">Product Descriptions</h4>
+                            <div class="py-8" id="editor"></div>
+                            <textarea class="form-control" name="description" rows="3"
+                                      placeholder="Product Description"></textarea>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-lg-4 col-12">
+            <!-- card -->
+            <div class="card mb-6 card-lg">
+                <!-- card body -->
+                <div class="card-body p-6">
+                    <!-- input -->
+                    <div class="form-check form-switch mb-4">
+                        <input class="form-check-input" type="checkbox" role="switch" id="flexSwitchStock"
+                               name="has_promo">
+                        <label class="form-check-label" for="flexSwitchStock">Has Promo</label>
+                    </div>
+                    <!-- input -->
+                    <div>
+                        <div class="mb-3">
+                            <label class="form-label">Promo Start Date</label>
+                            <input type="date" class="form-control" name="promo_start_date" disabled>
+                        </div>
+                        <!-- input -->
+                        <div class="mb-3">
+                            <label class="form-label">Promo End Date</label>
+                            <input type="date" class="form-control" name="promo_end_date" disabled>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <!-- card -->
+            <div class="card mb-6 card-lg">
+                <!-- card body -->
+                <div class="card-body p-6">
+                    <h4 class="mb-4 h5">Product Price</h4>
+                    <!-- input -->
+                    <div class="mb-3">
+                        <label class="form-label">Regular Price</label>
+                        <input type="text" class="form-control" name="price" placeholder="$0.00">
+                    </div>
+                    <!-- input -->
+                    <div class="mb-3">
+                        <label class="form-label">Promo Price</label>
+                        <input type="text" class="form-control" name="promo_price" placeholder="$0.00" disabled>
+                    </div>
+                </div>
+            </div>
+            <!-- card -->
+            <div class="card mb-6 card-lg">
+                <!-- card body -->
+                <div class="card-body p-6">
+                    <h4 class="mb-4 h5">Promo</h4>
+                    <!-- input -->
+                    <div class="mb-3">
+                        <label class="form-label">Promo Description</label>
+                        <textarea class="form-control" name="promo_description" rows="3"
+                                  placeholder="Promo Description" disabled></textarea>
+                    </div>
+                </div>
+            </div>
+            <!-- button -->
+            <div class="d-grid">
+                <button type="submit" class="btn btn-primary">Create Product</button>
+            </div>
+        </div>
+    </div>
+</form>
+               </div>
+            </div>
+         </main>
+      </div>
+
+      <!-- Libs JS -->
+      <script src="../../../static/menu_dashboard/libs/jquery/dist/jquery.min.js"></script>
+
+      <!-- JavaScript to enable/disable Promo fields -->
+      <script>
+          var hasPromoCheckbox = document.getElementById('flexSwitchStock');
+          var promoFields = [
+              document.querySelector('[name="promo_start_date"]'),
+              document.querySelector('[name="promo_end_date"]'),
+              document.querySelector('[name="promo_price"]'),
+              document.querySelector('[name="promo_description"]')
+          ];
+
+          hasPromoCheckbox.addEventListener('change', function() {
+              promoFields.forEach(function(field) {
+                  field.disabled = !this.checked;
+                  field.required = this.checked;
+              }.bind(this));
+          });
+      </script>
+
+      <script src="../../../static/menu_dashboard/libs/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
+      <script src="../../../static/menu_dashboard/libs/simplebar/dist/simplebar.min.js"></script>
+
+      <!-- Theme JS -->
+      <script src="../../../static/menu_dashboard/js/theme.min.js"></script>
+
+      <script src="../../../static/menu_dashboard/libs/quill/dist/quill.min.js"></script>
+      <script src="../../../static/menu_dashboard/js/vendors/editor.js"></script>
+      <script src="../../../static/menu_dashboard/libs/dropzone/dist/min/dropzone.min.js"></script>
+      <script src="../../../static/menu_dashboard/js/vendors/dropzone.js"></script>
+   </body>
+</html>

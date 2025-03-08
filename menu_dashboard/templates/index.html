@@ -1,0 +1,436 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Restaurant Chat - Detail without Nav</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet" />
+  <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js"></script>
+  <style>
+    :root {
+      --primary: #ffb74d;
+      --secondary: #ffa726;
+      --background: #f0f0f5;
+      --surface: #ffffff;
+      --text-dark: #2e2e2e;
+      --text-light: #8e8e93;
+      --shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+      --header-height: 60px;
+      /* Brand colors for chat detail view header and sent messages */
+      --brand-color: #f7c028;
+      --brand-color-end: #f9d56e;
+    }
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+      font-family: 'Inter', sans-serif;
+    }
+    html, body {
+      height: 100%;
+      background: var(--background);
+      overflow: hidden;
+      color: var(--text-dark);
+    }
+    .app {
+      height: 100%;
+      max-width: 480px;
+      margin: 0 auto;
+      background: var(--surface);
+      box-shadow: var(--shadow);
+      display: flex;
+      flex-direction: column;
+    }
+    .views-container {
+      flex: 1;
+      position: relative;
+      overflow: hidden;
+    }
+    .view {
+      position: absolute;
+      width: 100%;
+      height: 100%;
+      background: var(--surface);
+      transition: transform 0.35s ease;
+      display: flex;
+      flex-direction: column;
+    }
+    /* Positions for sliding transitions */
+    .chat-list { transform: translateX(0); }
+    .chat-detail { transform: translateX(100%); }
+    .chat-detail.active { transform: translateX(0); }
+    .chat-list.inactive { transform: translateX(-100%); }
+    
+    /* Chat List Header */
+    .header {
+      height: var(--header-height);
+      background: var(--primary);
+      color: #fff;
+      display: flex;
+      align-items: center;
+      padding: 0 16px;
+      box-shadow: var(--shadow);
+    }
+    .header h1 {
+      font-size: 1.25rem;
+      font-weight: 700;
+    }
+    .header .back-button {
+      background: none;
+      border: none;
+      margin-right: 12px;
+      color: #fff;
+      cursor: pointer;
+      font-size: 1.25rem;
+    }
+    
+    /* Chat List Container */
+    .chat-list-container {
+      flex: 1;
+      overflow-y: auto;
+      background: var(--background);
+      /* Removed padding so the border spans full width */
+      padding: 0;
+    }
+    /* Updated Chat Item Styling */
+    .chat-item {
+      background: var(--surface);
+      padding: 12px 16px;
+      display: flex;
+      align-items: center;
+      cursor: pointer;
+      border-bottom: 1px solid #e6e6e6;  /* Subtle line under each chat */
+      transition: background 0.2s ease;
+    }
+    .chat-item:hover {
+      background: #f8f8f8;
+    }
+    .chat-item .avatar {
+      width: 48px;
+      height: 48px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, var(--primary), var(--secondary));
+      color: #fff;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.1rem;
+      font-weight: 600;
+      margin-right: 16px;
+      flex-shrink: 0;
+    }
+    .chat-item .details {
+      flex: 1;
+    }
+    .chat-item .details .name {
+      font-weight: 600;
+      font-size: 1rem;
+      margin-bottom: 4px;
+      color: var(--text-dark);
+    }
+    .chat-item .details .last-message {
+      font-size: 0.9rem;
+      color: var(--text-light);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    .chat-item .time {
+      font-size: 0.8rem;
+      color: var(--text-light);
+      margin-left: auto;
+    }
+    .unread-badge {
+      background: red;
+      color: #fff;
+      font-size: 0.75rem;
+      padding: 2px 6px;
+      border-radius: 12px;
+      margin-left: 8px;
+    }
+    
+    /* Chat Detail Header with Brand Colors */
+    .chat-detail header {
+      height: var(--header-height);
+      background: linear-gradient(135deg, var(--brand-color) 0%, var(--brand-color-end) 100%);
+      color: #fff;
+      display: flex;
+      align-items: center;
+      padding: 0 16px;
+      box-shadow: var(--shadow);
+    }
+    .chat-detail header .back-button {
+      color: #fff;
+    }
+    .chat-detail header .avatar {
+      width: 48px;
+      height: 48px;
+      border-radius: 50%;
+      background: #fff;
+      color: var(--brand-color);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.1rem;
+      font-weight: 600;
+      margin-right: 16px;
+    }
+    .chat-detail header .chat-details h2 {
+      font-size: 1rem;
+      font-weight: 600;
+      margin-bottom: 4px;
+    }
+    .chat-detail header .chat-details p {
+      font-size: 0.85rem;
+      color: #fff;
+    }
+    
+    /* Chat Messages: Left & Right Layout */
+    .chat-messages {
+      flex: 1;
+      overflow-y: auto;
+      padding: 16px;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      background: var(--background);
+    }
+    .message {
+      max-width: 75%;
+      padding: 10px 14px;
+      border-radius: 16px;
+      font-size: 0.95rem;
+      line-height: 1.4;
+      word-wrap: break-word;
+      opacity: 0;
+      animation: fadeIn 0.3s forwards;
+    }
+    .message.sent {
+      background: linear-gradient(135deg, var(--brand-color) 0%, var(--brand-color-end) 100%);
+      color: #fff;
+      align-self: flex-end;
+      border-radius: 16px 16px 4px 16px;
+    }
+    .message.received {
+      background: #e0e0e0;
+      color: var(--text-dark);
+      align-self: flex-start;
+      border-radius: 16px 16px 16px 4px;
+    }
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(5px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    
+    .input-area {
+      padding: 12px 16px;
+      background: var(--surface);
+      border-top: 1px solid #e0e0e0;
+      display: flex;
+      align-items: center;
+    }
+    .message-input {
+      flex: 1;
+      padding: 10px 14px;
+      border: 1px solid #ccc;
+      border-radius: 20px;
+      font-size: 1rem;
+      outline: none;
+      transition: border-color 0.2s;
+    }
+    .message-input:focus {
+      border-color: var(--brand-color);
+    }
+    .send-button {
+      background: var(--brand-color);
+      border: none;
+      padding: 10px;
+      margin-left: 12px;
+      border-radius: 50%;
+      color: #fff;
+      cursor: pointer;
+      transition: background 0.2s, transform 0.2s;
+    }
+    .send-button:hover {
+      background: var(--brand-color-end);
+      transform: scale(1.1);
+    }
+    
+    /* Navigation */
+    .navigation {
+      height: 60px;
+      background: var(--surface);
+      border-top: 1px solid #e0e0e0;
+      display: flex;
+      align-items: center;
+      justify-content: space-around;
+    }
+    .nav-item, .new-chat-button {
+      background: none;
+      border: none;
+      color: var(--text-light);
+      font-size: 1.1rem;
+      cursor: pointer;
+      padding: 8px 16px;
+      border-radius: 12px;
+      transition: background 0.2s;
+    }
+    .nav-item.active, .new-chat-button:hover {
+      background: rgba(255, 183, 77, 0.2);
+      color: var(--primary);
+    }
+    
+    /* Hide navigation when not needed */
+    .hidden {
+      display: none;
+    }
+    
+    @media (min-width: 769px) {
+      .app {
+        max-width: 600px;
+        border-radius: 12px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="app">
+    <div class="views-container">
+      <!-- Chat List View -->
+      <section class="view chat-list active">
+        <header class="header">
+          <h1>Orders</h1>
+        </header>
+        <div class="chat-list-container" id="chatListContainer">
+          <!-- Chat items will be rendered here -->
+        </div>
+      </section>
+      <!-- Chat Detail View -->
+      <section class="view chat-detail" id="chatDetailView">
+        <header class="header">
+          <button class="back-button" id="backButton"><i data-lucide="chevron-left"></i></button>
+          <div class="avatar" id="chatAvatar">T1</div>
+          <div class="chat-details">
+            <h2 id="chatName">Table 1</h2>
+            <p class="chat-status" id="chatStatus">Active now</p>
+          </div>
+        </header>
+        <div class="chat-messages" id="chatMessages">
+          <!-- Chat messages will appear here -->
+        </div>
+        <div class="input-area">
+          <input type="text" class="message-input" id="messageInput" placeholder="Type a message..." />
+          <button class="send-button" id="sendButton"><i data-lucide="send"></i></button>
+        </div>
+      </section>
+    </div>
+    <nav class="navigation" id="navigation">
+      <button class="nav-item active"><i data-lucide="home"></i></button>
+      <button class="new-chat-button" id="newChatButton">+ New Order</button>
+      <button class="nav-item"><i data-lucide="user"></i></button>
+    </nav>
+  </div>
+
+  <script>
+    const orders = [
+      { id: 1, name: 'Table 1', lastMessage: 'Order: 2 Burgers', unread: 2, status: 'Active now', time: '02:49' },
+      { id: 2, name: 'Table 2', lastMessage: 'Waiting...', unread: 0, status: '5m ago', time: '01:37' },
+      { id: 3, name: 'Table 3', lastMessage: 'Ready to serve', unread: 1, status: 'Active now', time: '01:18' }
+    ];
+
+    const sampleMessages = [
+      { text: 'Hello! Ready to take your order?', type: 'received' },
+      { text: '2 Burgers and 1 Fries, please.', type: 'sent' },
+      { text: 'Would you like any drinks with that?', type: 'received' }
+    ];
+
+    const chatListContainer = document.getElementById('chatListContainer');
+    const chatDetailView = document.getElementById('chatDetailView');
+    const backButton = document.getElementById('backButton');
+    const chatAvatar = document.getElementById('chatAvatar');
+    const chatName = document.getElementById('chatName');
+    const chatStatus = document.getElementById('chatStatus');
+    const chatMessages = document.getElementById('chatMessages');
+    const messageInput = document.getElementById('messageInput');
+    const sendButton = document.getElementById('sendButton');
+    const newChatButton = document.getElementById('newChatButton');
+    const navigation = document.getElementById('navigation');
+
+    function renderChatList() {
+      chatListContainer.innerHTML = orders.map(order => `
+        <div class="chat-item" onclick="openChat(${order.id})" data-id="${order.id}">
+          <div class="avatar">${order.name.slice(-1)}</div>
+          <div class="details">
+            <div class="name">${order.name}</div>
+            <div class="last-message">${order.lastMessage}</div>
+          </div>
+          <div class="time">${order.time}</div>
+          ${order.unread ? `<div class="unread-badge">${order.unread}</div>` : ''}
+        </div>
+      `).join('');
+    }
+
+    function openChat(id) {
+      const order = orders.find(o => o.id === id);
+      chatAvatar.textContent = order.name.slice(-1);
+      chatName.textContent = order.name;
+      chatStatus.textContent = order.status;
+      loadMessages();
+      document.querySelector('.chat-list').classList.add('inactive');
+      chatDetailView.classList.add('active');
+      navigation.classList.add('hidden');
+    }
+
+    function loadMessages() {
+      chatMessages.innerHTML = sampleMessages.map(msg => `
+        <div class="message ${msg.type}">${msg.text}</div>
+      `).join('');
+      chatMessages.scrollTop = chatMessages.scrollHeight;
+    }
+
+    function sendMessage() {
+      const text = messageInput.value.trim();
+      if (!text) return;
+      chatMessages.insertAdjacentHTML('beforeend', `<div class="message sent">${text}</div>`);
+      chatMessages.scrollTop = chatMessages.scrollHeight;
+      messageInput.value = '';
+      setTimeout(() => {
+        chatMessages.insertAdjacentHTML('beforeend', `<div class="message received">Got it! Processing...</div>`);
+        chatMessages.scrollTop = chatMessages.scrollHeight;
+      }, 1000);
+    }
+
+    function goBack() {
+      document.querySelector('.chat-list').classList.remove('inactive');
+      chatDetailView.classList.remove('active');
+      chatMessages.innerHTML = '';
+      navigation.classList.remove('hidden');
+    }
+
+    function addNewOrder() {
+      const newId = orders.length + 1;
+      const newOrder = {
+        id: newId,
+        name: `Table ${newId}`,
+        lastMessage: 'New order received',
+        unread: 0,
+        status: 'Active now',
+        time: new Date().toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' })
+      };
+      orders.push(newOrder);
+      renderChatList();
+      alert(`Added new order for ${newOrder.name}`);
+    }
+
+    backButton.addEventListener('click', goBack);
+    sendButton.addEventListener('click', sendMessage);
+    messageInput.addEventListener('keypress', (e) => { if (e.key === 'Enter') sendMessage(); });
+    newChatButton.addEventListener('click', addNewOrder);
+
+    document.addEventListener('DOMContentLoaded', () => {
+      renderChatList();
+      lucide.createIcons();
+    });
+  </script>
+</body>
+</html>

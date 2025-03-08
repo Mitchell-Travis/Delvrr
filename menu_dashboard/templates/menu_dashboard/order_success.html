@@ -1,0 +1,341 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Order Success - SnapMenu</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+    :root {
+        --primary: #f7c028; /* Updated Brand */
+        --primary-gradient: linear-gradient(135deg, #f7c028, #d67a2a); /* Updated gradient */
+        --surface: #ffffff; /* Updated Background for surfaces */
+        --surface-alt: #F8F8F8;
+        --text: #1F2937;
+        --text-secondary: #6B7280;
+        --success: #34D399;
+        --warning: #FBBF24;
+        --error: #EF4444;
+        --radius-sm: 12px;
+        --radius-md: 16px;
+        --radius-lg: 24px;
+        --safe-area-top: env(safe-area-inset-top, 0px);
+        --safe-area-bottom: env(safe-area-inset-bottom, 0px);
+    }
+
+    * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+        font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+    }
+
+    body {
+        background: var(--surface);
+        min-height: 100vh;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 16px;
+    }
+
+    .card {
+        background: white;
+        width: 100%;
+        max-width: 360px;
+        border-radius: 24px;
+        box-shadow: 0 12px 36px rgba(0, 0, 0, 0.1);
+        overflow: hidden;
+        animation: slideUp 0.6s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+
+    .header {
+        background: var(--primary);
+        padding: 32px 24px;
+        text-align: center;
+        color: white;
+        position: relative;
+        overflow: hidden;
+    }
+
+    .header::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: radial-gradient(circle at top right, rgba(255,255,255,0.1) 0%, transparent 60%);
+    }
+
+    .check-circle {
+        width: 64px;
+        height: 64px;
+        background: rgba(255, 255, 255, 0.15);
+        backdrop-filter: blur(8px);
+        border-radius: 50%;
+        margin: 0 auto 16px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        position: relative;
+        animation: scaleIn 0.5s 0.2s cubic-bezier(0.33, 1, 0.68, 1) both;
+    }
+
+    .check-circle::before {
+        content: '';
+        position: absolute;
+        inset: -3px;
+        border: 2px solid rgba(255, 255, 255, 0.2);
+        border-radius: 50%;
+        animation: pulse 2s infinite;
+    }
+
+    .check-icon {
+        width: 48px;
+        height: 48px;
+        background: white;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    }
+
+    .check-icon i {
+        color: var(--primary);
+        font-size: 24px;
+    }
+
+    .header h1 {
+        font-size: 22px;
+        margin-bottom: 8px;
+        font-weight: 600;
+    }
+
+    .header p {
+        font-size: 14px;
+        opacity: 0.9;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 6px;
+    }
+
+    .status-dot {
+        width: 6px;
+        height: 6px;
+        background: white;
+        border-radius: 50%;
+        animation: blink 1.5s infinite;
+    }
+
+    .content {
+        padding: 24px;
+    }
+
+    .section {
+        margin-bottom: 20px;
+    }
+
+    .section-title {
+        font-size: 12px;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        color: #999;
+        margin-bottom: 12px;
+    }
+
+    .details-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 16px;
+    }
+
+    .detail-item {
+        background: var(--surface-alt);
+        padding: 12px;
+        border-radius: 12px;
+    }
+
+    .detail-label {
+        font-size: 12px;
+        color: #666;
+        margin-bottom: 4px;
+    }
+
+    .detail-value {
+        font-size: 14px;
+        font-weight: 600;
+        color: #000;
+    }
+
+    .total {
+        background: #fff7f0; /* Light tint matching new brand */
+        border-radius: 16px;
+        padding: 20px;
+        text-align: center;
+        border: 1px dashed rgba(239, 140, 49, 0.2);
+    }
+
+    .total-label {
+        font-size: 13px;
+        color: #666;
+        margin-bottom: 8px;
+    }
+
+    .total-value {
+        font-size: 28px;
+        font-weight: 700;
+        color: var(--primary);
+        letter-spacing: -0.5px;
+    }
+
+    .action-button {
+        display: block;
+        background: var(--primary);
+        color: white;
+        text-decoration: none;
+        padding: 16px;
+        text-align: center;
+        font-weight: 600;
+        font-size: 14px;
+        margin-top: 24px;
+        border-radius: 14px;
+        transition: all 0.3s ease;
+        box-shadow: 0 4px 12px rgba(239, 140, 49, 0.15);
+    }
+
+    .action-button:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 6px 16px rgba(239, 140, 49, 0.25);
+    }
+
+    .action-button:active {
+        transform: scale(0.98);
+    }
+
+    .toast {
+    position: fixed;
+    top: 16px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: var(--primary); /* Uses the new brand color (#f7c028) */
+    backdrop-filter: blur(8px);
+    color: white;
+    padding: 12px 24px;
+    border-radius: 100px;
+    font-size: 14px;
+    font-weight: 500;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    box-shadow: 0 8px 24px rgba(247, 192, 40, 0.2); /* Semi-transparent version of #f7c028 */
+    animation: slideIn 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+
+    @keyframes slideUp {
+        from { 
+            opacity: 0;
+            transform: translateY(20px);
+        }
+        to { 
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+
+    @keyframes slideIn {
+        from { 
+            opacity: 0;
+            transform: translate(-50%, -20px);
+        }
+        to { 
+            opacity: 1;
+            transform: translate(-50%, 0);
+        }
+    }
+
+    @keyframes pulse {
+        0% { transform: scale(1); opacity: 1; }
+        100% { transform: scale(1.2); opacity: 0; }
+    }
+
+    @keyframes blink {
+        0% { opacity: 0.4; }
+        50% { opacity: 1; }
+        100% { opacity: 0.4; }
+    }
+
+    @keyframes scaleIn {
+        from { transform: scale(0.8); opacity: 0; }
+        to { transform: scale(1); opacity: 1; }
+    }
+</style>
+
+</head>
+<body>
+    <div class="card">
+        <div class="header">
+            <div class="check-circle">
+                <div class="check-icon">
+                    <i class="fas fa-check"></i>
+                </div>
+            </div>
+            <h1>Order Confirmed!</h1>
+            <p>
+                <span class="status-dot"></span>
+                Your order is being prepared
+            </p>
+        </div>
+
+        <div class="content">
+            <div class="section">
+                <div class="section-title">Order Details</div>
+                <div class="details-grid">
+                    <div class="detail-item">
+                        <div class="detail-label">Order ID</div>
+                        <div class="detail-value">{{ order_id }}</div>
+                    </div>
+                    <div class="detail-item">
+                        <div class="detail-label">Table</div>
+                        <div class="detail-value">{{ table_number }}</div>
+                    </div>
+                    <div class="detail-item">
+                        <div class="detail-label">Time</div>
+                        <div class="detail-value">{{ order_time|date:"g:i A" }}</div>
+                    </div>
+                    <div class="detail-item">
+                        <div class="detail-label">Payment</div>
+                        <div class="detail-value">{{ payment_method }}</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="total">
+                <div class="total-label">Total Amount</div>
+                <div class="total-value">${{ amount }}</div>
+            </div>
+
+            <a href="{% url 'restaurant_menu' restaurant_name_slug=restaurant_name_slug restaurant_id=restaurant_id %}" class="action-button">
+                Back to Menu
+            </a>
+        </div>
+    </div>
+
+    <div class="toast" id="successToast">
+        <i class="fas fa-check-circle"></i>
+        Order placed successfully
+    </div>
+
+    <script>
+        setTimeout(() => {
+            const toast = document.getElementById('successToast');
+            toast.style.opacity = '0';
+            toast.style.transform = 'translate(-50%, -20px)';
+            setTimeout(() => toast.remove(), 300);
+        }, 3000);
+    </script>
+</body>
+</html>

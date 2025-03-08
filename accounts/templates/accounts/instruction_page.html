@@ -1,0 +1,1154 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Modern Data Transfer Chat</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        :root {
+            --primary-color: #0ea5e9;
+            --primary-dark: #0284c7;
+            --primary-light: #38bdf8;
+            --background-color: #f1f5f9;
+            --surface-color: #ffffff;
+            --text-primary: #0f172a;
+            --text-secondary: #475569;
+            --border-color: #e2e8f0;
+            --success-color: #22c55e;
+            --error-color: #ef4444;
+            --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.05);
+            --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+            --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+            --radius-sm: 0.5rem;
+            --radius-md: 0.75rem;
+            --radius-lg: 1rem;
+            --radius-xl: 1.5rem;
+            --transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+            --safe-bottom: env(safe-area-inset-bottom, 0px);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        body {
+            font-family: system-ui, -apple-system, sans-serif;
+            background: var(--primary-color);
+            color: var(--text-primary);
+            line-height: 1.5;
+            -webkit-font-smoothing: antialiased;
+            height: 100vh;
+            height: calc(var(--vh, 1vh) * 100);
+            overflow: hidden;
+        }
+
+        .app-container {
+            max-width: 100%;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            background: var(--surface-color);
+            position: relative;
+        }
+
+        .chat-header {
+            padding: 1rem;
+            background: var(--surface-color);
+            color: var(--text-primary);
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            box-shadow: var(--shadow-sm);
+            position: relative;
+            z-index: 10;
+        }
+
+        .avatar {
+            width: 2.75rem;
+            height: 2.75rem;
+            border-radius: var(--radius-lg);
+            background: var(--primary-color);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 1.25rem;
+            box-shadow: var(--shadow-sm);
+        }
+
+        .user-info {
+            flex: 1;
+        }
+
+        .user-name {
+            font-weight: 600;
+            font-size: 1.125rem;
+            color: var(--text-primary);
+        }
+
+        .user-status {
+            font-size: 0.875rem;
+            color: var(--text-secondary);
+        }
+
+        .messages-container {
+            flex: 1;
+            overflow-y: auto;
+            padding: 1rem;
+            background: var(--background-color);
+            display: flex;
+            flex-direction: column;
+            gap: 0.75rem;
+            scroll-behavior: smooth;
+        }
+
+        .message {
+            max-width: 80%;
+            padding: 0.875rem 1rem;
+            border-radius: var(--radius-xl);
+            position: relative;
+            animation: slideIn 0.3s ease;
+            word-break: break-word;
+            font-size: 0.9375rem;
+        }
+
+        .message.sent {
+            align-self: flex-end;
+            background: var(--primary-color);
+            color: white;
+            border-bottom-right-radius: var(--radius-sm);
+        }
+
+        .message.received {
+            align-self: flex-start;
+            background: var(--surface-color);
+            color: var(--text-primary);
+            border-bottom-left-radius: var(--radius-sm);
+            box-shadow: var(--shadow-md);
+        }
+
+        .system-message {
+            align-self: center;
+            background: rgba(0, 0, 0, 0.05);
+            color: var(--text-secondary);
+            padding: 0.5rem 1rem;
+            border-radius: var(--radius-xl);
+            font-size: 0.875rem;
+            max-width: 90%;
+            text-align: center;
+        }
+
+        .input-area {
+            padding: 1rem;
+            padding-bottom: calc(1rem + var(--safe-bottom));
+            background: var(--surface-color);
+            border-top: 1px solid var(--border-color);
+            position: relative;
+            z-index: 10;
+        }
+
+        .input-container {
+            display: flex;
+            gap: 0.75rem;
+            align-items: flex-end;
+            max-width: 48rem;
+            margin: 0 auto;
+            position: relative;
+        }
+
+        .message-input {
+            flex: 1;
+            padding: 0.875rem 1rem;
+            padding-right: 3rem;
+            border: 2px solid var(--border-color);
+            border-radius: var(--radius-xl);
+            font-size: 1rem;
+            background: var(--background-color);
+            transition: var(--transition);
+            resize: none;
+            max-height: 120px;
+            min-height: 48px;
+        }
+
+        .message-input:focus {
+            outline: none;
+            border-color: var(--primary-light);
+            background: var(--surface-color);
+        }
+
+        .action-buttons {
+            position: absolute;
+            right: 0.5rem;
+            bottom: 0.5rem;
+            display: flex;
+            gap: 0.25rem;
+        }
+
+        .action-button {
+            width: 2.5rem;
+            height: 2.5rem;
+            border-radius: 50%;
+            border: none;
+            background: transparent;
+            color: var(--primary-color);
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: var(--transition);
+        }
+
+        .action-button:hover {
+            background: var(--primary-color);
+            color: white;
+        }
+
+        .action-button.send {
+            background: var(--primary-color);
+            color: white;
+        }
+
+        .action-button.send:hover {
+            background: var(--primary-dark);
+            transform: translateY(-2px);
+        }
+
+        .data-transfer-drawer {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: var(--surface-color);
+            padding: 1.5rem;
+            padding-bottom: calc(1.5rem + var(--safe-bottom));
+            border-radius: var(--radius-lg) var(--radius-lg) 0 0;
+            box-shadow: var(--shadow-lg);
+            transform: translateY(100%);
+            transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            z-index: 50;
+            max-height: 90vh;
+            overflow-y: auto;
+        }
+
+        .data-transfer-drawer.active {
+            transform: translateY(0);
+        }
+
+        .drawer-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 1.5rem;
+        }
+
+        .drawer-title {
+            font-size: 1.25rem;
+            font-weight: 600;
+            color: var(--text-primary);
+        }
+
+        .drawer-close {
+            background: none;
+            border: none;
+            color: var(--text-secondary);
+            cursor: pointer;
+            padding: 0.5rem;
+            margin: -0.5rem;
+            font-size: 1.5rem;
+            transition: var(--transition);
+        }
+
+        .form-group {
+            margin-bottom: 1.25rem;
+        }
+
+        .form-label {
+            display: block;
+            color: var(--text-secondary);
+            margin-bottom: 0.5rem;
+            font-size: 0.875rem;
+        }
+
+        .form-input {
+            width: 100%;
+            padding: 0.875rem 1rem;
+            border: 2px solid var(--border-color);
+            border-radius: var(--radius-lg);
+            font-size: 1rem;
+            transition: var(--transition);
+            background: var(--background-color);
+        }
+
+        .form-input:focus {
+            outline: none;
+            border-color: var(--primary-light);
+            background: var(--surface-color);
+        }
+
+        .data-input-group {
+            display: flex;
+            gap: 0.75rem;
+        }
+
+        .data-input-group select {
+            width: 100px;
+            padding: 0.875rem;
+            border: 2px solid var(--border-color);
+            border-radius: var(--radius-lg);
+            background: var(--background-color);
+            font-size: 1rem;
+            transition: var(--transition);
+        }
+
+        .submit-button {
+            width: 100%;
+            padding: 1rem;
+            background: var(--primary-color);
+            color: white;
+            border: none;
+            border-radius: var(--radius-lg);
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: var(--transition);
+            margin-top: 1rem;
+        }
+
+        .submit-button:hover {
+            background: var(--primary-dark);
+            transform: translateY(-2px);
+        }
+
+        .data-packet {
+            padding: 1rem;
+            border-radius: var(--radius-xl);
+            background: var(--surface-color);
+            box-shadow: var(--shadow-md);
+            transition: var(--transition);
+            cursor: pointer;
+            width: 100%;
+            max-width: 320px;
+        }
+
+        .data-packet.unopened {
+            background: linear-gradient(135deg, var(--primary-color), var(--primary-dark));
+            color: white;
+        }
+
+        .data-packet:hover {
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-lg);
+        }
+
+        .data-packet-header {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            margin-bottom: 0.75rem;
+        }
+
+        .data-amount {
+            font-size: 1.25rem;
+            font-weight: 600;
+        }
+
+        .data-sender {
+            font-size: 0.875rem;
+            opacity: 0.9;
+        }
+
+        .progress-bar {
+            height: 4px;
+            background: rgba(255, 255, 255, 0.2);
+            border-radius: 2px;
+            overflow: hidden;
+            margin: 0.75rem 0;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: var(--success-color);
+            transition: width 0.3s ease;
+            width: 0%;
+        }
+
+        .backdrop {
+            position: fixed;
+            inset: 0;
+            background: rgba(0, 0, 0, 0.3);
+            opacity: 0;
+            transition: opacity 0.3s ease;
+            pointer-events: none;
+            backdrop-filter: blur(4px);
+            z-index: 40;
+        }
+
+        .backdrop.active {
+            opacity: 1;
+            pointer-events: auto;
+        }
+
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateY(10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @media (min-width: 768px) {
+            body {
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                padding: 1rem;
+            }
+
+            .app-container {
+                width: 100%;
+                max-width: 48rem;
+                height: calc(100vh - 2rem);
+                border-radius: var(--radius-xl);
+                box-shadow: var(--shadow-lg);
+            }
+
+            .chat-header {
+                border-radius: var(--radius-xl) var(--radius-xl) 0 0;
+            }
+
+            .data-transfer-drawer {
+                width: 28rem;
+                left: 50%;
+                transform: translateX(-50%) translateY(100%);
+                border-radius: var(--radius-xl);
+                margin: 1rem;
+            }
+
+            .data-transfer-drawer.active {
+                transform: translateX(-50%) translateY(0);
+            }
+        }
+
+        @media (max-width: 767px) {
+            .message {
+                max-width: 85%;
+            }
+        }
+
+        @media (display-mode: standalone) {
+            .app-container {
+                height: 100%;
+            }
+        }
+
+        /* Additional styles for money transfer */
+        .money-transfer-drawer {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: var(--surface-color);
+            padding: 1.5rem;
+            padding-bottom: calc(1.5rem + var(--safe-bottom));
+            border-radius: var(--radius-lg) var(--radius-lg) 0 0;
+            box-shadow: var(--shadow-lg);
+            transform: translateY(100%);
+            transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            z-index: 50;
+            max-height: 90vh;
+            overflow-y: auto;
+        }
+
+        .money-transfer-drawer.active {
+            transform: translateY(0);
+        }
+
+        .money-packet {
+            padding: 1rem;
+            border-radius: var(--radius-xl);
+            background: var(--surface-color);
+            box-shadow: var(--shadow-md);
+            transition: var(--transition);
+            cursor: pointer;
+            width: 100%;
+            max-width: 320px;
+        }
+
+        .money-packet.unopened {
+            background: linear-gradient(135deg, #22c55e, #16a34a);
+            color: white;
+        }
+
+        .money-amount {
+            font-size: 1.5rem;
+            font-weight: 600;
+        }
+
+        .currency-input-group {
+            display: flex;
+            gap: 0.75rem;
+            align-items: center;
+        }
+
+        .currency-input-group .currency-symbol {
+            font-size: 1.25rem;
+            color: var(--text-secondary);
+            padding: 0.875rem 0;
+        }
+
+        .data-status {
+            font-size: 0.875rem;
+            text-align: center;
+            margin-top: 0.5rem;
+        }
+
+        @media (min-width: 768px) {
+            .money-transfer-drawer {
+                width: 28rem;
+                left: 50%;
+                transform: translateX(-50%) translateY(100%);
+                border-radius: var(--radius-xl);
+                margin: 1rem;
+            }
+
+            .money-transfer-drawer.active {
+                transform: translateX(-50%) translateY(0);
+            }
+        }
+
+        /* Paycode Modal Styles */
+.paycode-modal {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    background: var(--surface-color);
+    padding: 1.5rem;
+    border-radius: var(--radius-lg);
+    box-shadow: var(--shadow-lg);
+    z-index: 100;
+    width: 90%;
+    max-width: 24rem;
+    text-align: center;
+    display: none;
+}
+
+.paycode-modal.active {
+    display: block;
+}
+
+.paycode-modal .modal-title {
+    font-size: 1.25rem;
+    font-weight: 600;
+    color: var(--text-primary);
+    margin-bottom: 1rem;
+}
+
+.paycode-modal .paycode {
+    font-size: 2rem;
+    font-weight: 600;
+    color: var(--primary-color);
+    margin: 1rem 0;
+    padding: 1rem;
+    background: var(--background-color);
+    border-radius: var(--radius-lg);
+    letter-spacing: 0.5rem;
+}
+
+.paycode-modal .pin-input {
+    width: 100%;
+    padding: 0.875rem 1rem;
+    border: 2px solid var(--border-color);
+    border-radius: var(--radius-lg);
+    font-size: 1.25rem;
+    text-align: center;
+    margin-bottom: 1rem;
+    transition: var(--transition);
+}
+
+.paycode-modal .pin-input:focus {
+    outline: none;
+    border-color: var(--primary-light);
+}
+
+.paycode-modal .submit-button {
+    width: 100%;
+    padding: 1rem;
+    background: var(--primary-color);
+    color: white;
+    border: none;
+    border-radius: var(--radius-lg);
+    font-size: 1rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: var(--transition);
+}
+
+.paycode-modal .submit-button:hover {
+    background: var(--primary-dark);
+    transform: translateY(-2px);
+}
+
+.paycode-modal .error-message {
+    color: var(--error-color);
+    font-size: 0.875rem;
+    margin-top: 0.5rem;
+    display: none;
+}
+    </style>
+</head>
+<body>
+    <div class="app-container">
+        <header class="chat-header">
+            <div class="avatar">
+                <i class="fas fa-user"></i>
+            </div>
+            <div class="user-info">
+                <div class="user-name">Mitch</div>
+                <div class="user-status">Online</div>
+            </div>
+        </header>
+
+        <main class="messages-container" id="messages">
+            <!-- Messages will be dynamically added here -->
+        </main>
+
+        <footer class="input-area">
+            <div class="input-container">
+                <textarea 
+                    class="message-input" 
+                    id="messageInput" 
+                    placeholder="Type a message..." 
+                    rows="1"
+                ></textarea>
+                <div class="action-buttons">
+                    <button class="action-button" onclick="openMoneyTransfer()" aria-label="Send Money">
+                        <i class="fas fa-dollar-sign"></i>
+                    </button>
+                    <button class="action-button" onclick="openDataTransfer()" aria-label="Send Data">
+                        <i class="fas fa-file-upload"></i>
+                    </button>
+                    <button class="action-button send" onclick="sendMessage()" aria-label="Send Message">
+                        <i class="fas fa-paper-plane"></i>
+                    </button>
+                </div>
+            </div>
+        </footer>
+    </div>
+
+    <div class="backdrop" id="backdrop" onclick="closeDrawers()"></div>
+
+    <div class="data-transfer-drawer" id="dataTransferDrawer">
+        <div class="drawer-header">
+            <div class="drawer-title">Send Data</div>
+            <button class="drawer-close" onclick="closeDataTransfer()" aria-label="Close">×</button>
+        </div>
+        <div class="form-group">
+            <label class="form-label">From</label>
+            <input type="tel" class="form-input" id="senderNumber" value="+1 987 654 3210" readonly>
+        </div>
+        <div class="form-group">
+            <label class="form-label">To</label>
+            <input type="tel" class="form-input" id="recipientNumber" placeholder="+1 234 567 8900">
+        </div>
+        <div class="form-group">
+            <label class="form-label">Data Amount</label>
+            <div class="data-input-group">
+                <input type="number" class="form-input" id="dataAmount" placeholder="Enter amount">
+                <select class="form-input" id="dataUnit">
+                    <option value="MB">MB</option>
+                    <option value="GB">GB</option>
+                </select>
+            </div>
+        </div>
+        <div class="form-group">
+            <label class="form-label">Message (optional)</label>
+            <input type="text" class="form-input" id="transferMessage" placeholder="Add a message">
+        </div>
+        <button class="submit-button" onclick="sendDataTransfer()">Send Data</button>
+    </div>
+
+    <div class="money-transfer-drawer" id="moneyTransferDrawer">
+        <div class="drawer-header">
+            <div class="drawer-title">Send Money</div>
+            <button class="drawer-close" onclick="closeMoneyTransfer()" aria-label="Close">×</button>
+        </div>
+        <div class="form-group">
+            <label class="form-label">From</label>
+            <input type="tel" class="form-input" id="moneySenderNumber" value="+1 987 654 3210" readonly>
+        </div>
+        <div class="form-group">
+            <label class="form-label">To</label>
+            <input type="tel" class="form-input" id="moneyRecipientNumber" placeholder="+1 234 567 8900">
+        </div>
+        <div class="form-group">
+            <label class="form-label">Amount</label>
+            <div class="currency-input-group">
+                <span class="currency-symbol">$</span>
+                <input type="number" class="form-input" id="moneyAmount" placeholder="Enter amount">
+            </div>
+        </div>
+        <div class="form-group">
+            <label class="form-label">Message (optional)</label>
+            <input type="text" class="form-input" id="moneyMessage" placeholder="Add a message">
+        </div>
+        <button class="submit-button" onclick="sendMoneyTransfer()">Send Money</button>
+    </div>
+
+     <!-- New PIN Confirmation Modal -->
+    <!-- Paycode Modal -->
+    <div class="paycode-modal" id="paycodeModal">
+        <div class="modal-title">Confirm Payment</div>
+        <div class="paycode" id="paycodeDisplay">1234 5678</div>
+        <input type="password" class="pin-input" id="pinInput" placeholder="Enter 6-digit PIN" maxlength="6" inputmode="numeric">
+        <div class="error-message" id="pinError">Invalid PIN. Please try again.</div>
+        <button class="submit-button" onclick="confirmPayment()">Confirm Payment</button>
+    </div>
+
+    <script>
+        const messagesContainer = document.getElementById('messages');
+        const messageInput = document.getElementById('messageInput');
+        const dataTransferDrawer = document.getElementById('dataTransferDrawer');
+        const moneyTransferDrawer = document.getElementById('moneyTransferDrawer');
+        const backdrop = document.getElementById('backdrop');
+        const senderNumber = '0886580959';
+        let lastRecipientNumber = '';
+
+        // Auto-resize textarea
+        function autoResize(textarea) {
+            textarea.style.height = 'auto';
+            textarea.style.height = Math.min(textarea.scrollHeight, 120) + 'px';
+        }
+
+        // Add regular message
+        function addMessage(text, type = 'sent') {
+            const messageDiv = document.createElement('div');
+            messageDiv.className = `message ${type}`;
+            messageDiv.textContent = text;
+            messagesContainer.appendChild(messageDiv);
+            scrollToBottom();
+        }
+
+        // Add system message
+        function addSystemMessage(text) {
+            const messageDiv = document.createElement('div');
+            messageDiv.className = 'system-message';
+            messageDiv.textContent = text;
+            messagesContainer.appendChild(messageDiv);
+            scrollToBottom();
+        }
+
+        // Send regular message
+        function sendMessage() {
+            const text = messageInput.value.trim();
+            if (text) {
+                addMessage(text, 'sent');
+                messageInput.value = '';
+                messageInput.style.height = 'auto';
+                
+                // Simulate reply
+                setTimeout(() => {
+                    const replies = [
+                        'Got it!', 
+                        'Thanks for the message!', 
+                        'Received, thanks!', 
+                        'Perfect, I will take a look.',
+                        'Thanks for letting me know.'
+                    ];
+                    const randomReply = replies[Math.floor(Math.random() * replies.length)];
+                    addMessage(randomReply, 'received');
+                }, 1000 + Math.random() * 1000);
+            }
+        }
+
+        // Data transfer drawer controls
+        function openDataTransfer() {
+            dataTransferDrawer.classList.add('active');
+            backdrop.classList.add('active');
+            
+            if (lastRecipientNumber) {
+                document.getElementById('recipientNumber').value = lastRecipientNumber;
+            }
+            document.getElementById('senderNumber').value = senderNumber;
+        }
+
+        function closeDataTransfer() {
+            dataTransferDrawer.classList.remove('active');
+            backdrop.classList.remove('active');
+            resetForm();
+        }
+
+        function resetForm() {
+            document.getElementById('dataAmount').value = '';
+            document.getElementById('transferMessage').value = '';
+            document.getElementById('dataUnit').value = 'MB';
+        }
+
+        // Validate phone number format
+        function validatePhoneNumber(phone) {
+            const phoneRegex = /^\+?[\d\s-]{10,}$/;
+            return phoneRegex.test(phone);
+        }
+
+        // Handle data transfer
+        function sendDataTransfer() {
+            const amount = document.getElementById('dataAmount').value;
+            const unit = document.getElementById('dataUnit').value;
+            const recipientNumber = document.getElementById('recipientNumber').value;
+            const message = document.getElementById('transferMessage').value;
+            
+            // Validation
+            if (!amount || !recipientNumber) {
+                addSystemMessage('Please enter both data amount and recipient number');
+                return;
+            }
+
+            if (!validatePhoneNumber(recipientNumber)) {
+                addSystemMessage('Please enter a valid phone number');
+                return;
+            }
+
+            if (amount <= 0) {
+                addSystemMessage('Please enter a valid data amount');
+                return;
+            }
+
+            lastRecipientNumber = recipientNumber;
+
+            // Create sent packet
+            createDataPacket(amount, unit, senderNumber, recipientNumber, message, false);
+            closeDataTransfer();
+            
+            // Simulate receiving the packet
+            setTimeout(() => {
+                createDataPacket(amount, unit, senderNumber, recipientNumber, message, true);
+            }, 2000);
+        }
+
+        // Create data transfer packet
+        function createDataPacket(amount, unit, from, to, message, isReceived = false) {
+            const packetWrapper = document.createElement('div');
+            packetWrapper.className = `message ${isReceived ? 'received' : 'sent'}`;
+            
+            const dataPacket = document.createElement('div');
+            dataPacket.className = 'data-packet unopened';
+            
+            const formattedSize = formatDataSize(amount, unit);
+            const displayNumber = isReceived ? from : to;
+            
+            dataPacket.innerHTML = `
+                <div class="data-packet-header">
+                    <i class="fas fa-database"></i>
+                    <div class="data-packet-details">
+                        <div class="data-amount">${formattedSize}</div>
+                        <div class="data-sender">${isReceived ? 'From: ' : 'To: '} ${displayNumber}</div>
+                    </div>
+                </div>
+                ${message ? `<div class="data-message">${message}</div>` : ''}
+                <div class="progress-bar">
+                    <div class="progress-fill"></div>
+                </div>
+                <div class="data-status">${isReceived ? 'Tap to accept' : 'Waiting for acceptance...'}</div>
+            `;
+
+            if (isReceived) {
+                dataPacket.onclick = () => {
+                    if (dataPacket.classList.contains('unopened')) {
+                        acceptDataTransfer(dataPacket, formattedSize, from);
+                    }
+                };
+            }
+
+            packetWrapper.appendChild(dataPacket);
+            messagesContainer.appendChild(packetWrapper);
+            scrollToBottom();
+        }
+
+        // Handle data transfer acceptance
+        function acceptDataTransfer(dataPacket, formattedSize, from) {
+            dataPacket.classList.remove('unopened');
+            const progressFill = dataPacket.querySelector('.progress-fill');
+            const statusDiv = dataPacket.querySelector('.data-status');
+            
+            let progress = 0;
+            const interval = setInterval(() => {
+                progress += 2;
+                progressFill.style.width = `${progress}%`;
+                statusDiv.textContent = `Receiving... ${progress}%`;
+                
+                if (progress >= 100) {
+                    clearInterval(interval);
+                    dataPacket.classList.add('opened');
+                    dataPacket.innerHTML = `
+                        <div class="data-packet-header">
+                            <i class="fas fa-check-circle"></i>
+                            <div class="data-packet-details">
+                                <div class="data-amount">${formattedSize}</div>
+                                <div class="data-sender">From: ${from}</div>
+                            </div>
+                        </div>
+                        <div class="data-status">Transfer Complete!</div>
+                    `;
+                    addSystemMessage(`Received ${formattedSize} from ${from}`);
+                }
+            }, 50);
+        }
+
+        // Format data size with unit
+        function formatDataSize(amount, unit) {
+            return `${amount} ${unit}`;
+        }
+
+        // Auto-scroll to bottom
+        function scrollToBottom() {
+            messagesContainer.scrollTop = messagesContainer.scrollHeight;
+        }
+
+        // Event Listeners
+        messageInput.addEventListener('input', function() {
+            autoResize(this);
+        });
+
+        messageInput.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter' && !e.shiftKey) {
+                e.preventDefault();
+                sendMessage();
+            }
+        });
+
+        // Handle mobile viewport height
+        function setVH() {
+            let vh = window.innerHeight * 0.01;
+            document.documentElement.style.setProperty('--vh', `${vh}px`);
+        }
+
+        window.addEventListener('resize', setVH);
+        window.addEventListener('orientationchange', setVH);
+        setVH();
+
+        // Initialize with welcome message
+        window.addEventListener('DOMContentLoaded', () => {
+            addSystemMessage('Welcome to the Data Transfer Chat! Try sending a message or data package.');
+        });
+
+        // Money transfer drawer controls
+        function openMoneyTransfer() {
+            moneyTransferDrawer.classList.add('active');
+            backdrop.classList.add('active');
+            
+            if (lastRecipientNumber) {
+                document.getElementById('moneyRecipientNumber').value = lastRecipientNumber;
+            }
+            document.getElementById('moneySenderNumber').value = senderNumber;
+        }
+
+        function closeMoneyTransfer() {
+            moneyTransferDrawer.classList.remove('active');
+            backdrop.classList.remove('active');
+            resetMoneyForm();
+        }
+
+        function resetMoneyForm() {
+            document.getElementById('moneyAmount').value = '';
+            document.getElementById('moneyMessage').value = '';
+        }
+
+        function createMoneyPacket(amount, from, to, message, isReceived = false) {
+            const packetWrapper = document.createElement('div');
+            packetWrapper.className = `message ${isReceived ? 'received' : 'sent'}`;
+            
+            const moneyPacket = document.createElement('div');
+            moneyPacket.className = 'money-packet unopened';
+            
+            const formattedAmount = new Intl.NumberFormat('en-US', {
+                style: 'currency',
+                currency: 'USD'
+            }).format(amount);
+            
+            const displayNumber = isReceived ? from : to;
+            
+            moneyPacket.innerHTML = `
+                <div class="data-packet-header">
+                    <i class="fas fa-dollar-sign"></i>
+                    <div class="data-packet-details">
+                        <div class="money-amount">${formattedAmount}</div>
+                        <div class="data-sender">${isReceived ? 'From: ' : 'To: '} ${displayNumber}</div>
+                    </div>
+                </div>
+                ${message ? `<div class="data-message">${message}</div>` : ''}
+                <div class="progress-bar">
+                    <div class="progress-fill"></div>
+                </div>
+                <div class="data-status">${isReceived ? 'Tap to accept' : 'Waiting for acceptance...'}</div>
+            `;
+
+            if (isReceived) {
+                moneyPacket.onclick = () => {
+                    if (moneyPacket.classList.contains('unopened')) {
+                        acceptMoneyTransfer(moneyPacket, formattedAmount, from);
+                    }
+                };
+            }
+
+            packetWrapper.appendChild(moneyPacket);
+            messagesContainer.appendChild(packetWrapper);
+            scrollToBottom();
+        }
+
+        function acceptMoneyTransfer(moneyPacket, formattedAmount, from) {
+            moneyPacket.classList.remove('unopened');
+            const progressFill = moneyPacket.querySelector('.progress-fill');
+            const statusDiv = moneyPacket.querySelector('.data-status');
+            
+            let progress = 0;
+            const interval = setInterval(() => {
+                progress += 2;
+                progressFill.style.width = `${progress}%`;
+                statusDiv.textContent = `Processing... ${progress}%`;
+                
+                if (progress >= 100) {
+                    clearInterval(interval);
+                    moneyPacket.classList.add('opened');
+                    moneyPacket.innerHTML = `
+                        <div class="data-packet-header">
+                            <i class="fas fa-check-circle"></i>
+                            <div class="data-packet-details">
+                                <div class="money-amount">${formattedAmount}</div>
+                                <div class="data-sender">From: ${from}</div>
+                            </div>
+                        </div>
+                        <div class="data-status">Transfer Complete!</div>
+                    `;
+                    addSystemMessage(`Received ${formattedAmount} from ${from}`);
+                }
+            }, 50);
+        }
+
+        function sendMoneyTransfer() {
+            const amount = document.getElementById('moneyAmount').value;
+            const recipientNumber = document.getElementById('moneyRecipientNumber').value;
+            const message = document.getElementById('moneyMessage').value;
+            
+            // Validation
+            if (!amount || !recipientNumber) {
+                addSystemMessage('Please enter both amount and recipient number');
+                return;
+            }
+
+            if (!validatePhoneNumber(recipientNumber)) {
+                addSystemMessage('Please enter a valid phone number');
+                return;
+            }
+
+            if (amount <= 0) {
+                addSystemMessage('Please enter a valid amount');
+                return;
+            }
+
+            lastRecipientNumber = recipientNumber;
+
+            // Create sent packet
+            createMoneyPacket(amount, senderNumber, recipientNumber, message, false);
+            closeMoneyTransfer();
+            
+            // Simulate receiving the packet
+            setTimeout(() => {
+                createMoneyPacket(amount, senderNumber, recipientNumber, message, true);
+            }, 2000);
+        }
+
+        // Update backdrop click handler to close both drawers
+        backdrop.onclick = () => {
+            closeDataTransfer();
+            closeMoneyTransfer();
+        };
+
+        // Variables for Paycode and PIN confirmation
+const paycodeModal = document.getElementById('paycodeModal');
+const paycodeDisplay = document.getElementById('paycodeDisplay');
+const pinInput = document.getElementById('pinInput');
+const pinError = document.getElementById('pinError');
+let pendingMoneyTransfer = null;
+
+// Generate a random paycode
+function generatePaycode() {
+    const code = Math.floor(100000 + Math.random() * 900000); // 6-digit code
+    return code.toString().replace(/(\d{3})(\d{3})/, '$1 $2'); // Format as "123 456"
+}
+
+// Show Paycode modal
+function showPaycodeModal(amount, recipientNumber, message) {
+    pendingMoneyTransfer = { amount, recipientNumber, message };
+    paycodeDisplay.textContent = generatePaycode(); // Generate and display paycode
+    paycodeModal.classList.add('active');
+    backdrop.classList.add('active');
+    pinInput.value = '';
+    pinError.style.display = 'none';
+}
+
+// Confirm payment
+function confirmPayment() {
+    const enteredPin = pinInput.value;
+
+    // Simulate PIN validation (replace with actual validation logic)
+    if (enteredPin === '123456') { // Example PIN
+        paycodeModal.classList.remove('active');
+        backdrop.classList.remove('active');
+        proceedWithMoneyTransfer();
+    } else {
+        pinError.style.display = 'block';
+    }
+}
+
+// Proceed with money transfer after PIN confirmation
+function proceedWithMoneyTransfer() {
+    if (pendingMoneyTransfer) {
+        const { amount, recipientNumber, message } = pendingMoneyTransfer;
+        createMoneyPacket(amount, senderNumber, recipientNumber, message, false);
+        
+        // Simulate receiving the packet
+        setTimeout(() => {
+            createMoneyPacket(amount, senderNumber, recipientNumber, message, true);
+        }, 2000);
+
+        pendingMoneyTransfer = null;
+    }
+}
+
+// Update sendMoneyTransfer function to show Paycode modal
+function sendMoneyTransfer() {
+    const amount = document.getElementById('moneyAmount').value;
+    const recipientNumber = document.getElementById('moneyRecipientNumber').value;
+    const message = document.getElementById('moneyMessage').value;
+    
+    // Validation
+    if (!amount || !recipientNumber) {
+        addSystemMessage('Please enter both amount and recipient number');
+        return;
+    }
+
+    if (!validatePhoneNumber(recipientNumber)) {
+        addSystemMessage('Please enter a valid phone number');
+        return;
+    }
+
+    if (amount <= 0) {
+        addSystemMessage('Please enter a valid amount');
+        return;
+    }
+
+    lastRecipientNumber = recipientNumber;
+
+    // Show Paycode modal
+    showPaycodeModal(amount, recipientNumber, message);
+}
+    </script>
+</body>
+</html>

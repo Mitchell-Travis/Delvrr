@@ -1,0 +1,596 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Delvrr - Sign In</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: -apple-system, BlinkMacSystemFont, system-ui, "Segoe UI", Roboto, sans-serif;
+        }
+
+        :root {
+            --primary: #f7c028;
+            --primary-dark: #e6b018;
+            --surface: #fbfbfa;
+            --background: #fbfbfa;
+            --text: black;
+            --text-secondary: #6b7280;
+            --border: #e5e7eb;
+            --error: #ef4444;
+            --success: #10b981;
+        }
+
+        body {
+            min-height: 100vh;
+            background: var(--background);
+            display: flex;
+            flex-direction: column;
+            overflow-x: hidden;
+        }
+
+        .login-container {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            padding: 1.5rem;
+            max-width: 480px;
+            margin: 0 auto;
+            width: 100%;
+        }
+
+        .header {
+            margin-top: 2rem;
+            text-align: left;
+        }
+
+        .brand {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            margin-bottom: 2rem;
+        }
+
+        .logo {
+            width: 48px;
+            height: 48px;
+            border-radius: 12px;
+            background: var(--surface);
+            box-shadow: 0 8px 16px rgba(0, 0, 0, 0.1);
+        }
+
+        .title {
+            font-size: 2rem;
+            font-weight: 700;
+            margin-bottom: 0.5rem;
+            background: linear-gradient(45deg, var(--text) 30%, #666);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .subtitle {
+            color: var(--text-secondary);
+            font-size: 1rem;
+        }
+
+        /* Enhanced Quick Login Styles */
+       .quick-login-container {
+        width: 100%;
+        max-width: 480px;
+        margin: 2rem auto;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 1rem;
+        padding: 0 1rem;
+    }
+
+    .welcome-text {
+        font-size: 1.5rem;
+        font-weight: 600;
+        color: var(--text);
+        margin-bottom: 0.5rem;
+        text-align: center;
+    }
+
+    .quick-login-card {
+        background: var(--surface);
+        border-radius: 16px;
+        overflow: hidden;
+        box-shadow: 0 4px 24px rgba(0, 0, 0, 0.08);
+        transition: all 0.3s ease;
+        width: 100%;
+    }
+
+    .quick-login-card:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 8px 32px rgba(247, 192, 40, 0.15);
+    }
+
+    .quick-login-content {
+        padding: 1rem;
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+    }
+
+    .avatar-container {
+        position: relative;
+    }
+
+    .avatar {
+        width: 48px;
+        height: 48px;
+        border-radius: 50%;
+        background: #f0f0f0;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.25rem;
+        font-weight: 600;
+        color: var(--text);
+        flex-shrink: 0;
+        position: relative;
+    }
+
+    .status-indicator {
+        position: absolute;
+        bottom: -2px;
+        right: -2px;
+        width: 20px;
+        height: 20px;
+        border-radius: 50%;
+        background: white;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    }
+
+    .status-indicator i {
+        color: #10b981;
+        font-size: 0.75rem;
+    }
+
+    .user-info {
+        flex: 1;
+        min-width: 0;
+    }
+
+    .user-name {
+        color: var(--text);
+        font-size: 1rem;
+        font-weight: 500;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+
+    .login-button {
+        width: 36px;
+        height: 36px;
+        border-radius: 50%;
+        background: var(--primary);
+        border: none;
+        color: white;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        flex-shrink: 0;
+    }
+
+    .login-button:hover {
+        background: var(--primary-dark);
+        transform: translateX(2px);
+    }
+
+    .login-button i {
+        font-size: 0.875rem;
+    }
+
+    .login-button.loading {
+        opacity: 0.7;
+        pointer-events: none;
+    }
+
+    /* Updated switch account styles to match the image */
+    .switch-account {
+        width: 100%;
+        padding: 0.4rem;
+        border-radius: 100px;
+        border: 1px solid #e5e7eb;
+        background: white;
+        color: var(--text);
+        font-size: 0.95rem;
+        font-weight: 500;
+        cursor: pointer;
+        transition: all 0.2s ease;
+        margin-top: 0.5rem;
+    }
+
+    .switch-account:hover {
+        background: #f9fafb;
+        border-color: #d1d5db;
+    }
+
+    @media (max-width: 480px) {
+        .quick-login-container {
+            margin: 1rem auto;
+        }
+
+        .quick-login-content {
+            padding: 0.875rem;
+        }
+
+        .welcome-text {
+            font-size: 1.25rem;
+        }
+    }
+
+    /* Loading animation */
+    @keyframes spin {
+        to {
+            transform: rotate(360deg);
+        }
+    }
+
+    .login-button.loading .fa-spinner {
+        animation: spin 1s linear infinite;
+    }
+
+        /* Original Form Styles */
+        .input-group {
+            position: relative;
+            margin: 1.5rem 0;
+        }
+
+        .input-group input {
+            width: 100%;
+            background: var(--surface);
+            border: 2px solid var(--border);
+            border-radius: 16px;
+            padding: 1rem 1rem 1rem 3rem;
+            font-size: 1rem;
+            transition: all 0.3s ease;
+        }
+
+        .input-group input:focus {
+            border-color: var(--primary);
+            box-shadow: 0 0 0 4px rgba(239, 140, 49, 0.15);
+            outline: none;
+        }
+
+        .input-group i {
+            position: absolute;
+            left: 1rem;
+            top: 50%;
+            transform: translateY(-50%);
+            color: var(--text-secondary);
+            transition: all 0.3s ease;
+        }
+
+        .input-group input:focus + i {
+            color: var(--primary-dark);
+        }
+
+        .options {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin: 1.5rem 0;
+        }
+
+        .remember {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .remember input[type="checkbox"] {
+            width: 1.25rem;
+            height: 1.25rem;
+            accent-color: var(--primary);
+        }
+
+        .forgot-link {
+            color: var(--text-secondary);
+            text-decoration: none;
+            font-weight: 500;
+            transition: color 0.3s ease;
+        }
+
+        .forgot-link:hover {
+            color: var(--primary-dark);
+        }
+
+        .btn {
+            width: 100%;
+            background: var(--primary);
+            color: white;
+            border: none;
+            border-radius: 16px;
+            padding: 1rem;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .btn:hover {
+            background: var(--primary-dark);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(239, 140, 49, 0.3);
+        }
+
+        .social-login {
+            margin-top: 2rem;
+            text-align: center;
+        }
+
+        .social-text {
+            color: var(--text-secondary);
+            margin-bottom: 1rem;
+            position: relative;
+        }
+
+        .social-text::before,
+        .social-text::after {
+            content: '';
+            position: absolute;
+            top: 50%;
+            width: 30%;
+            height: 1px;
+            background: var(--border);
+        }
+
+        .social-text::before {
+            left: 0;
+        }
+
+        .social-text::after {
+            right: 0;
+        }
+
+        .social-buttons {
+            display: flex;
+            gap: 1rem;
+            justify-content: center;
+        }
+
+        .social-btn {
+            width: 48px;
+            height: 48px;
+            border-radius: 50%;
+            border: none;
+            background: var(--surface);
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .social-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+        }
+
+        .social-btn i {
+            font-size: 1.25rem;
+        }
+
+        .google i {
+            color: #db4437;
+        }
+
+        .facebook i {
+            color: #1877f2;
+        }
+
+        .signup {
+            margin-top: 2rem;
+            text-align: center;
+            padding: 1rem;
+            background: var(--surface);
+            border-radius: 16px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+        }
+
+        .signup-text {
+            color: var(--text-secondary);
+            margin-right: 0.5rem;
+        }
+
+        .signup-link {
+            color: var(--text);
+            text-decoration: none;
+            font-weight: 600;
+            transition: color 0.3s ease;
+        }
+
+        .signup-link:hover {
+            color: var(--primary-dark);
+        }
+
+        /* Loading animation */
+        .btn.loading, .quick-login-btn.loading {
+            position: relative;
+            color: transparent;
+        }
+
+        .btn.loading::after, .quick-login-btn.loading::after {
+            content: "";
+            position: absolute;
+            width: 20px;
+            height: 20px;
+            top: 50%;
+            left: 50%;
+            border: 2px solid white;
+            border-radius: 50%;
+            border-top-color: transparent;
+            animation: spin 0.8s linear infinite;
+            transform: translate(-50%, -50%);
+        }
+
+        @keyframes spin {
+            to {
+                transform: translate(-50%, -50%) rotate(360deg);
+            }
+        }
+
+        /* Hide regular form when quick login is shown */
+        body.has-quick-login .regular-form-container {
+            display: none;
+        }
+
+        @media (max-width: 480px) {
+            body {
+                background: var(--surface);
+            }
+
+            .login-container {
+                padding: 1.25rem;
+            }
+
+            .header {
+                margin-top: 1rem;
+            }
+
+            .signup {
+                background: var(--background);
+            }
+        }
+    </style>
+</head>
+<body class="{% if recent_user %}has-quick-login{% endif %}">
+    <div class="login-container">
+        <header class="header">
+            <div class="brand">
+                <img src="../../static/img/delvrr.JPG" alt="Delvrr Logo" class="logo">
+            </div>
+
+            {% if recent_user %}
+            <!-- Enhanced Quick Login -->
+           
+            <div class="quick-login-container">
+                <h2 class="welcome-text">Welcome back</h2>
+                <div class="quick-login-card">
+                    <div class="quick-login-content">
+                        <div class="avatar-container">
+                            <div class="avatar">
+                                <span>{{ recent_user.email|slice:":1"|upper }}</span>
+                            </div>
+                            <div class="status-indicator">
+                                <i class="fas fa-check"></i>
+                            </div>
+                        </div>
+                        <div class="user-info">
+                            <div class="user-name">{{ recent_user.email }}</div>
+                        </div>
+                        <button class="login-button" onclick="handleQuickLogin()">
+                            <i class="fas fa-chevron-right"></i>
+                        </button>
+                    </div>
+                </div>
+                <button class="switch-account" onclick="showRegularLoginForm()">
+                    Use another profile
+                </button>
+            </div>
+
+            {% endif %}
+        </header>
+
+        <div class="regular-form-container" {% if recent_user %}style="display: none;"{% endif %}>
+            <h1 class="title">Welcome back</h1>
+            <p class="subtitle">Sign in to continue to your account</p>
+
+            <form id="login-form" method="POST" action="{% url 'customer_signin' %}">
+                {% csrf_token %}
+                
+                <input type="hidden" name="next" value="{{ next }}">
+                <input type="hidden" name="device_id" value="{{ device_id }}">
+                <input type="hidden" name="device_name" value="{{ device_name }}">
+
+                {% if messages %}
+                <div class="messages">
+                    {% for message in messages %}
+                    <div class="message {{ message.tags }}">
+                        {{ message }}
+                    </div>
+                    {% endfor %}
+                </div>
+                {% endif %}
+
+                <div class="input-group">
+                    <input type="email" name="email" placeholder="Email address" required autocomplete="email">
+                    <i class="fas fa-envelope"></i>
+                </div>
+
+                <div class="input-group">
+                    <input type="password" name="password" placeholder="Password" required autocomplete="current-password">
+                    <i class="fas fa-lock"></i>
+                </div>
+
+                <div class="options">
+                    <label class="remember">
+                        <input type="checkbox" id="remember-me">
+                        <span>Remember me</span>
+                    </label>
+                    <a href="/forgot-password" class="forgot-link">Forgot password?</a>
+                </div>
+
+                <button type="submit" class="btn">Sign in</button>
+
+                <div class="social-login">
+                    <p class="social-text">Or continue with</p>
+                    <div class="social-buttons">
+                        <button type="button" class="social-btn google">
+                            <i class="fab fa-google"></i>
+                        </button>
+                        <button type="button" class="social-btn facebook">
+                            <i class="fab fa-facebook-f"></i>
+                        </button>
+                    </div>
+                </div>
+            </form>
+
+            <div class="signup">
+                <span class="signup-text">Don't have an account?</span>
+                <a href="{% url 'customer_signup' %}" class="signup-link">Sign up</a>
+            </div>
+        </div>
+    </div>
+
+    <script>
+    function handleQuickLogin() {
+        const button = document.querySelector('.login-button');
+        button.classList.add('loading');
+        button.innerHTML = '<i class="fas fa-spinner"></i>';
+        
+        const form = document.getElementById('login-form');
+        const quickLoginInput = document.createElement('input');
+        quickLoginInput.type = 'hidden';
+        quickLoginInput.name = 'quick_login';
+        quickLoginInput.value = 'true';
+        form.appendChild(quickLoginInput);
+        
+        setTimeout(() => form.submit(), 300);
+    }
+
+    function showRegularLoginForm() {
+        document.querySelector('.quick-login-container').style.display = 'none';
+        document.querySelector('.regular-form-container').style.display = 'block';
+        document.querySelector('.title').scrollIntoView({ behavior: 'smooth' });
+    }
+</script>
+</body>
+</html>

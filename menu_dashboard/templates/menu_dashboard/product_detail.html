@@ -1,0 +1,96 @@
+<div class="product-detail-container max-w-6xl mx-auto px-4 py-8">
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+        <!-- Product Image Section -->
+        <div class="product-image">
+            <img src="{{ product.product_image.url }}" alt="{{ product.name }}" 
+                 class="w-full rounded-lg shadow-lg">
+            {% if product.has_promo %}
+                <div class="promo-badge absolute top-4 right-4 bg-red-500 text-white px-4 py-2 rounded-full">
+                    PROMO
+                </div>
+            {% endif %}
+        </div>
+
+        <!-- Product Info Section -->
+        <div class="product-info space-y-6">
+            <h1 class="text-3xl font-bold text-gray-900">{{ product.name }}</h1>
+            
+            <div class="category-info">
+                <span class="text-sm text-gray-500">{{ product.category }}</span>
+                {% if product.subcategory %}
+                    <span class="mx-2">·</span>
+                    <span class="text-sm text-gray-500">{{ product.subcategory }}</span>
+                {% endif %}
+            </div>
+
+            <div class="pricing">
+                {% if product.has_promo %}
+                    <div class="flex items-center space-x-4">
+                        <span class="text-3xl font-bold text-red-600">${{ product.promo_price }}</span>
+                        <span class="text-xl text-gray-400 line-through">${{ product.price }}</span>
+                    </div>
+                    <div class="promo-info mt-2">
+                        <p class="text-sm text-gray-600">Promo valid until {{ product.promo_end_date }}</p>
+                        {% if product.promo_discription %}
+                            <p class="text-sm text-gray-600">{{ product.promo_discription }}</p>
+                        {% endif %}
+                    </div>
+                {% else %}
+                    <span class="text-3xl font-bold text-gray-900">${{ product.price }}</span>
+                {% endif %}
+            </div>
+
+            <div class="description">
+                <h3 class="text-lg font-semibold mb-2">Description</h3>
+                <p class="text-gray-600">{{ product.description }}</p>
+            </div>
+
+            {% if product.status == 'Available' %}
+                <div class="add-to-cart">
+                    <button class="add-to-cart-btn bg-blue-600 text-white px-8 py-3 rounded-lg hover:bg-blue-700 transition-colors w-full md:w-auto"
+                            data-product-id="{{ product.id }}">
+                        Add to Cart
+                    </button>
+                </div>
+            {% else %}
+                <div class="unavailable-notice">
+                    <p class="text-red-600 font-semibold">Currently Unavailable</p>
+                </div>
+            {% endif %}
+
+            <!-- Restaurant Info -->
+            <div class="restaurant-info mt-8 border-t pt-6">
+                <h3 class="text-lg font-semibold mb-2">Served by</h3>
+                <div class="flex items-center space-x-4">
+                    {% if product.restaurant.logo_pic %}
+                        <img src="{{ product.restaurant.logo_pic.url }}" alt="{{ product.restaurant.restaurant_name }}" 
+                             class="w-12 h-12 rounded-full">
+                    {% endif %}
+                    <div>
+                        <p class="font-semibold">{{ product.restaurant.restaurant_name }}</p>
+                        <p class="text-sm text-gray-600">{{ product.restaurant.address }}</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Related Products Section -->
+    {% if related_products %}
+    <div class="related-products mt-16">
+        <h2 class="text-2xl font-bold mb-6">Related Products</h2>
+        <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-6">
+            {% for related_product in related_products %}
+                <div class="dish-card">
+                    <div class="dish-image">
+                        <img src="{{ related_product.product_image.url }}" alt="{{ related_product.name }}"
+                             class="w-full h-48 object-cover rounded-lg">
+                    </div>
+                    <div class="dish-info mt-4">
+                        <h3 class="text-lg font-semibold">{{ related_product.name }}</h3>
+                        <p class="text-gray-600">${{ related_product.price }}</p>
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
+    </div>

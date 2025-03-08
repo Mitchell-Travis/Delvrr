@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html lang="en">
+   <head>
+      <meta charset="utf-8">
+      <title>Receipt</title>
+      <style>
+         body {
+            font-family: Arial, sans-serif;
+         }
+
+         .receipt-container {
+            width: 100%;
+            margin: 0 auto;
+         }
+
+         .receipt-header {
+            text-align: center;
+            margin-bottom: 30px;
+         }
+
+         .receipt-header h1 {
+            margin: 0;
+            font-size: 24px;
+         }
+
+         .receipt-details {
+            width: 100%;
+            margin-bottom: 30px;
+         }
+
+         .receipt-details .detail-row {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 10px;
+         }
+
+         .receipt-details .detail-label {
+            color: #888;
+         }
+
+         .receipt-details .detail-value {
+            font-weight: bold;
+            color: #333;
+         }
+
+         .receipt-items {
+            width: 100%;
+            border-top: 1px solid #eee;
+            padding-top: 10px;
+         }
+
+         .receipt-items table {
+            width: 100%;
+            border-collapse: collapse;
+         }
+
+         .receipt-items table th,
+         .receipt-items table td {
+            border-bottom: 1px solid #eee;
+            padding: 10px 5px;
+            text-align: left;
+         }
+
+         .receipt-items table th {
+            background-color: #f5f5f5;
+         }
+
+         .receipt-footer {
+            text-align: right;
+            margin-top: 30px;
+         }
+
+         .receipt-footer .total-amount {
+            font-size: 20px;
+            font-weight: bold;
+         }
+      </style>
+   </head>
+   <body>
+      <div class="receipt-container">
+         <div class="receipt-header">
+            <h1>Receipt</h1>
+         </div>
+         <div class="receipt-details">
+            <div class="detail-row">
+               <span class="detail-label">Order ID:</span>
+               <span class="detail-value">{{ order.id }}</span>
+            </div>
+            <div class="detail-row">
+               <span class="detail-label">Order Time:</span>
+               <span class="detail-value">{{ order.created_at|date:"d-m-Y, H:i:s" }}</span>
+            </div>
+            <div class="detail-row">
+               <span class="detail-label">Payment Method:</span>
+               <span class="detail-value">{{ order.payment_method }}</span>
+            </div>
+            <div class="detail-row">
+               <span class="detail-label">Customer Name:</span>
+               <span class="detail-value">{{ order.customer.user.get_full_name }}</span>
+            </div>
+            <div class="detail-row">
+               <span class="detail-label">Table Number:</span>
+               <span class="detail-value">{{ order.table_number }}</span>
+            </div>
+         </div>
+         <div class="receipt-items">
+            <table>
+               <thead>
+                  <tr>
+                     <th>Item</th>
+                     <th>Quantity</th>
+                     <th>Price</th>
+                  </tr>
+               </thead>
+               <tbody>
+                  {% for item in order.items.all %}
+                  <tr>
+                     <td>{{ item.menu_item.name }}</td>
+                     <td>{{ item.quantity }}</td>
+                     <td>${{ item.total_price }}</td>
+                  </tr>
+                  {% endfor %}
+               </tbody>
+            </table>
+         </div>
+         <div class="receipt-footer">
+            <div class="total-amount">Total: ${{ order.amount }}</div>
+         </div>
+      </div>
+   </body>
+</html>

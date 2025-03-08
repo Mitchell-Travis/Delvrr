@@ -1,0 +1,6 @@
+{% extends "admin/change_list.html" %}
+
+{% block content %}
+  <h2>Total Earnings: {{ total_earnings|floatformat:2 }}</h2>
+  {{ block.super }}
+{% endblock %}

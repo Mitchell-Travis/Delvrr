@@ -1,0 +1,730 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Delvrr - Restaurant Menu Scanner</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        :root {
+            --primary-color: #FFD700;
+            --primary-dark: #FFB700;
+            --text-primary: #333;
+            --text-secondary: #666;
+            --background-light: #f8f9fa;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', sans-serif;
+        }
+
+        body {
+            background-color: var(--background-light);
+        }
+
+        .header {
+            background: white;
+            padding: 1rem;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+
+        .header-content {
+            max-width: 1200px;
+            margin: 0 auto;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .logo {
+            font-size: 1.5rem;
+            font-weight: bold;
+            color: var(--primary-color);
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .filters-section {
+            background: white;
+            padding: 1rem;
+            margin: 1rem auto;
+            max-width: 1200px;
+            border-radius: 12px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+
+        .search-container {
+            display: flex;
+            gap: 1rem;
+            margin-bottom: 1rem;
+        }
+
+        .search-input {
+            flex: 1;
+            padding: 1rem;
+            border: 2px solid #eee;
+            border-radius: 8px;
+            font-size: 1rem;
+            transition: all 0.3s ease;
+        }
+
+        .search-input:focus {
+            border-color: var(--primary-color);
+            outline: none;
+        }
+
+        .filter-options {
+            display: flex;
+            gap: 1rem;
+            flex-wrap: wrap;
+        }
+
+        .filter-chip {
+            padding: 0.5rem 1rem;
+            background: #eee;
+            border-radius: 20px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .filter-chip.active {
+            background: var(--primary-color);
+            color: var(--text-primary);
+        }
+
+        .restaurant-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+            gap: 1.5rem;
+            padding: 1rem;
+            max-width: 1200px; /* Align this width with filters-section */
+            margin: 0 auto; /* Center-align the grid */
+        }
+
+        .restaurant-card {
+            background: var(--card-bg);
+            border-radius: 20px;
+            box-shadow: 0 8px 15px var(--shadow-light), 0 2px 4px var(--shadow-dark);
+            overflow: hidden;
+            position: relative;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+
+        .restaurant-card:hover {
+            transform: translateY(-8px);
+            box-shadow: 0 16px 30px var(--shadow-dark);
+        }
+
+        .restaurant-image-container {
+            position: relative;
+            height: 180px;
+            overflow: hidden;
+        }
+
+        .restaurant-image {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            transition: transform 0.3s ease;
+        }
+
+        .restaurant-card:hover .restaurant-image {
+            transform: scale(1.1);
+        }
+
+        .image-overlay {
+            position: absolute;
+            bottom: 0;
+            width: 100%;
+            background: linear-gradient(180deg, transparent, rgba(0, 0, 0, 0.6));
+            padding: 1rem;
+            color: white;
+            font-size: 0.9rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .restaurant-status {
+            padding: 0.3rem 0.6rem;
+            border-radius: 12px;
+            font-weight: bold;
+        }
+
+        .status-open {
+            background: var(--primary-color);
+        }
+
+        .status-closed {
+            background: var(--secondary-color);
+        }
+
+        .restaurant-content {
+            padding: 1rem;
+        }
+
+        .restaurant-name {
+            font-size: 1.2rem;
+            font-weight: bold;
+            margin-bottom: 0.5rem;
+        }
+
+        .restaurant-rating {
+            display: flex;
+            align-items: center;
+            font-size: 0.9rem;
+            color: var(--text-secondary);
+            gap: 0.3rem;
+            margin-bottom: 1rem;
+        }
+
+        .info-tabs {
+            display: flex;
+            gap: 1rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .tab {
+            cursor: pointer;
+            font-size: 0.9rem;
+            color: var(--text-secondary);
+            padding: 0.3rem 0.6rem;
+            border-radius: 8px;
+            transition: background 0.3s ease;
+        }
+
+        .tab.active {
+            background: var(--primary-color);
+            color: white;
+        }
+
+        .tab-content {
+            font-size: 0.9rem;
+            color: var(--text-secondary);
+        }
+
+        .tab-pane {
+            display: none;
+        }
+
+        .tab-pane.active {
+            display: block;
+        }
+
+        .action-buttons {
+            position: absolute;
+            bottom: 1rem;
+            right: 1rem;
+            display: flex;
+            gap: 0.5rem;
+        }
+
+        .fab {
+            width: 50px;
+            height: 50px;
+            background: var(--primary-color);
+            border: none;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 1.2rem;
+            box-shadow: 0 4px 10px var(--shadow-dark);
+            cursor: pointer;
+            transition: transform 0.3s ease;
+        }
+
+        .fab:hover {
+            transform: scale(1.1);
+        }
+
+        .no-results {
+            text-align: center;
+            color: var(--text-secondary);
+            font-size: 1rem;
+            margin-top: 2rem;
+        }
+
+        .scan-button {
+            position: fixed;
+            bottom: 2rem;
+            right: 2rem;
+            background: var(--primary-color);
+            color: var(--text-primary);
+            width: 65px;
+            height: 65px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 4px 12px rgba(255,215,0,0.4);
+            border: none;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-size: 1.5rem;
+        }
+
+        .scan-button:hover {
+            transform: scale(1.1);
+            background: var(--primary-dark);
+        }
+
+        .scanner-modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.9);
+            z-index: 1000;
+        }
+
+        .scanner-content {
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            padding: 2rem;
+        }
+
+        .scanner-header {
+            width: 100%;
+            padding: 1rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        #webcam-container {
+            width: 100%;
+            max-width: 500px;
+            aspect-ratio: 1;
+            background: black;
+            position: relative;
+        }
+
+        .close-scanner {
+            background: none;
+            border: none;
+            color: white;
+            font-size: 1.5rem;
+            cursor: pointer;
+        }
+
+        .status-badge {
+            padding: 0.25rem 0.5rem;
+            border-radius: 4px;
+            font-size: 0.8rem;
+            font-weight: 500;
+        }
+
+        .status-open {
+            background: #4CAF50;
+            color: white;
+        }
+
+        .status-closed {
+            background: #f44336;
+            color: white;
+        }
+
+        @media (max-width: 768px) {
+            .restaurant-grid {
+                grid-template-columns: 1fr;
+                padding: 1rem;
+            }
+
+            .filters-section {
+                margin: 1rem;
+            }
+
+            .search-container {
+                flex-direction: column;
+            }
+
+            .restaurant-details {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+
+</head>
+<body>
+    <header class="header">
+        <div class="header-content">
+            <div class="logo">
+                <i class="fas fa-utensils"></i>
+                Delvrr
+            </div>
+            <div class="user-actions">
+                <i class="fas fa-user"></i>
+            </div>
+        </div>
+    </header>
+
+    <div class="filters-section">
+        <div class="search-container">
+            <input type="text" class="search-input" placeholder="Search restaurants by name or address...">
+            <button id="location-button" class="filter-chip">
+                <i class="fas fa-location-arrow"></i> Near Me
+            </button>
+        </div>
+        <div class="filter-options">
+            <div class="filter-chip">Open Now</div>
+            <div class="filter-chip">Distance</div>
+            <div class="filter-chip">Recently Added</div>
+        </div>
+    </div>
+
+    <div class="restaurant-grid" id="restaurantGrid">
+    {% for restaurant in restaurants %}
+    <div class="restaurant-card" data-slug="{{ restaurant.slug }}">
+        <div class="restaurant-image-container">
+            <img src="{{ restaurant.logo_pic.url }}" alt="{{ restaurant.restaurant_name }}" class="restaurant-image">
+            <div class="image-overlay">
+                <span class="restaurant-status {% if restaurant.is_open %}status-open{% else %}status-closed{% endif %}">
+                    {% if restaurant.is_open %}Open{% else %}Closed{% endif %}
+                </span>
+            </div>
+        </div>
+        <div class="restaurant-content">
+            <h3 class="restaurant-name">{{ restaurant.restaurant_name }}</h3>
+            <div class="restaurant-details">
+                <div class="restaurant-rating">
+                    <i class="fas fa-star"></i> 4.5 (50 reviews)
+                </div>
+                <div class="info-tabs">
+                    <span class="tab active" data-tab="address">Address</span>
+                    <span class="tab" data-tab="hours">Hours</span>
+                    <span class="tab" data-tab="contact">Contact</span>
+                </div>
+                <div class="tab-content">
+                    <div class="tab-pane active" id="address">{{ restaurant.address }}</div>
+                    <div class="tab-pane" id="hours">{{ restaurant.business_hours }}</div>
+                    <div class="tab-pane" id="contact">{{ restaurant.mobile }}</div>
+                </div>
+            </div>
+        </div>
+        <div class="action-buttons">
+            
+            <button class="fab call">
+                <i class="fas fa-utensils"></i>
+            </button>
+        </div>
+    </div>
+    {% empty %}
+    <div class="no-results">
+        <i class="fas fa-search"></i>
+        <p>No restaurants found</p>
+    </div>
+    {% endfor %}
+</div>
+
+
+
+
+
+    <button class="scan-button" id="scanButton">
+        <i class="fas fa-qrcode"></i>
+    </button>
+
+    <div class="scanner-modal" id="scannerModal">
+        <div class="scanner-content">
+            <div class="scanner-header">
+                <h2>Scan Menu QR Code</h2>
+                <button class="close-scanner" id="closeScanner">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <div id="webcam-container"></div>
+            <p class="mt-4">Position the QR code within the frame to scan</p>
+        </div>
+    </div>
+
+    <script src="https://unpkg.com/html5-qrcode"></script>
+    <script>
+        class Restaurant {
+            constructor(data) {
+                this.id = data.id;
+                this.user = data.user;
+                this.restaurant_name = data.restaurant_name;
+                this.slug = data.slug;
+                this.logo_pic = data.logo_pic;
+                this.address = data.address;
+                this.mobile = data.mobile;
+                this.latitude = parseFloat(data.latitude);
+                this.longitude = parseFloat(data.longitude);
+                this.business_hours = data.business_hours;
+            }
+
+            isOpen() {
+                if (!this.business_hours) return false;
+                
+                const now = new Date();
+                const day = now.getDay();
+                const time = now.getHours() * 100 + now.getMinutes();
+                
+                const hours = this.parseBusinessHours();
+                const todayHours = hours[day];
+                
+                return todayHours && time >= todayHours.open && time <= todayHours.close;
+            }
+
+            parseBusinessHours() {
+                // Parse business_hours string into structured format
+                // Example format: "Mon-Fri: 9:00-17:00, Sat: 10:00-15:00"
+                const hours = Array(7).fill(null);
+                const dayMap = {
+                    'mon': 1, 'tue': 2, 'wed': 3, 'thu': 4, 
+                    'fri': 5, 'sat': 6, 'sun': 0
+                };
+
+                if (!this.business_hours) return hours;
+
+                this.business_hours.split(',').forEach(schedule => {
+                    const [days, times] = schedule.trim().split(':');
+                    const [open, close] = times.trim().split('-')
+                        .map(t => parseInt(t.replace(':', '')));
+
+                    if (days.includes('-')) {
+                        const [start, end] = days.split('-')
+                            .map(d => dayMap[d.toLowerCase()]);
+                        for (let d = start; d <= end; d++) {
+                            hours[d] = { open, close };
+                        }
+                    } else {
+                        const day = dayMap[days.toLowerCase()];
+                        hours[day] = { open, close };
+                    }
+                });
+
+                return hours;
+            }
+
+            distanceTo(lat, lon) {
+                if (!this.latitude || !this.longitude) return Infinity;
+                
+                const R = 6371; // Earth's radius in km
+                const dLat = (lat - this.latitude) * Math.PI / 180;
+                const dLon = (lon - this.longitude) * Math.PI / 180;
+                
+                const a = Math.sin(dLat/2) * Math.sin(dLat/2) +
+                    Math.cos(this.latitude * Math.PI / 180) * Math.cos(lat * Math.PI / 180) * 
+                    Math.sin(dLon/2) * Math.sin(dLon/2);
+                
+                const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+                return R * c;
+            }
+
+            toCard() {
+                const isOpen = this.isOpen();
+                return `
+                    <div class="restaurant-card" data-slug="${this.slug}">
+                        <img src="${this.logo_pic || '/api/placeholder/400/200'}" 
+                             alt="${this.restaurant_name}" 
+                             class="restaurant-logo">
+                        <div class="restaurant-info">
+                            <div class="restaurant-header">
+                                <div class="restaurant-name">${this.restaurant_name}</div>
+                                <span class="status-badge ${isOpen ? 'status-open' : 'status-closed'}">
+                                    ${isOpen ? 'Open' : 'Closed'}
+                                </span>
+                            </div>
+                            <div class="restaurant-details">
+                                <div class="detail-item">
+                                    <i class="fas fa-map-marker-alt"></i>
+                                    <span>${this.address}</span>
+                                </div>
+                                <div class="detail-item">
+                                    <i class="fas fa-phone"></i>
+                                    <span>${this.mobile}</span>
+                                </div>
+                                <div class="detail-item">
+                                    <i class="fas fa-clock"></i>
+                                    <span>${this.business_hours || 'Hours not available'}</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            }
+        }
+
+        class RestaurantManager {
+            constructor() {
+                this.restaurants = [];
+                this.userLocation = null;
+                this.filters = new Set();
+            }
+
+            async fetchRestaurants() {
+                try {
+                    const response = await fetch('/api/restaurants/');
+                    const data = await response.json();
+                    this.restaurants = data.map(r => new Restaurant(r));
+                    this.render();
+                } catch (error) {
+                    console.error('Failed to fetch restaurants:', error);
+                }
+            }
+
+            setUserLocation(position) {
+                this.userLocation = {
+                    latitude: position.coords.latitude,
+                    longitude: position.coords.longitude
+                };
+                this.render();
+            }
+
+            toggleFilter(filter) {
+                if (this.filters.has(filter)) {
+                    this.filters.delete(filter);
+                } else {
+                    this.filters.add(filter);
+                }
+                this.render();
+            }
+
+            applyFilters(restaurants) {
+                let filtered = [...restaurants];
+
+                if (this.filters.has('Open Now')) {
+                    filtered = filtered.filter(r => r.isOpen());
+                }
+
+                if (this.filters.has('Distance') && this.userLocation) {
+                    filtered.sort((a, b) => {
+                        const distA = a.distanceTo(this.userLocation.latitude, this.userLocation.longitude);
+                        const distB = b.distanceTo(this.userLocation.latitude, this.userLocation.longitude);
+                        return distA - distB;
+                    });
+                }
+
+                if (this.filters.has('Recently Added')) {
+                    filtered.sort((a, b) => b.id - a.id);
+                }
+
+                return filtered;
+            }
+            render() {
+                const searchTerm = document.querySelector('.search-input').value.toLowerCase();
+                let filtered = this.restaurants;
+
+                if (searchTerm) {
+                    filtered = filtered.filter(r => 
+                        r.restaurant_name.toLowerCase().includes(searchTerm) ||
+                        r.address.toLowerCase().includes(searchTerm)
+                    );
+                }
+
+                filtered = this.applyFilters(filtered);
+                
+                const grid = document.getElementById('restaurantGrid');
+                grid.innerHTML = filtered.map(r => r.toCard()).join('');
+
+                // Add click handlers to cards
+                document.querySelectorAll('.restaurant-card').forEach(card => {
+                    card.addEventListener('click', () => {
+                        window.location.href = `/restaurant/${card.dataset.slug}`;
+                    });
+                });
+            }
+        }
+
+        // Scanner implementation
+        class QRScanner {
+            constructor() {
+                this.scanner = null;
+                this.modal = document.getElementById('scannerModal');
+                this.setupListeners();
+            }
+
+            setupListeners() {
+                document.getElementById('scanButton').addEventListener('click', () => this.open());
+                document.getElementById('closeScanner').addEventListener('click', () => this.close());
+            }
+
+            open() {
+                this.modal.style.display = 'block';
+                document.body.style.overflow = 'hidden';
+                this.initializeScanner();
+            }
+
+            close() {
+                this.modal.style.display = 'none';
+                document.body.style.overflow = 'auto';
+                if (this.scanner) {
+                    this.scanner.clear();
+                    this.scanner = null;
+                }
+            }
+
+            initializeScanner() {
+                this.scanner = new Html5QrcodeScanner(
+                    "webcam-container",
+                    { 
+                        fps: 10, 
+                        qrbox: { width: 250, height: 250 },
+                        aspectRatio: 1.0,
+                        showTorchButtonIfSupported: true
+                    }
+                );
+
+                this.scanner.render((decodedText) => {
+                    // Play success sound
+                    const audio = new Audio('/static/sounds/beep.mp3');
+                    audio.play();
+                    
+                    // Navigate to menu URL
+                    window.location.href = decodedText;
+                }, (error) => {
+                    console.warn(error);
+                });
+            }
+        }
+
+        // Initialize app
+        document.addEventListener('DOMContentLoaded', () => {
+            const manager = new RestaurantManager();
+            const scanner = new QRScanner();
+
+            // Set up search functionality
+            document.querySelector('.search-input').addEventListener('input', () => {
+                manager.render();
+            });
+
+            // Set up location button
+            document.getElementById('location-button').addEventListener('click', () => {
+                if (navigator.geolocation) {
+                    navigator.geolocation.getCurrentPosition(
+                        position => manager.setUserLocation(position),
+                        error => console.error('Error getting location:', error)
+                    );
+                }
+            });
+
+            // Set up filter chips
+            document.querySelectorAll('.filter-chip').forEach(chip => {
+                chip.addEventListener('click', () => {
+                    chip.classList.toggle('active');
+                    manager.toggleFilter(chip.textContent.trim());
+                });
+            });
+
+            // Initial data fetch
+            manager.fetchRestaurants();
+        });
+    </script>
+</body>
+</html>

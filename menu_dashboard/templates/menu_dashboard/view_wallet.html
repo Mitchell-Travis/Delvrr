@@ -1,0 +1,16 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>My Wallet</title>
+</head>
+<body>
+    <h1>My Wallet</h1>
+    <p>Current Balance: {{ wallet.balance }}</p>
+    <h2>Top-up History</h2>
+    <ul>
+        {% for topup in topup_requests %}
+            <li>{{ topup.timestamp }} - Amount: {{ topup.amount }} - Processed: {{ topup.processed }}</li>
+        {% endfor %}
+    </ul>
+</body>
+</html>

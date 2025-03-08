@@ -1,0 +1,590 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Delvrr Checkout</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" rel="stylesheet">
+   <style>
+:root {
+    --primary: #f7c028; /* Updated Brand */
+    --primary-gradient: linear-gradient(135deg, #f7c028, #d6a021); /* Brand to a slightly darker variant */
+    --surface: #ffffff; /* Updated Background */
+    --surface-alt: #F8F8F8; /* Light Gray remains */
+    --text: #1F2937; /* Dark Gray */
+    --text-secondary: #6B7280; /* Gray */
+    --success: #34D399; /* Green */
+    --warning: #FBBF24; /* Yellow */
+    --error: #EF4444; /* Red */
+    --radius-sm: 12px;
+    --radius-md: 16px;
+    --radius-lg: 24px;
+    --safe-area-top: env(safe-area-inset-top, 0px);
+    --safe-area-bottom: env(safe-area-inset-bottom, 0px);
+}
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    -webkit-tap-highlight-color: transparent;
+}
+
+body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    background: var(--surface);
+    color: var(--text);
+    line-height: 1.5;
+    overflow-x: hidden;
+}
+
+.app-container {
+    max-width: 480px;
+    margin: 0 auto;
+    min-height: 100vh;
+    position: relative;
+    background: var(--surface);
+}
+
+.header {
+    position: sticky;
+    top: 0;
+    background: var(--surface);
+    padding: calc(1rem + var(--safe-area-top)) 1.5rem 1rem;
+    z-index: 100;
+    backdrop-filter: blur(10px);
+    border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+}
+
+.header-content {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.back-button {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    border: none;
+    background: var(--surface-alt);
+    color: var(--text);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.back-button:active {
+    transform: scale(0.95);
+}
+
+.table-card {
+    margin: 1rem 1.5rem;
+    padding: 1.5rem;
+    background: var(--primary);
+    border-radius: var(--radius-lg);
+    color: white;
+    position: relative;
+    overflow: hidden;
+}
+
+.table-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+}
+
+.order-section {
+    margin: 2rem 1.5rem;
+}
+
+.section-title {
+    font-size: 1.25rem;
+    font-weight: 600;
+    margin-bottom: 1rem;
+}
+
+.order-item {
+    display: grid;
+    grid-template-columns: auto 1fr auto;
+    gap: 1rem;
+    padding: 1rem;
+    background: var(--surface);
+    border-radius: var(--radius-md);
+    margin-bottom: 1rem;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+    transition: transform 0.2s ease;
+}
+
+.order-item:active {
+    transform: scale(0.98);
+}
+
+.order-item img {
+    width: 70px;
+    height: 70px;
+    object-fit: contain; /* Changed from cover to contain */
+    border-radius: var(--radius-sm);
+    background-color: #f5f5f5; /* Optional: adds background for better visibility */
+}
+
+.payment-methods {
+    margin: 2rem 1.5rem;
+}
+
+.payment-option {
+    padding: 1.25rem;
+    background: var(--surface);
+    border-radius: var(--radius-md);
+    margin-bottom: 1rem;
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    border: 2px solid transparent;
+}
+
+.payment-option:not([style*="opacity"]):active {
+    transform: scale(0.98);
+}
+
+/* Updated payment-option.selected to use the new brand color */
+.payment-option.selected {
+    border-color: var(--primary);
+    background: linear-gradient(to right, rgba(247, 192, 40, 0.1), transparent);
+}
+
+.payment-icon {
+    width: 48px;
+    height: 48px;
+    border-radius: var(--radius-sm);
+    background: var(--surface-alt);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.5rem;
+    color: var(--primary);
+}
+
+.checkout-bar {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    background: var(--surface);
+    padding: 1rem 1.5rem calc(1rem + var(--safe-area-bottom));
+    box-shadow: 0 -4px 12px rgba(0, 0, 0, 0.05);
+    z-index: 100;
+}
+
+.checkout-content {
+    max-width: 480px;
+    margin: 0 auto;
+}
+
+.total-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1rem;
+}
+
+.checkout-button {
+    background: var(--primary);
+    color: white;
+    border: none;
+    width: 100%;
+    padding: 1rem;
+    border-radius: var(--radius-md);
+    font-weight: 600;
+    font-size: 1.1rem;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+}
+
+.checkout-button:disabled {
+    opacity: 0.7;
+    cursor: not-allowed;
+}
+
+.checkout-button:not(:disabled):active {
+    transform: scale(0.98);
+}
+
+.loading-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.8);
+    backdrop-filter: blur(8px);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 1000;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.3s ease;
+}
+
+.loading-overlay.active {
+    opacity: 1;
+    pointer-events: all;
+}
+
+.loading-spinner {
+    width: 48px;
+    height: 48px;
+    border: 4px solid rgba(255, 255, 255, 0.1);
+    border-left-color: white;
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+}
+
+.toast {
+    position: fixed;
+    top: calc(var(--safe-area-top) + 1rem);
+    left: 50%;
+    transform: translateX(-50%) translateY(-100%);
+    background: var(--surface);
+    padding: 1rem 1.5rem;
+    border-radius: var(--radius-md);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    z-index: 1000;
+    transition: transform 0.3s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+}
+
+.toast.active {
+    transform: translateX(-50%) translateY(0);
+}
+
+@keyframes spin {
+    to { transform: rotate(360deg); }
+}
+
+@media (min-width: 481px) {
+    .app-container {
+        margin: 2rem auto;
+        border-radius: var(--radius-lg);
+        box-shadow: 0 8px 24px rgba(0, 0, 0, 0.1);
+        min-height: calc(100vh - 4rem);
+    }
+
+    .checkout-bar {
+        max-width: 480px;
+        left: 50%;
+        transform: translateX(-50%);
+        border-radius: var(--radius-lg) var(--radius-lg) 0 0;
+    }
+}
+</style>
+
+</head>
+<body>
+    <div class="app-container">
+        <header class="header">
+            <div class="header-content">
+                <button class="back-button" onclick="window.history.back()">
+                    <i class="fas fa-arrow-left"></i>
+                </button>
+                <h1 style="font-size: 1.25rem; font-weight: 600;">Checkout</h1>
+                <div style="width: 40px;"></div>
+            </div>
+        </header>
+
+        <div class="table-card">
+            <div style="display: flex; align-items: center; gap: 1rem;">
+                <div class="payment-icon" style="background: rgba(255, 255, 255, 0.2); color: white;">
+                    <i class="fas fa-utensils"></i>
+                </div>
+                <div>
+                    <h3 style="font-size: 1.1rem; margin-bottom: 0.10rem;">Table 1</h3>
+                    <p style="opacity: 0.9;">Your order will be served here</p>
+                </div>
+            </div>
+        </div>
+
+        <section class="order-section">
+            <h2 class="section-title">Order Details</h2>
+            <div id="orderDetailsList"></div>
+        </section>
+
+        <section class="payment-methods">
+            <h2 class="section-title">Payment Method</h2>
+            <div class="payment-option" data-method="Cash on Delivery">
+                <div class="payment-icon">
+                    <i class="fas fa-money-bill-alt"></i>
+                </div>
+                <div>
+                    <h3 style="font-size: 1rem; margin-bottom: 0.25rem;">Pay at Table</h3>
+                    <p style="color: var(--text-secondary); font-size: 0.9rem;">Cash on delive</p>
+                </div>
+            </div>
+            <div class="payment-option" data-method="Card Payment" style="opacity: 0.5">
+                    <div class="payment-icon">
+                        <i class="fas fa-credit-card"></i>
+                    </div>
+                    <div>
+                        <h3 style="font-size: 1rem; margin-bottom: 0.25rem;">Card Payment</h3>
+                        <p style="color: var(--text-secondary); font-size: 0.9rem;">Coming soon</p>
+                    </div>
+                </div>
+                <div class="payment-option" data-method="Mobile Pay" style="opacity: 0.5">
+                    <div class="payment-icon">
+                        <i class="fas fa-mobile-alt"></i>
+                    </div>
+                    <div>
+                        <h3 style="font-size: 1rem; margin-bottom: 0.25rem;">Mobile Pay</h3>
+                        <p style="color: var(--text-secondary); font-size: 0.9rem;">Coming soon</p>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Add spacing for the fixed checkout bar -->
+            <div style="height: 140px;"></div>
+        </div>
+
+        <div class="checkout-bar">
+            <div class="checkout-content">
+                <div class="total-row">
+                    <div>
+                        <p style="color: var(--text-secondary);">Total Amount</p>
+                        <p style="font-size: 1.25rem; font-weight: 600;" id="cartTotal">$0.00</p>
+                    </div>
+                    <button id="checkoutButton" class="checkout-button" disabled>
+                        <i class="fas fa-lock"></i>
+                        Place Order
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <div class="loading-overlay" id="loading-overlay">
+            <div class="loading-spinner"></div>
+        </div>
+
+        <!-- Customization Modal -->
+    <div id="customizationModal" class="modal" style="display: none;">
+      <div class="modal-content">
+        <span class="close">&times;</span>
+        <h2>Customize Your Order</h2>
+        <label>
+          <input type="checkbox" id="extraCheese">
+          Extra Cheese
+        </label>
+        <br>
+        <label>
+          <input type="checkbox" id="noOnions">
+          No Onions
+        </label>
+        <br>
+        <button id="saveCustomization" class="checkout-button" style="width: auto; margin-top: 1rem;">Save</button>
+      </div>
+    </div>
+    </div>
+
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script>
+        $(document).ready(function() {
+            const SERVICE_FEE = 0.51;
+            let selectedPaymentMethod = '';
+
+            // Show toast message
+            function showToast(message, type = 'info') {
+                const toast = $('#toast');
+                const icon = toast.find('i');
+                
+                // Set icon and color based on type
+                icon.removeClass().addClass('fas');
+                switch(type) {
+                    case 'success':
+                        icon.addClass('fa-check-circle').css('color', 'var(--success)');
+                        break;
+                    case 'error':
+                        icon.addClass('fa-exclamation-circle').css('color', 'var(--error)');
+                        break;
+                    case 'warning':
+                        icon.addClass('fa-exclamation-triangle').css('color', 'var(--warning)');
+                        break;
+                    default:
+                        icon.addClass('fa-info-circle').css('color', 'var(--primary)');
+                }
+
+                $('#toast-message').text(message);
+                toast.addClass('active');
+
+                setTimeout(() => {
+                    toast.removeClass('active');
+                }, 3000);
+            }
+
+            // Update order details with smooth animations
+            function updateOrderDetails() {
+                const cart = JSON.parse(localStorage.getItem('cart') || '{}');
+                let orderHtml = '';
+                let subtotal = 0;
+
+                if (Object.keys(cart).length === 0) {
+                    orderHtml = `
+                        <div style="text-align: center; padding: 2rem; color: var(--text-secondary);">
+                            <i class="fas fa-shopping-bag" style="font-size: 2rem; margin-bottom: 1rem;"></i>
+                            <p>Your cart is empty</p>
+                        </div>
+                    `;
+                } else {
+                    Object.entries(cart).forEach(([id, item]) => {
+                        const itemTotal = item[0] * item[2];
+                        subtotal += itemTotal;
+                        orderHtml += `
+                            <div class="order-item">
+                                <img src="${item[3]}" alt="${item[1]}">
+                                <div>
+                                    <h3 style="font-size: 1rem; margin-bottom: 0.5rem;">${item[1]}</h3>
+                                    <p style="color: var(--text-secondary); font-size: 0.9rem;">
+                                        ${item[0]} × $${item[2].toFixed(2)}
+                                    </p>
+                                </div>
+                                <div style="text-align: right;">
+                                    <p style="font-weight: 600;">$${itemTotal.toFixed(2)}</p>
+                                </div>
+                            </div>
+                        `;
+                    });
+                }
+
+                $('#orderDetailsList').html(orderHtml);
+                const total = subtotal + SERVICE_FEE;
+                $('#cartTotal').text(`$${total.toFixed(2)}`);
+                
+                // Update checkout button state
+                const checkoutButton = $('#checkoutButton');
+                checkoutButton.prop('disabled', Object.keys(cart).length === 0 || !selectedPaymentMethod);
+            }
+
+            // Payment method selection with haptic feedback
+            $('.payment-option').not('[style*="opacity"]').on('click', function() {
+                $('.payment-option').removeClass('selected');
+                $(this).addClass('selected');
+                selectedPaymentMethod = $(this).data('method');
+                
+                // Provide haptic feedback if available
+                if (navigator.vibrate) {
+                    navigator.vibrate(50);
+                }
+                
+                updateOrderDetails();
+            });
+
+            // Enhanced checkout process
+            $('#checkoutButton').on('click', function(e) {
+                e.preventDefault();
+                const cart = localStorage.getItem('cart');
+                
+                if (!cart || Object.keys(JSON.parse(cart)).length === 0) {
+                    showToast('Your cart is empty', 'warning');
+                    return;
+                }
+
+                if (!selectedPaymentMethod) {
+                    showToast('Please select a payment method', 'warning');
+                    return;
+                }
+
+                const subtotal = parseFloat($('#cartTotal').text().replace('$', ''));
+                const restaurantId = '{{ restaurant.id }}';
+                const csrfToken = '{{ csrf_token }}';
+
+                $('#loading-overlay').addClass('active');
+
+                $.ajax({
+                    type: 'POST',
+                    url: `/dashboard/${restaurantId}/checkout/`,
+                    data: {
+                        cart: cart,
+                        payment_method: selectedPaymentMethod,
+                        total_amount: subtotal,
+                        csrfmiddlewaretoken: csrfToken,
+                    },
+                    success: function(response) {
+                        setTimeout(() => {
+                            $('#loading-overlay').removeClass('active');
+                            if (response.message === 'Order placed successfully') {
+                                showToast('Order placed successfully!', 'success');
+                                localStorage.removeItem('cart');
+                                
+                                setTimeout(() => {
+                                    window.location.href = `/dashboard/${response.order_id}/order_success/`;
+                                }, 1000);
+                            }
+                        }, 1500);
+                    },
+                    error: function(xhr) {
+                        $('#loading-overlay').removeClass('active');
+                        if (xhr.status === 401) {
+                            showToast('Please log in to continue', 'error');
+                            setTimeout(() => {
+                                window.location.href = `/customer_signin/?next=${encodeURIComponent(window.location.href)}`;
+                            }, 1500);
+                        } else {
+                            showToast('Error placing order', 'error');
+                        }
+                    }
+                });
+            });
+
+            // Add touch ripple effect
+            $('.payment-option, .checkout-button').on('touchstart', function(e) {
+                const rect = e.currentTarget.getBoundingClientRect();
+                const ripple = document.createElement('div');
+                const size = Math.max(rect.width, rect.height);
+                const x = e.touches[0].clientX - rect.left - size / 2;
+                const y = e.touches[0].clientY - rect.top - size / 2;
+                
+                ripple.style.cssText = `
+                    position: absolute;
+                    width: ${size}px;
+                    height: ${size}px;
+                    background: rgba(255, 255, 255, 0.4);
+                    border-radius: 50%;
+                    transform: translate(${x}px, ${y}px) scale(0);
+                    transition: transform 0.5s;
+                `;
+                
+                e.currentTarget.style.overflow = 'hidden';
+                e.currentTarget.appendChild(ripple);
+                
+                requestAnimationFrame(() => {
+                    ripple.style.transform = `translate(${x}px, ${y}px) scale(2)`;
+                    ripple.style.opacity = '0';
+                });
+                
+                setTimeout(() => ripple.remove(), 500);
+            });
+
+            // Initialize the page
+            updateOrderDetails();
+
+            // Add smooth page transitions
+            window.addEventListener('pageshow', function(event) {
+                if (event.persisted) {
+                    window.location.reload();
+                }
+            });
+        });
+    </script>
+</body>
+</html>
