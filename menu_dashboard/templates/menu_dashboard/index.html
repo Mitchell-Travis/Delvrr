@@ -900,7 +900,7 @@ body {
   margin-bottom: var(--space-md);
 }
 .section-header h2 {
-  font-size: 18px;
+  font-size: 15px;
   font-weight: 700;
   color: var(--text-primary);
 }
@@ -1031,7 +1031,7 @@ body {
 .product-grid {
   display: grid;
   grid-template-columns: repeat(2, 1fr);
-  gap: var(--space-md);
+  gap: var(--space-lg);
   width: 100%;
 }
 
@@ -1198,7 +1198,7 @@ body {
 /* Responsive adjustments for smaller screens */
 @media (max-width: 480px) {
   .product-grid {
-    gap: var(--space-sm);
+    gap: var(--space-md);
   }
   
   .grid-image-container {
@@ -1211,7 +1211,7 @@ body {
   
   .grid-details h3 {
     font-size: 14px;
-    min-height: 38px;
+    min-height: 15px;
   }
 }
 
@@ -3134,8 +3134,8 @@ input:checked + .slider:before {
   <!-- Featured Section with Carousel View -->
   <div class="featured-section  shared-view">
     <div class="section-header">
-      <h2>Menu Items</h2>
-      <button class="view-all">View All</button>
+      <h2>Most Popular Items</h2>
+      <button class="view-all">See all</button>
     </div>
     <div class="items-carousel">
       {% for category_products in allProds %}
