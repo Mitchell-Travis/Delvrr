@@ -3,832 +3,473 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Delvrr | Scan. Order. Enjoy.</title>
-    <link rel="stylesheet" href="styles.css">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <title>Delvrr - Smart Restaurant Ordering</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/tailwindcss/2.2.19/tailwind.min.css" rel="stylesheet">
+      <style>
+        @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700&display=swap');
 
-    <style type="text/css">
-        :root {
-    --brand: #f7c028;
-    --brand-dark: #d6a021;
-    --brand-light: rgba(247, 192, 40, 0.1);
-    --background: #ffffff;
-    --surface: #f8f9fa;
-    --text-primary: #1a1a1a;
-    --text-secondary: #6c757d;
-    --border: #e9ecef;
-    --primary-color: #f7c028;
-    --shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
-    --transition: all 0.3s ease;
-}
-
-* {
-    margin: 0;
-    padding: 0;
-    box-sizing: border-box;
+:root {
+    /* Modern color palette */
+    --primary: #6366F1;     /* Indigo */
+    --secondary: #3B82F6;   /* Blue */
+    --accent: #8B5CF6;      /* Purple */
+    --success: #22C55E;     /* Green */
+    --background: #F8FAFC;  /* Slate 50 */
+    --text: #0F172A;        /* Slate 900 */
 }
 
 body {
-    font-family: 'Poppins', sans-serif;
-    color: var(--text-primary);
-    background-color: var(--background);
-    line-height: 1.6;
+    font-family: 'Plus Jakarta Sans', sans-serif;
+    background: var(--background);
+    color: var(--text);
 }
 
-.container {
-    width: 90%;
-    max-width: 1200px;
-    margin: 0 auto;
-    padding: 0 20px;
+/* Modern Glass Nav */
+.glass-nav {
+    background: rgba(255, 255, 255, 0.8);
+    backdrop-filter: blur(12px);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.3);
+    box-shadow: 0 4px 30px rgba(0, 0, 0, 0.05);
 }
 
-h1, h2, h3, h4, h5, h6 {
-    font-weight: 700;
-    line-height: 1.2;
-    margin-bottom: 0.5em;
+/* Hero Section Enhancement */
+.hero-gradient {
+    background: 
+        radial-gradient(circle at 10% 0%, var(--primary) 0%, transparent 50%),
+        radial-gradient(circle at 90% 100%, var(--accent) 0%, transparent 50%),
+        linear-gradient(180deg, var(--background) 0%, rgba(248, 250, 252, 0.8) 100%);
 }
 
-h1 {
-    font-size: 2.5rem;
-}
-
-h2 {
-    font-size: 2rem;
-}
-
-h3 {
-    font-size: 1.5rem;
-}
-
-p {
-    margin-bottom: 1rem;
-    color: var(--text-secondary);
-}
-
-a {
-    text-decoration: none;
-    color: var(--text-primary);
-    transition: var(--transition);
-}
-
-a:hover {
-    color: var(--brand);
-}
-
-.btn {
-    display: inline-block;
-    padding: 12px 24px;
-    border-radius: 6px;
-    font-weight: 600;
-    font-size: 16px;
-    cursor: pointer;
-    transition: var(--transition);
-    border: none;
-}
-
-.btn-primary {
-    background-color: var(--brand);
-    color: white;
-    box-shadow: 0 4px 6px rgba(215, 160, 33, 0.2);
-}
-
-.btn-primary:hover {
-    background-color: var(--brand-dark);
-    transform: translateY(-2px);
-    box-shadow: 0 6px 8px rgba(215, 160, 33, 0.3);
-}
-
-.btn-outline {
-    background-color: transparent;
-    color: var(--text-primary);
-    border: 2px solid var(--brand);
-}
-
-.btn-outline:hover {
-    background-color: var(--brand-light);
-    color: var(--brand-dark);
-    transform: translateY(-2px);
-}
-
-/* Header & Navigation */
-header {
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100%;
-    background-color: var(--background);
-    box-shadow: var(--shadow);
-    z-index: 1000;
-}
-
-nav {
-    padding: 15px 0;
-}
-
-nav .container {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-}
-
-.logo img {
-    height: 40px;
-}
-
-.nav-links {
-    display: flex;
-    gap: 30px;
-}
-
-.nav-links a {
-    font-weight: 500;
-}
-
-.mobile-menu-icon {
-    display: none;
-    font-size: 24px;
-    cursor: pointer;
-}
-
-/* Hero Section */
-.hero {
-    padding: 120px 0 80px;
-    background-color: var(--surface);
-    overflow: hidden;
-}
-
-.hero .container {
-    display: flex;
-    align-items: center;
-    gap: 40px;
-}
-
-.hero-content {
-    flex: 1;
-}
-
-.hero-content h1 span {
-    color: var(--brand);
-    position: relative;
-}
-
-.hero-content h1 span::after {
-    content: '';
-    position: absolute;
-    bottom: 0;
-    left: 0;
-    width: 100%;
-    height: 8px;
-    background-color: var(--brand-light);
-    z-index: -1;
-}
-
-.hero-image {
-    flex: 1;
-    position: relative;
-}
-
-.hero-image img {
-    width: 100%;
-    border-radius: 8px;
-    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
-}
-
-.cta-buttons {
-    display: flex;
-    gap: 16px;
-    margin-top: 24px;
-}
-
-/* Features Section */
-.features {
-    padding: 80px 0;
-}
-
-.section-header {
-    text-align: center;
-    margin-bottom: 60px;
-}
-
-.section-header p {
-    max-width: 600px;
-    margin: 0 auto;
-}
-
-.features-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-    gap: 30px;
-}
-
+/* Modern Cards */
 .feature-card {
-    background-color: var(--surface);
-    padding: 30px;
-    border-radius: 8px;
-    text-align: center;
-    box-shadow: var(--shadow);
-    transition: var(--transition);
+    background: rgba(255, 255, 255, 0.7);
+    backdrop-filter: blur(12px);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.05);
+    transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .feature-card:hover {
-    transform: translateY(-5px);
-    box-shadow: 0 10px 20px rgba(0, 0, 0, 0.08);
+    transform: translateY(-8px);
+    box-shadow: 0 12px 48px rgba(99, 102, 241, 0.1);
+    border: 1px solid rgba(99, 102, 241, 0.2);
 }
 
-.feature-icon {
-    font-size: 36px;
-    color: var(--brand);
-    margin-bottom: 20px;
+/* Enhanced Order Preview */
+.order-preview {
+    background: rgba(255, 255, 255, 0.95);
+    backdrop-filter: blur(16px);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    box-shadow: 
+        0 8px 32px rgba(0, 0, 0, 0.05),
+        0 16px 48px rgba(99, 102, 241, 0.1);
 }
 
-/* How It Works */
-.how-it-works {
-    padding: 80px 0;
-    background-color: var(--surface);
-}
-
-.steps {
-    display: flex;
-    flex-direction: column;
-    gap: 40px;
-    max-width: 800px;
-    margin: 0 auto;
-}
-
-.step {
-    display: flex;
-    gap: 30px;
-    align-items: flex-start;
-}
-
-.step-number {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    width: 60px;
-    height: 60px;
-    border-radius: 50%;
-    background-color: var(--brand);
+/* Animated Buttons */
+.btn-primary {
+    background: linear-gradient(135deg, var(--primary), var(--secondary));
     color: white;
-    font-size: 24px;
-    font-weight: 700;
-    flex-shrink: 0;
-}
-
-.step-content {
-    flex: 1;
-}
-
-/* Testimonial */
-.testimonial {
-    padding: 80px 0;
-}
-
-.testimonial-card {
-    background-color: var(--surface);
-    padding: 40px;
-    border-radius: 8px;
-    box-shadow: var(--shadow);
-    max-width: 800px;
-    margin: 0 auto;
+    transition: all 0.3s ease;
     position: relative;
+    overflow: hidden;
 }
 
-.quote {
-    font-size: 40px;
-    color: var(--brand);
-    margin-bottom: 20px;
-}
-
-.testimonial-text {
-    font-size: 18px;
-    font-style: italic;
-    margin-bottom: 30px;
-}
-
-.testimonial-author {
-    display: flex;
-    align-items: center;
-    gap: 16px;
-}
-
-.testimonial-author img {
-    width: 60px;
-    height: 60px;
-    border-radius: 50%;
-    object-fit: cover;
-}
-
-.testimonial-author h4 {
-    margin-bottom: 0;
-}
-
-/* Benefits */
-.benefits {
-    padding: 80px 0;
-}
-
-.benefits-container {
-    display: flex;
-    align-items: center;
-    gap: 60px;
-}
-
-.benefit-image {
-    flex: 1;
-}
-
-.benefit-image img {
+.btn-primary::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
     width: 100%;
-    border-radius: 8px;
-    box-shadow: var(--shadow);
+    height: 100%;
+    background: linear-gradient(135deg, var(--secondary), var(--primary));
+    opacity: 0;
+    transition: opacity 0.3s ease;
 }
 
-.benefit-list {
-    flex: 1;
-    display: flex;
-    flex-direction: column;
-    gap: 30px;
+.btn-primary:hover::after {
+    opacity: 1;
 }
 
-.benefit-item {
-    display: flex;
-    gap: 16px;
-    align-items: flex-start;
+/* Enhanced Stats Section */
+.stats-item {
+    background: rgba(255, 255, 255, 0.7);
+    backdrop-filter: blur(12px);
+    border-radius: 16px;
+    padding: 2rem;
+    box-shadow: 0 4px 24px rgba(0, 0, 0, 0.05);
+    transition: transform 0.3s ease;
 }
 
-.benefit-item i {
-    color: var(--brand);
-    font-size: 24px;
-    margin-top: 5px;
+.stats-item:hover {
+    transform: translateY(-4px);
 }
 
-.benefit-item h3 {
-    margin-bottom: 5px;
-}
-
-/* Pricing */
-.pricing {
-    padding: 80px 0;
-    background-color: var(--surface);
-}
-
-.pricing-cards {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-    gap: 30px;
-}
-
+/* Pricing Cards Enhancement */
 .pricing-card {
-    background-color: var(--background);
-    border-radius: 8px;
-    padding: 40px 30px;
-    box-shadow: var(--shadow);
-    text-align: center;
-    transition: var(--transition);
-    position: relative;
+    background: rgba(255, 255, 255, 0.9);
+    backdrop-filter: blur(12px);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.05);
+    transition: all 0.4s ease;
 }
 
 .pricing-card.featured {
-    border: 2px solid var(--brand);
-    transform: scale(1.05);
+    background: linear-gradient(135deg, rgba(99, 102, 241, 0.1), rgba(139, 92, 246, 0.1));
+    border: 2px solid var(--primary);
 }
 
-.popular-tag {
-    position: absolute;
-    top: -15px;
-    left: 50%;
-    transform: translateX(-50%);
-    background-color: var(--brand);
-    color: white;
-    padding: 8px 16px;
-    border-radius: 20px;
-    font-weight: 600;
-    font-size: 14px;
+/* Smooth Scrolling */
+html {
+    scroll-behavior: smooth;
 }
 
-.pricing-header {
-    margin-bottom: 30px;
+/* Modern Animations */
+@keyframes float {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(-20px); }
 }
 
-.price {
-    display: flex;
-    align-items: baseline;
-    justify-content: center;
-    gap: 4px;
-    margin-top: 16px;
+.floating {
+    animation: float 6s ease-in-out infinite;
 }
 
-.currency {
-    font-size: 20px;
-    font-weight: 600;
+/* Enhanced Typography */
+h1, h2, h3, h4, h5, h6 {
+    background: linear-gradient(135deg, var(--text), #475569);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    line-height: 1.2;
 }
 
-.amount {
-    font-size: 48px;
-    font-weight: 700;
-    line-height: 1;
+/* Custom Scrollbar */
+::-webkit-scrollbar {
+    width: 8px;
 }
 
-.period {
-    color: var(--text-secondary);
-    font-size: 16px;
+::-webkit-scrollbar-track {
+    background: var(--background);
 }
 
-.pricing-features {
-    list-style: none;
-    text-align: left;
-    margin-bottom: 30px;
-}
-
-.pricing-features li {
-    margin-bottom: 15px;
-    display: flex;
-    align-items: center;
-    gap: 10px;
-}
-
-.pricing-features i {
-    color: var(--brand);
-}
-
-.pricing-card .btn {
-    width: 100%;
-}
-
-.pricing-card:hover {
-    transform: translateY(-10px);
-    box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
-}
-
-.pricing-card.featured:hover {
-    transform: scale(1.05) translateY(-10px);
-}
-
-/* CTA Section */
-.cta-section {
-    padding: 80px 0;
-    text-align: center;
-    background: linear-gradient(135deg, var(--brand-light) 0%, rgba(255, 255, 255, 0) 100%);
-}
-
-.cta-section h2 {
-    margin-bottom: 16px;
-}
-
-.cta-section p {
-    max-width: 600px;
-    margin: 0 auto 30px;
-}
-
-/* Footer */
-footer {
-    background-color: var(--surface);
-    padding: 80px 0 20px;
-}
-
-.footer-content {
-    display: flex;
-    justify-content: space-between;
-    margin-bottom: 60px;
-}
-
-.footer-logo {
-    max-width: 300px;
-}
-
-.footer-logo p {
-    margin-top: 16px;
-}
-
-.footer-links {
-    display: flex;
-    gap: 60px;
-}
-
-.footer-column h4 {
-    margin-bottom: 20px;
-    position: relative;
-    display: inline-block;
-}
-
-.footer-column h4::after {
-    content: '';
-    position: absolute;
-    bottom: -5px;
-    left: 0;
-    width: 30px;
-    height: 3px;
-    background-color: var(--brand);
-}
-
-.footer-column a {
-    display: block;
-    margin-bottom: 12px;
-    color: var(--text-secondary);
-}
-
-.social-icons {
-    display: flex;
-    gap: 16px;
-}
-
-.social-icons a {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    width: 40px;
-    height: 40px;
-    border-radius: 50%;
-    background-color: var(--brand-light);
-    color: var(--brand-dark);
-    transition: var(--transition);
-}
-
-.social-icons a:hover {
-    background-color: var(--brand);
-    color: white;
-    transform: translateY(-3px);
-}
-
-.footer-bottom {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding-top: 20px;
-    border-top: 1px solid var(--border);
-}
-
-.footer-bottom-links {
-    display: flex;
-    gap: 20px;
-}
-
-/* Responsive */
-@media (max-width: 992px) {
-    .hero .container {
-        flex-direction: column;
-    }
-    
-    .benefits-container {
-        flex-direction: column;
-    }
-    
-    .footer-content {
-        flex-direction: column;
-        gap: 40px;
-    }
-    
-    .footer-links {
-        flex-wrap: wrap;
-        gap: 30px;
-    }
-    
-    .footer-column {
-        min-width: 150px;
-    }
-}
-
-@media (max-width: 768px) {
-    h1 {
-        font-size: 2rem;
-    }
-    
-    h2 {
-        font-size: 1.75rem;
-    }
-    
-    .nav-links, .btn {
-        display: none;
-    }
-    
-    .mobile-menu-icon {
-        display: block;
-    }
-    
-    .pricing-cards {
-        grid-template-columns: 1fr;
-    }
-    
-    .pricing-card.featured {
-        transform: scale(1);
-    }
-    
-    .pricing-card.featured:hover {
-        transform: translateY(-10px);
-    }
-    
-    .footer-bottom {
-        flex-direction: column;
-        gap: 20px;
-        text-align: center;
-    }
-}
-
-/* Mobile Menu */
-.mobile-menu {
-    position: fixed;
-    top: 70px;
-    left: 0;
-    width: 100%;
-    background-color: var(--background);
-    padding: 20px;
-    box-shadow: var(--shadow);
-    display: none;
-    flex-direction: column;
-    gap: 20px;
-    z-index: 999;
-}
-
-.mobile-menu.active {
-    display: flex;
-}
-
-.mobile-menu a {
-    font-weight: 500;
-    padding: 10px 0;
-    border-bottom: 1px solid var(--border);
-}
-
-.mobile-menu .btn {
-    display: inline-block;
-    margin-top: 20px;
+::-webkit-scrollbar-thumb {
+    background: linear-gradient(var(--primary), var(--secondary));
+    border-radius: 4px;
 }
     </style>
 </head>
 <body>
-    <header>
-        <nav>
-            <div class="container">
-                <div class="logo">
-                    <img src="/api/placeholder/120/40" alt="Delvrr Logo">
+    <!-- Navigation -->
+    <nav class="fixed w-full z-50 glass-nav">
+        <div class="container mx-auto px-6 py-4">
+            <div class="flex items-center justify-between">
+                <div class="text-3xl font-bold gradient-text">
+                    Delvrr
                 </div>
-                <div class="nav-links">
-                    <a href="#features">Features</a>
-                    <a href="#how-it-works">How It Works</a>
-                    <a href="#benefits">Benefits</a>
-                    <a href="#pricing">Pricing</a>
-                </div>
-                <button class="btn btn-primary">Get Started</button>
-                <div class="mobile-menu-icon">
-                    <i class="fas fa-bars"></i>
+                <div class="hidden md:flex items-center space-x-8">
+                    <a href="#features" class="text-gray-700 hover:text-primary transition-colors">Features</a>
+                    <a href="#how" class="text-gray-700 hover:text-primary transition-colors">How It Works</a>
+                    <a href="#demo" class="text-gray-700 hover:text-primary transition-colors">Live Demo</a>
+                    <button class="bg-primary text-white px-6 py-2 rounded-full hover:bg-indigo-600 transition-colors">
+                        Get Started Free
+                    </button>
                 </div>
             </div>
-        </nav>
-    </header>
+        </div>
+    </nav>
 
-    <section class="hero">
-        <div class="container">
-            <div class="hero-content">
-                <h1>Transform Your Restaurant with <span>Contactless Ordering</span></h1>
-                <p>Scan. Order. Enjoy. Delvrr's digital menu system streamlines ordering, enhances customer experience, and boosts your restaurant's efficiency.</p>
-                <div class="cta-buttons">
-                    <button class="btn btn-primary">Request Demo</button>
-                    <button class="btn btn-outline">Learn More</button>
+    <!-- Hero Section -->
+    <section class="min-h-screen hero-gradient flex items-center pt-20">
+        <div class="container mx-auto px-6">
+            <div class="flex flex-col md:flex-row items-center gap-12">
+                <div class="md:w-1/2 space-y-8">
+                    <h1 class="text-6xl font-bold leading-tight">
+                        The Future of <span class="gradient-text">Restaurant Ordering</span> is Here
+                    </h1>
+                    <p class="text-xl text-gray-600">
+                        Transform your dining experience with QR-based digital menus and instant ordering. No apps required.
+                    </p>
+                    <div class="flex gap-4">
+                        <button class="bg-primary text-white px-8 py-4 rounded-full hover:bg-indigo-600 transition-all transform hover:scale-105">
+                            Start Free Trial
+                        </button>
+                        <button class="px-8 py-4 rounded-full border-2 border-primary text-primary hover:bg-primary hover:text-white transition-all">
+                            Watch Demo
+                        </button>
+                    </div>
+                    <div class="flex items-center gap-4 text-sm text-gray-500">
+                        <div class="flex -space-x-2">
+                            <img src="/api/placeholder/32/32" alt="User" class="w-8 h-8 rounded-full border-2 border-white">
+                            <img src="/api/placeholder/32/32" alt="User" class="w-8 h-8 rounded-full border-2 border-white">
+                            <img src="/api/placeholder/32/32" alt="User" class="w-8 h-8 rounded-full border-2 border-white">
+                        </div>
+                        <p>Trusted by 500+ restaurants worldwide</p>
+                    </div>
+                </div>
+                <div class="md:w-1/2 relative">
+                    <div class="floating order-preview p-6 rounded-2xl max-w-md mx-auto">
+                        <div class="flex items-center gap-4 mb-6">
+                            <div class="w-12 h-12 bg-primary/10 rounded-xl flex items-center justify-center">
+                                <svg class="w-6 h-6 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z"/>
+                                </svg>
+                            </div>
+                            <div>
+                                <h3 class="font-semibold">Table 12 • Order #458</h3>
+                                <p class="text-sm text-gray-500">Just now</p>
+                            </div>
+                        </div>
+                        <div class="space-y-4">
+                            <div class="flex items-center justify-between p-3 bg-gray-50 rounded-xl">
+                                <div class="flex items-center gap-3">
+                                    <img src="/api/placeholder/48/48" alt="Food" class="w-12 h-12 rounded-lg object-cover">
+                                    <div>
+                                        <p class="font-medium">Margherita Pizza</p>
+                                        <p class="text-sm text-gray-500">Extra cheese</p>
+                                    </div>
+                                </div>
+                                <p class="font-semibold">$14.99</p>
+                            </div>
+                            <div class="flex items-center justify-between p-3 bg-gray-50 rounded-xl">
+                                <div class="flex items-center gap-3">
+                                    <img src="/api/placeholder/48/48" alt="Food" class="w-12 h-12 rounded-lg object-cover">
+                                    <div>
+                                        <p class="font-medium">Caesar Salad</p>
+                                        <p class="text-sm text-gray-500">No croutons</p>
+                                    </div>
+                                </div>
+                                <p class="font-semibold">$8.99</p>
+                            </div>
+                        </div>
+                        <div class="mt-6 pt-6 border-t">
+                            <div class="flex justify-between mb-2">
+                                <p class="text-gray-600">Subtotal</p>
+                                <p class="font-semibold">$23.98</p>
+                            </div>
+                            <button class="w-full bg-primary text-white py-3 rounded-xl hover:bg-indigo-600 transition-colors">
+                                Confirm Order
+                            </button>
+                        </div>
+                    </div>
+                    <div class="absolute -bottom-10 -right-10 bg-white p-4 rounded-xl shadow-lg">
+                        <div class="flex items-center gap-3">
+                            <div class="w-10 h-10 bg-green-100 rounded-lg flex items-center justify-center">
+                                <svg class="w-6 h-6 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
+                                </svg>
+                            </div>
+                            <p class="text-sm font-medium">Order Confirmed!</p>
+                        </div>
+                    </div>
                 </div>
             </div>
-            <div class="hero-image">
-                <img src="/api/placeholder/600/400" alt="Delvrr App Demo">
+            <div class="absolute bottom-10 left-1/2 transform -translate-x-1/2 scroll-indicator">
+                <svg class="w-6 h-6 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 14l-7 7m0 0l-7-7m7 7V3"/>
+                </svg>
             </div>
         </div>
     </section>
 
-    <section id="features" class="features">
-        <div class="container">
-            <div class="section-header">
-                <h2>Why Choose Delvrr?</h2>
-                <p>A complete digital ordering solution for modern restaurants</p>
+    <!-- Stats Section -->
+<section class="py-12 bg-gray-50">
+    <div class="container mx-auto px-6">
+        <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+            <div class="stats-item text-center p-6">
+                <h3 class="text-4xl font-bold text-gray-900">50%</h3>
+                <p class="text-gray-600 mt-2">Faster Order Processing</p>
             </div>
-            <div class="features-grid">
-                <div class="feature-card">
-                    <div class="feature-icon">
-                        <i class="fas fa-qrcode"></i>
-                    </div>
-                    <h3>QR Code Menus</h3>
-                    <p>Replace physical menus with easy-to-scan QR codes at each table</p>
-                </div>
-                <div class="feature-card">
-                    <div class="feature-icon">
-                        <i class="fas fa-comments"></i>
-                    </div>
-                    <h3>Direct Chat</h3>
-                    <p>Real-time communication between customers and staff</p>
-                </div>
-                <div class="feature-card">
-                    <div class="feature-icon">
-                        <i class="fas fa-receipt"></i>
-                    </div>
-                    <h3>Auto Receipts</h3>
-                    <p>Automatic order confirmations and digital receipts</p>
-                </div>
-                <div class="feature-card">
-                    <div class="feature-icon">
-                        <i class="fas fa-mobile-alt"></i>
-                    </div>
-                    <h3>Restaurant App</h3>
-                    <p>Dedicated app for staff to manage incoming orders efficiently</p>
-                </div>
+            <div class="stats-item text-center p-6">
+                <h3 class="text-4xl font-bold text-gray-900">90%</h3>
+                <p class="text-gray-600 mt-2">Order Accuracy</p>
+            </div>
+            <div class="stats-item text-center p-6">
+                <h3 class="text-4xl font-bold text-gray-900">500+</h3>
+                <p class="text-gray-600 mt-2">Restaurants</p>
+            </div>
+            <div class="stats-item text-center p-6">
+                <h3 class="text-4xl font-bold text-gray-900">1M+</h3>
+                <p class="text-gray-600 mt-2">Orders Processed</p>
             </div>
         </div>
-    </section>
+    </div>
+</section>
 
-    <section id="how-it-works" class="how-it-works">
-        <div class="container">
-            <div class="section-header">
-                <h2>How Delvrr Works</h2>
-                <p>A seamless experience for both customers and restaurants</p>
+<!-- Benefits Section -->
+<section class="py-20">
+    <div class="container mx-auto px-6">
+        <div class="text-center mb-16">
+            <h2 class="text-4xl font-bold mb-4">Why Restaurants Love Delvrr</h2>
+            <p class="text-xl text-gray-600">Transform your dining experience with our digital solution</p>
+        </div>
+        <div class="grid md:grid-cols-3 gap-8">
+            <div class="benefit-card p-8 rounded-2xl bg-white">
+                <div class="w-14 h-14 bg-primary/10 rounded-xl flex items-center justify-center mb-6">
+                    <svg class="w-8 h-8 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                    </svg>
+                </div>
+                <h3 class="text-xl font-semibold mb-4">Cash on Delivery</h3>
+                <p class="text-gray-600">Simple payment process with no need for complex POS integration</p>
             </div>
-            <div class="steps">
-                <div class="step">
-                    <div class="step-number">1</div>
-                    <div class="step-content">
-                        <h3>Scan QR Code</h3>
-                        <p>Customers scan the QR code at their table to access the digital menu</p>
-                    </div>
+            <div class="benefit-card p-8 rounded-2xl bg-white">
+                <div class="w-14 h-14 bg-primary/10 rounded-xl flex items-center justify-center mb-6">
+                    <svg class="w-8 h-8 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"/>
+                    </svg>
                 </div>
-                <div class="step">
-                    <div class="step-number">2</div>
-                    <div class="step-content">
-                        <h3>Browse & Order</h3>
-                        <p>Browse the menu, select items, and place orders directly from their phones</p>
-                    </div>
+                <h3 class="text-xl font-semibold mb-4">Contactless Ordering</h3>
+                <p class="text-gray-600">Safe and hygienic ordering process with zero physical contact needed</p>
+            </div>
+            <div class="benefit-card p-8 rounded-2xl bg-white">
+                <div class="w-14 h-14 bg-primary/10 rounded-xl flex items-center justify-center mb-6">
+                    <svg class="w-8 h-8 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/>
+                    </svg>
                 </div>
-                <div class="step">
-                    <div class="step-number">3</div>
-                    <div class="step-content">
-                        <h3>Real-time Chat</h3>
-                        <p>Communicate with staff for special requests or assistance</p>
-                    </div>
-                </div>
-                <div class="step">
-                    <div class="step-number">4</div>
-                    <div class="step-content">
-                        <h3>Cash on Delivery</h3>
-                        <p>Pay at the table when food arrives or use the integrated payment system</p>
-                    </div>
-                </div>
+                <h3 class="text-xl font-semibold mb-4">Instant Updates</h3>
+                <p class="text-gray-600">Update menu items and prices in real-time without reprinting</p>
             </div>
         </div>
-    </section>
+    </div>
+</section>
 
-    <section class="testimonial">
-        <div class="container">
-            <div class="testimonial-card">
-                <div class="quote">
-                    <i class="fas fa-quote-left"></i>
-                </div>
-                <p class="testimonial-text">"Delvrr has completely transformed how we handle orders. Our staff is more efficient, our customers love the convenience, and we've seen a 20% increase in average order value."</p>
-                <div class="testimonial-author">
-                    <img src="/api/placeholder/60/60" alt="Restaurant Owner">
-                    <div>
-                        <h4>Sarah Johnson</h4>
-                        <p>Owner, The Bistro</p>
-                    </div>
-                </div>
+<!-- QR Demo Section -->
+<section class="py-20 bg-gray-50">
+    <div class="container mx-auto px-6">
+        <div class="flex flex-col md:flex-row items-center gap-12">
+            <div class="md:w-1/2">
+                <h2 class="text-4xl font-bold mb-6">Simple QR Code Setup</h2>
+                <p class="text-xl text-gray-600 mb-8">Generate unique QR codes for each table and start accepting orders instantly</p>
+                <ul class="space-y-4">
+                    <li class="flex items-center gap-3">
+                        <svg class="w-6 h-6 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
+                        </svg>
+                        <span>Custom QR codes for each table</span>
+                    </li>
+                    <li class="flex items-center gap-3">
+                        <svg class="w-6 h-6 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
+                        </svg>
+                        <span>Easy menu management</span>
+                    </li>
+                    <li class="flex items-center gap-3">
+                        <svg class="w-6 h-6 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
+                        </svg>
+                        <span>Real-time order tracking</span>
+                    </li>
+                </ul>
             </div>
-        </div>
-    </section>
-
-    <section id="benefits" class="benefits">
-        <div class="container">
-            <div class="section-header">
-                <h2>Benefits for Your Restaurant</h2>
-                <p>Increase efficiency, reduce costs, and enhance customer satisfaction</p>
-            </div>
-            <div class="benefits-container">
-                <div class="benefit-image">
-                    <img src="/api/placeholder/500/400" alt="Restaurant using Delvrr">
-                </div>
-                <div class="benefit-list">
-                    <div class="benefit-item">
-                        <i class="fas fa-check-circle"></i>
+            <div class="md:w-1/2">
+                <div class="qr-demo-card p-8 rounded-2xl">
+                    <div class="flex items-center gap-4 mb-6">
+                        <div class="w-12 h-12 bg-primary/10 rounded-xl flex items-center justify-center">
+                            <svg class="w-6 h-6 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v1m6 11h2m-6 0h-2v4m0-11v3m0 0h.01M12 12h4.01M16 20h4M4 12h4m12 0h.01M5 8h2a1 1 0 001-1V5a1 1 0 00-1-1H5a1 1 0 00-1 1v2a1 1 0 001 1zm12 0h2a1 1 0 001-1V5a1 1 0 00-1-1h-2a1 1 0 00-1 1v2a1 1 0 001 1zM5 20h2a1 1 0 001-1v-2a1 1 0 00-1-1H5a1 1 0 00-1 1v2a1 1 0 001 1z"/>
+                            </svg>
+                        </div>
                         <div>
-                            <h3>Eliminate Menu Printing Costs</h3>
-                            <p>Save money on printing and updating physical menus</p>
+                            <h3 class="font-semibold">Table 12 QR Code</h3>
+                            <p class="text-sm text-gray-500">Scan to view menu</p>
                         </div>
                     </div>
-                    <div class="benefit-item">
-                        <i class="fas fa-check-circle"></i>
-                        <div>
-                            <h3>Reduce Order Errors</h3>
-                            <p>Digital ordering eliminates miscommunication and mistakes</p>
+                    <div class="bg-white p-6 rounded-xl border border-gray-200">
+                        <div class="w-48 h-48 mx-auto bg-gray-100 rounded-lg flex items-center justify-center">
+                            <svg class="w-32 h-32 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v1m6 11h2m-6 0h-2v4m0-11v3m0 0h.01M12 12h4.01M16 20h4M4 12h4m12 0h.01M5 8h2a1 1 0 001-1V5a1 1 0 00-1-1H5a1 1 0 00-1 1v2a1 1 0 001 1zm12 0h2a1 1 0 001-1V5a1 1 0 00-1-1h-2a1 1 0 00-1 1v2a1 1 0 001 1zM5 20h2a1 1 0 001-1v-2a1 1 0 00-1-1H5a1 1 0 00-1 1v2a1 1 0 001 1z"/>
+                            </svg>
                         </div>
                     </div>
-                    <div class="benefit-item">
-                        <i class="fas fa-check-circle"></i>
-                        <div>
-                            <h3>Increase Table Turnover</h3>
-                            <p>Speed up the ordering process and serve more customers</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+    <!-- Features -->
+    <section id="features" class="py-20">
+        <div class="container mx-auto px-6">
+            <div class="text-center mb-16">
+                <h2 class="text-4xl font-bold mb-4">Why Choose Delvrr?</h2>
+                <p class="text-xl text-gray-600">Streamlined ordering that benefits everyone</p>
+            </div>
+            <div class="grid md:grid-cols-3 gap-8">
+                <div class="feature-card p-8 rounded-2xl bg-white">
+                    <div class="w-14 h-14 bg-primary/10 rounded-xl flex items-center justify-center mb-6">
+                        <svg class="w-8 h-8 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                        </svg>
+                    </div>
+                    <h3 class="text-xl font-semibold mb-4">Quick Setup</h3>
+                    <p class="text-gray-600">Generate QR codes instantly and start accepting orders in minutes</p>
+                </div>
+                <div class="feature-card p-8 rounded-2xl bg-white">
+                    <div class="w-14 h-14 bg-primary/10 rounded-xl flex items-center justify-center mb-6">
+                        <svg class="w-8 h-8 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/>
+                        </svg>
+                    </div>
+                    <h3 class="text-xl font-semibold mb-4">Real-time Analytics</h3>
+                    <p class="text-gray-600">Track orders, popular items, and customer preferences instantly</p>
+                </div>
+                <div class="feature-card p-8 rounded-2xl bg-white">
+                    <div class="w-14 h-14 bg-primary/10 rounded-xl flex items-center justify-center mb-6">
+                        <svg class="w-8 h-8 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"/>
+                        </svg>
+                    </div>
+                    <h3 class="text-xl font-semibold mb-4">Instant Communication</h3>
+                    <p class="text-gray-600">Chat directly with customers for special requests and updates</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- How It Works -->
+    <section id="how" class="py-20 bg-gray-50">
+        <div class="container mx-auto px-6">
+            <div class="text-center mb-16">
+                <h2 class="text-4xl font-bold mb-4">How It Works</h2>
+                <p class="text-xl text-gray-600">Simple steps to transform your restaurant</p>
+            </div>
+            <div class="max-w-4xl mx-auto">
+                <div class="flex flex-col md:flex-row items-center gap-12">
+                    <div class="md:w-1/2">
+                        <div class="relative">
+                            <div class="order-preview p-6 rounded-2xl">
+                                <img src="/api/placeholder/400/300" alt="QR Code Demo" class="w-full rounded-lg">
+                                <div class="absolute -bottom-4 -right-4 bg-white<div class="absolute -bottom-4 -right-4 bg-white p-4 rounded-xl shadow-lg">
+                                    <div class="flex items-center gap-2">
+                                        <svg class="w-6 h-6 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v1m6 11h2m-6 0h-2v4m0-11v3m0 0h.01M12 12h4.01M16 20h4M4 12h4m12 0h.01M5 8h2a1 1 0 001-1V5a1 1 0 00-1-1H5a1 1 0 00-1 1v2a1 1 0 001 1zm12 0h2a1 1 0 001-1V5a1 1 0 00-1-1h-2a1 1 0 00-1 1v2a1 1 0 001 1zM5 20h2a1 1 0 001-1v-2a1 1 0 00-1-1H5a1 1 0 00-1 1v2a1 1 0 001 1z"/>
+                                        </svg>
+                                        <span class="font-medium">Scan & Order</span>
+                                    </div>
+                                </div>
+                            </div>
                         </div>
                     </div>
-                    <div class="benefit-item">
-                        <i class="fas fa-check-circle"></i>
-                        <div>
-                            <h3>Enhanced Customer Experience</h3>
-                            <p>Provide a modern, convenient ordering experience</p>
+                    <div class="md:w-1/2 space-y-8">
+                        <div class="space-y-4">
+                            <div class="flex items-center gap-4">
+                                <div class="w-10 h-10 bg-primary text-white rounded-full flex items-center justify-center font-bold">1</div>
+                                <h3 class="text-xl font-semibold">Generate QR Codes</h3>
+                            </div>
+                            <p class="text-gray-600 pl-14">Create unique QR codes for each table that instantly connect customers to your digital menu</p>
+                        </div>
+                        <div class="space-y-4">
+                            <div class="flex items-center gap-4">
+                                <div class="w-10 h-10 bg-primary text-white rounded-full flex items-center justify-center font-bold">2</div>
+                                <h3 class="text-xl font-semibold">Customers Order & Pay</h3>
+                            </div>
+                            <p class="text-gray-600 pl-14">Guests browse your menu, customize orders, and pay with cash on delivery</p>
+                        </div>
+                        <div class="space-y-4">
+                            <div class="flex items-center gap-4">
+                                <div class="w-10 h-10 bg-primary text-white rounded-full flex items-center justify-center font-bold">3</div>
+                                <h3 class="text-xl font-semibold">Manage Orders</h3>
+                            </div>
+                            <p class="text-gray-600 pl-14">Receive orders instantly in your dashboard and manage them efficiently</p>
                         </div>
                     </div>
                 </div>
@@ -836,245 +477,328 @@ footer {
         </div>
     </section>
 
-    <section id="pricing" class="pricing">
-        <div class="container">
-            <div class="section-header">
-                <h2>Simple, Transparent Pricing</h2>
-                <p>Choose the plan that fits your restaurant's needs</p>
+    <!-- Demo Section -->
+    <section id="demo" class="py-20">
+        <div class="container mx-auto px-6">
+            <div class="bg-primary rounded-3xl p-12 text-center">
+                <h2 class="text-4xl font-bold text-white mb-6">See Delvrr in Action</h2>
+                <p class="text-xl text-indigo-100 mb-8 max-w-2xl mx-auto">Watch how Delvrr transforms the dining experience for both restaurants and customers</p>
+                <div class="relative max-w-4xl mx-auto">
+                    <img src="/api/placeholder/800/450" alt="Demo Video Thumbnail" class="w-full rounded-xl shadow-2xl">
+                    <button class="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 bg-white/90 w-20 h-20 rounded-full flex items-center justify-center hover:bg-white transition-colors">
+                        <svg class="w-8 h-8 text-primary" fill="currentColor" viewBox="0 0 20 20">
+                            <path d="M6.3 2.841A1.5 1.5 0 004 4.11v11.78a1.5 1.5 0 002.3 1.269l9.344-5.89a1.5 1.5 0 000-2.538L6.3 2.84z"/>
+                        </svg>
+                    </button>
+                </div>
             </div>
-            <div class="pricing-cards">
-                <div class="pricing-card">
-                    <div class="pricing-header">
-                        <h3>Starter</h3>
-                        <div class="price">
-                            <span class="currency">$</span>
-                            <span class="amount">49</span>
-                            <span class="period">/month</span>
-                        </div>
+        </div>
+    </section>
+
+    <!-- Pricing Section -->
+    <section id="pricing" class="py-20 bg-gray-50">
+        <div class="container mx-auto px-6">
+            <div class="text-center mb-16">
+                <h2 class="text-4xl font-bold mb-4">Simple, Transparent Pricing</h2>
+                <p class="text-xl text-gray-600">Start free, upgrade as you grow</p>
+            </div>
+            <div class="grid md:grid-cols-3 gap-8 max-w-5xl mx-auto">
+                <div class="bg-white p-8 rounded-2xl border border-gray-200">
+                    <h3 class="text-xl font-semibold mb-4">Starter</h3>
+                    <div class="mb-6">
+                        <span class="text-4xl font-bold">$0</span>
+                        <span class="text-gray-600">/month</span>
                     </div>
-                    <ul class="pricing-features">
-                        <li><i class="fas fa-check"></i> Up to 10 tables</li>
-                        <li><i class="fas fa-check"></i> Digital menu with QR codes</li>
-                        <li><i class="fas fa-check"></i> Basic chat functionality</li>
-                        <li><i class="fas fa-check"></i> Email support</li>
+                    <ul class="space-y-4 mb-8">
+                        <li class="flex items-center gap-2">
+                            <svg class="w-5 h-5 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
+                            </svg>
+                            <span>Up to 50 orders/month</span>
+                        </li>
+                        <li class="flex items-center gap-2">
+                            <svg class="w-5 h-5 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
+                            </svg>
+                            <span>Basic analytics</span>
+                        </li>
                     </ul>
-                    <button class="btn btn-outline">Get Started</button>
+                    <button class="w-full py-2 border-2 border-primary text-primary rounded-xl hover:bg-primary hover:text-white transition-colors">
+                        Get Started
+                    </button>
                 </div>
-                <div class="pricing-card featured">
-                    <div class="popular-tag">Most Popular</div>
-                    <div class="pricing-header">
-                        <h3>Professional</h3>
-                        <div class="price">
-                            <span class="currency">$</span>
-                            <span class="amount">99</span>
-                            <span class="period">/month</span>
-                        </div>
+                <div class="bg-white p-8 rounded-2xl border-2 border-primary relative transform scale-105">
+                    <div class="absolute -top-4 left-1/2 transform -translate-x-1/2 bg-primary text-white px-4 py-1 rounded-full text-sm">
+                        Most Popular
                     </div>
-                    <ul class="pricing-features">
-                        <li><i class="fas fa-check"></i> Up to 30 tables</li>
-                        <li><i class="fas fa-check"></i> Advanced menu customization</li>
-                        <li><i class="fas fa-check"></i> Full chat system</li>
-                        <li><i class="fas fa-check"></i> Digital payments integration</li>
-                        <li><i class="fas fa-check"></i> Priority support</li>
+                    <h3 class="text-xl font-semibold mb-4">Professional</h3>
+                    <div class="mb-6">
+                        <span class="text-4xl font-bold">$49</span>
+                        <span class="text-gray-600">/month</span>
+                    </div>
+                    <ul class="space-y-4 mb-8">
+                        <li class="flex items-center gap-2">
+                            <svg class="w-5 h-5 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
+                            </svg>
+                            <span>Unlimited orders</span>
+                        </li>
+                        <li class="flex items-center gap-2">
+                            <svg class="w-5 h-5 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
+                            </svg>
+                            <span>Advanced analytics</span>
+                        </li>
+                        <li class="flex items-center gap-2">
+                            <svg class="w-5 h-5 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
+                            </svg>
+                            <span>Priority support</span>
+                        </li>
                     </ul>
-                    <button class="btn btn-primary">Get Started</button>
+                    <button class="w-full py-2 bg-primary text-white rounded-xl hover:bg-indigo-600 transition-colors">
+                        Start Free Trial
+                    </button>
                 </div>
-                <div class="pricing-card">
-                    <div class="pricing-header">
-                        <h3>Enterprise</h3>
-                        <div class="price">
-                            <span class="currency">$</span>
-                            <span class="amount">199</span>
-                            <span class="period">/month</span>
-                        </div>
+                <div class="bg-white p-8 rounded-2xl border border-gray-200">
+                    <h3 class="text-xl font-semibold mb-4">Enterprise</h3>
+                    <div class="mb-6">
+                        <span class="text-4xl font-bold">$199</span>
+                        <span class="text-gray-600">/month</span>
                     </div>
-                    <ul class="pricing-features">
-                        <li><i class="fas fa-check"></i> Unlimited tables</li>
-                        <li><i class="fas fa-check"></i> Full menu customization</li>
-                        <li><i class="fas fa-check"></i> Advanced analytics</li>
-                        <li><i class="fas fa-check"></i> Multiple restaurant locations</li>
-                        <li><i class="fas fa-check"></i> 24/7 dedicated support</li>
+                    <ul class="space-y-4 mb-8">
+                        <li class="flex items-center gap-2">
+                            <svg class="w-5 h-5 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
+                            </svg>
+                            <span>Multiple locations</span>
+                        </li>
+                        <li class="flex items-center gap-2">
+                            <svg class="w-5 h-5 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
+                            </svg>
+                            <span>Custom integration</span>
+                        </li>
+                        <li class="flex items-center gap-2">
+                            <svg class="w-5 h-5 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
+                            </svg>
+                            <span>24/7 support</span>
+                        </li>
                     </ul>
-                    <button class="btn btn-outline">Contact Sales</button>
+                    <button class="w-full py-2 border-2 border-primary text-primary rounded-xl hover:bg-primary hover:text-white transition-colors">
+                        Contact Sales
+                    </button>
                 </div>
             </div>
         </div>
     </section>
 
-    <section class="cta-section">
-        <div class="container">
-            <h2>Ready to Transform Your Restaurant?</h2>
-            <p>Join hundreds of restaurants already using Delvrr to streamline their operations</p>
-            <div class="cta-buttons">
-                <button class="btn btn-primary">Get Started Free</button>
-                <button class="btn btn-outline">Schedule Demo</button>
-            </div>
-        </div>
-    </section>
-
-    <footer>
-        <div class="container">
-            <div class="footer-content">
-                <div class="footer-logo">
-                    <img src="/api/placeholder/120/40" alt="Delvrr Logo">
-                    <p>Scan. Order. Enjoy.</p>
+    <!-- Footer -->
+    <footer class="bg-gray-900 text-white py-12">
+        <div class="container mx-auto px-6">
+            <div class="grid md:grid-cols-4 gap-8">
+                <div>
+                    <h4 class="text-2xl font-bold mb-4">Delvrr</h4>
+                    <p class="text-gray-400">Transforming restaurant operations with smart digital solutions</p>
                 </div>
-                <div class="footer-links">
-                    <div class="footer-column">
-                        <h4>Product</h4>
-                        <a href="#">Features</a>
-                        <a href="#">Pricing</a>
-                        <a href="#">Demo</a>
-                        <a href="#">Updates</a>
-                    </div>
-                    <div class="footer-column">
-                        <h4>Company</h4>
-                        <a href="#">About Us</a>
-                        <a href="#">Careers</a>
-                        <a href="#">Contact</a>
-                        <a href="#">Blog</a>
-                    </div>
-                    <div class="footer-column">
-                        <h4>Resources</h4>
-                        <a href="#">Help Center</a>
-                        <a href="#">Partners</a>
-                        <a href="#">Success Stories</a>
-                        <a href="#">FAQ</a>
-                    </div>
-                    <div class="footer-column">
-                        <h4>Follow Us</h4>
-                        <div class="social-icons">
-                            <a href="#"><i class="fab fa-facebook-f"></i></a>
-                            <a href="#"><i class="fab fa-twitter"></i></a>
-                            <a href="#"><i class="fab fa-instagram"></i></a>
-                            <a href="#"><i class="fab fa-linkedin-in"></i></a>
-                        </div>
-                    </div>
+                <div>
+                    <h5 class="font-semibold mb-4">Product</h5>
+                    <ul class="space-y-2">
+                        <li><a href="#features" class="text-gray-400 hover:text-white transition-colors">Features</a></li>
+                        <li><a href="#pricing" class="text-gray-400 hover:text-white transition-colors">Pricing</a></li>
+                        <li><a href="#demo" class="text-gray-400 hover:text-white transition-colors">Demo</a></li>
+                    </ul>
+                </div>
+                <div>
+                    <h5 class="font-semibold mb-4">Company</h5>
+                    <ul class="space-y-2">
+                        <li><a href="#" class="text-gray-400 hover:text-white transition-colors">About</a></li>
+                        <li><a href="#" class="text-gray-400 hover:text-white transition-colors">Blog</a></li>
+                        <li><a href="#" class="text-gray-400 hover:text-white transition-colors">Careers</a></li>
+                    </ul>
+                </div>
+                <div>
+                    <h5 class="font-semibold mb-4">Connect</h5>
+                    <ul class="space-y-2">
+                        <li><a href="#" class="text-gray-400 hover:text-white transition-colors">Twitter</a></li>
+                        <li><a href="#" class="text-gray-400 hover:text-white transition-colors">LinkedIn</a></li>
+                        <li><a href="#" class="text-gray-400 hover:text-white transition-colors">Instagram</a></li>
+                    </ul>
                 </div>
             </div>
-            <div class="footer-bottom">
+            <div class="border-t border-gray-800 mt-12 pt-8 text-center text-gray-400">
                 <p>&copy; 2025 Delvrr. All rights reserved.</p>
-                <div class="footer-bottom-links">
-                    <a href="#">Privacy Policy</a>
-                    <a href="#">Terms of Service</a>
-                </div>
             </div>
         </div>
     </footer>
 
-    <script type="text/javascript">
-        document.addEventListener('DOMContentLoaded', function() {
-    // Mobile menu toggle
-    const mobileMenuButton = document.querySelector('.mobile-menu-icon');
-    
-    if (mobileMenuButton) {
-        mobileMenuButton.addEventListener('click', function() {
-            // Create mobile menu if it doesn't exist
-            let mobileMenu = document.querySelector('.mobile-menu');
-            
-            if (!mobileMenu) {
-                mobileMenu = document.createElement('div');
-                mobileMenu.classList.add('mobile-menu');
-                
-                // Clone nav links
-                const navLinks = document.querySelector('.nav-links').cloneNode(true);
-                mobileMenu.appendChild(navLinks);
-                
-                // Clone button
-                const button = document.querySelector('nav .btn').cloneNode(true);
-                mobileMenu.appendChild(button);
-                
-                // Insert after header
-                document.querySelector('header').after(mobileMenu);
-            }
-            
-            // Toggle mobile menu
-            mobileMenu.classList.toggle('active');
-        });
-    }
-    
-    // Smooth scrolling for anchor links
-    document.querySelectorAll('a[href^="#"]').forEach(anchor => {
-        anchor.addEventListener('click', function(e) {
-            e.preventDefault();
-            
-            const targetId = this.getAttribute('href');
-            
-            if (targetId === '#') return;
-            
-            const targetElement = document.querySelector(targetId);
-            
-            if (targetElement) {
-                // Close mobile menu if open
-                const mobileMenu = document.querySelector('.mobile-menu.active');
-                if (mobileMenu) {
-                    mobileMenu.classList.remove('active');
-                }
-                
-                // Scroll to target
-                window.scrollTo({
-                    top: targetElement.offsetTop - 80, // Adjust for header height
+        <script>
+        // Smooth scroll implementation
+        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+            anchor.addEventListener('click', function (e) {
+                e.preventDefault();
+                document.querySelector(this.getAttribute('href')).scrollIntoView({
                     behavior: 'smooth'
                 });
-            }
+            });
         });
-    });
-    
-    // Sticky header
-    const header = document.querySelector('header');
-    const heroSection = document.querySelector('.hero');
-    
-    if (header && heroSection) {
-        window.addEventListener('scroll', function() {
-            if (window.scrollY > 50) {
-                header.style.boxShadow = '0 4px 6px rgba(0, 0, 0, 0.1)';
-                header.style.background = 'rgba(255, 255, 255, 0.98)';
-            } else {
-                header.style.boxShadow = 'none';
-                header.style.background = 'var(--background)';
-            }
-        });
-    }
-    
-    // Animation on scroll
-    const animateElements = document.querySelectorAll('.feature-card, .step, .benefit-item, .pricing-card');
-    
-    function checkScroll() {
-        animateElements.forEach(element => {
-            const elementTop = element.getBoundingClientRect().top;
-            const windowHeight = window.innerHeight;
+
+        // Navbar scroll effect
+        const nav = document.querySelector('nav');
+        let lastScroll = 0;
+
+        window.addEventListener('scroll', () => {
+            const currentScroll = window.pageYOffset;
             
-            if (elementTop < windowHeight - 100) {
-                element.style.opacity = '1';
-                element.style.transform = element.classList.contains('pricing-card') && element.classList.contains('featured') 
-                    ? 'scale(1.05) translateY(0)' 
-                    : 'translateY(0)';
+            if (currentScroll > 50) {
+                nav.classList.add('shadow-lg');
+                nav.style.transform = lastScroll > currentScroll ? 'translateY(0)' : 'translateY(-100%)';
+            } else {
+                nav.classList.remove('shadow-lg');
+                nav.style.transform = 'translateY(0)';
+            }
+            
+            lastScroll = currentScroll;
+        });
+
+        // Intersection Observer for animations
+        const observerOptions = {
+            root: null,
+            rootMargin: '0px',
+            threshold: 0.1
+        };
+
+        const animateOnScroll = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    entry.target.classList.add('animate-in');
+                    animateOnScroll.unobserve(entry.target);
+                }
+            });
+        }, observerOptions);
+
+        document.querySelectorAll('.feature-card, .order-preview, .floating').forEach(el => {
+            el.classList.add('opacity-0', 'translate-y-10', 'transition-all', 'duration-700');
+            animateOnScroll.observe(el);
+        });
+
+        // Add animation classes
+        const style = document.createElement('style');
+        style.textContent = `
+            .animate-in {
+                opacity: 1 !important;
+                transform: translateY(0) !important;
+            }
+        `;
+        document.head.appendChild(style);
+
+        // Demo video modal
+        const videoButton = document.querySelector('.demo-video-button');
+        const modal = document.createElement('div');
+        modal.className = 'fixed inset-0 bg-black/80 flex items-center justify-center z-50 opacity-0 pointer-events-none transition-opacity duration-300';
+        document.body.appendChild(modal);
+
+        if (videoButton) {
+            videoButton.addEventListener('click', () => {
+                modal.classList.remove('opacity-0', 'pointer-events-none');
+                modal.innerHTML = `
+                    <div class="relative w-full max-w-4xl mx-4">
+                        <button class="absolute -top-10 right-0 text-white hover:text-gray-300">
+                            <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+                            </svg>
+                        </button>
+                        <div class="bg-black rounded-xl aspect-video">
+                            <!-- Replace with actual video embed -->
+                            <div class="w-full h-full flex items-center justify-center text-white">Demo Video Placeholder</div>
+                        </div>
+                    </div>
+                `;
+
+                const closeButton = modal.querySelector('button');
+                closeButton.addEventListener('click', () => {
+                    modal.classList.add('opacity-0', 'pointer-events-none');
+                });
+            });
+        }
+
+        // Price toggle animation
+        const priceToggles = document.querySelectorAll('.price-toggle');
+        priceToggles.forEach(toggle => {
+            toggle.addEventListener('click', function() {
+                this.classList.toggle('bg-primary');
+                const monthly = document.querySelectorAll('.price-monthly');
+                const yearly = document.querySelectorAll('.price-yearly');
+                
+                monthly.forEach(el => el.classList.toggle('hidden'));
+                yearly.forEach(el => el.classList.toggle('hidden'));
+            });
+        });
+
+        // Feature card hover effects
+        document.querySelectorAll('.feature-card').forEach(card => {
+            card.addEventListener('mouseenter', function() {
+                this.querySelector('svg').classList.add('scale-110', 'transform', 'transition-transform');
+            });
+            
+            card.addEventListener('mouseleave', function() {
+                this.querySelector('svg').classList.remove('scale-110', 'transform', 'transition-transform');
+            });
+        });
+
+        // Scroll progress indicator
+        const progressBar = document.createElement('div');
+        progressBar.className = 'fixed top-0 left-0 h-1 bg-primary z-50 transition-all duration-300';
+        document.body.appendChild(progressBar);
+
+        window.addEventListener('scroll', () => {
+            const winScroll = document.body.scrollTop || document.documentElement.scrollTop;
+            const height = document.documentElement.scrollHeight - document.documentElement.clientHeight;
+            const scrolled = (winScroll / height) * 100;
+            progressBar.style.width = scrolled + '%';
+        });
+    </script>
+    <script type="text/javascript">
+        // Add smooth reveal animations for benefit cards
+document.querySelectorAll('.benefit-card').forEach(card => {
+    const observer = new IntersectionObserver(entries => {
+        entries.forEach(entry => {
+            if (entry.isIntersecting) {
+                entry.target.classList.add('animate-in');
+                observer.unobserve(entry.target);
             }
         });
-    }
-    
-    // Set initial state for animation
-    animateElements.forEach(element => {
-        element.style.opacity = '0';
-        element.style.transform = 'translateY(20px)';
-        element.style.transition = 'opacity 0.6s ease, transform 0.6s ease';
+    }, {
+        threshold: 0.1
     });
     
-    // Check elements on load
-    window.addEventListener('load', checkScroll);
-    // Check elements on scroll
-    window.addEventListener('scroll', checkScroll);
+    observer.observe(card);
+});
+
+// Stats counter animation
+document.querySelectorAll('.stats-item h3').forEach(stat => {
+    const value = parseInt(stat.textContent);
+    let current = 0;
+    const increment = value / 40;
+    const updateValue = () => {
+        if (current < value) {
+            current += increment;
+            stat.textContent = Math.round(current) + (stat.textContent.includes('+') ? '+' : '%');
+            requestAnimationFrame(updateValue);
+        } else {
+            stat.textContent = value + (stat.textContent.includes('+') ? '+' : '%');
+        }
+    };
     
-    // Form submission handlers
-    const buttons = document.querySelectorAll('.btn');
-    buttons.forEach(button => {
-        button.addEventListener('click', function(e) {
-            if (this.textContent.includes('Demo') || this.textContent.includes('Started') || this.textContent.includes('Sales')) {
-                e.preventDefault();
-                alert('Thank you for your interest in Delvrr! A member of our team will contact you shortly.');
-            }
-        });
+    const observer = new IntersectionObserver(entries => {
+        if (entries[0].isIntersecting) {
+            updateValue();
+            observer.unobserve(stat);
+        }
     });
+    
+    observer.observe(stat);
 });
     </script>
 </body>
