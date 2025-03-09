@@ -180,17 +180,26 @@ DEFAULT_FROM_EMAIL = 'Snap Menu <no-reply@snapmenu.localhost>'
 CSRF_COOKIE_SECURE = False
 CSRF_COOKIE_HTTPONLY = False
 
-# Static files (CSS, JavaScript, Images)
-# https://docs.djangoproject.com/en/4.2/howto/static-files/
 STATIC_URL = '/static/'
 
-STATICFILES_DIRS = (
-    os.path.join(BASE_DIR, 'static'),
-)
-STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
+if not DEBUG:
+    # Define the location where static files will be collected for production
+    STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
+    
+    # Use WhiteNoise for serving compressed static files in production
+    STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
 
-MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
+# Define the locations of additional static file directories
+# Static files (CSS, JavaScript, Images)
+STATIC_URL = '/static/'
+STATICFILES_DIRS = [
+    os.path.join(BASE_DIR, 'static'),  # Additional static file directories
+]
+STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')  # Directory for collected static files
+
+# Media files (uploads)
 MEDIA_URL = '/media/'
+MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
  
 
 LOGIN_REDIRECT_URL = '/afterlogin' # Page where users are redirected after login
