@@ -305,11 +305,18 @@ body {
   box-sizing: border-box;
 }
 
+html, body {
+  height: 100%;
+  width: 100%;
+  overflow-x: hidden;
+}
+
 body {
   font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
   color: var(--text-primary);
   background-color: var(--light-bg);
   -webkit-tap-highlight-color: transparent;
+  line-height: 1.5;
 }
 
 /* ======== Header Component ======== */
@@ -322,6 +329,7 @@ body {
   box-shadow: var(--shadow-md);
   position: relative;
   z-index: 20;
+  width: 100%;
 }
 
 /* Left side grouping */
@@ -363,8 +371,9 @@ body {
   color: var(--text-secondary);
 }
 
-.circle-button:active {
+.circle-button:active, .circle-button:hover {
   transform: scale(0.95);
+  opacity: 0.9;
 }
 
 /* Brand styling */
@@ -403,6 +412,10 @@ body {
   color: #fff;
   margin: 0;
   font-weight: 500;
+  max-width: 120px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 /* Right side elements */
@@ -430,7 +443,7 @@ body {
   z-index: 15; /* Higher than category nav, lower than header */
   border-top-left-radius: var(--radius-lg);
   border-top-right-radius: var(--radius-lg);
-  margin-top: -0px; /* Slight overlap with header */
+  margin-top: -0.4px; /* Slight overlap with header */
   box-shadow: var(--shadow-sm);
 }
 
@@ -440,6 +453,7 @@ body {
   border-radius: var(--radius-pill); /* Very rounded */
   display: flex;
   align-items: center;
+  padding: 0 var(--space-md);
   position: relative;
   box-shadow: var(--shadow-sm);
 }
@@ -448,6 +462,7 @@ body {
   font-size: 16px;
   color: var(--text-secondary);
   margin-right: var(--space-sm);
+  flex-shrink: 0;
 }
 
 .search-input {
@@ -458,13 +473,14 @@ body {
   font-size: 15px;
   padding: 12px 0;
   color: var(--text-primary);
+  width: 100%;
 }
 
 .search-input::placeholder {
   color: var(--text-secondary);
 }
 
-.search-results {
+.search-results-dropdown {
   position: absolute;
   top: 100%;
   left: 0;
@@ -477,6 +493,12 @@ body {
   box-shadow: var(--shadow-md);
   overflow: hidden;
   display: none;
+  max-height: 300px;
+  overflow-y: auto;
+}
+
+.search-results-content {
+  padding: var(--space-md);
 }
 
 /* PROMO BANNER - Modern, App-like */
@@ -861,12 +883,92 @@ body {
   letter-spacing: 0.5px;
 }
 
+/* Main content area */
+.main-content {
+  padding: var(--space-md);
+  background-color: var(--background);
+}
+
+/* Animation */
 @keyframes pulse {
   0% { transform: scale(1); }
   50% { transform: scale(1.1); }
   100% { transform: scale(1); }
 }
 
+/* ======== Responsive Adjustments ======== */
+@media (max-width: 768px) {
+  .app-header {
+    padding: var(--space-sm) var(--space-md);
+  }
+  
+  .brand-logo {
+    font-size: 20px;
+  }
+  
+  .header-left {
+    gap: var(--space-sm);
+  }
+  
+  .location-name {
+    max-width: 100px;
+  }
+  
+  .search-section {
+    padding: var(--space-sm);
+  }
+}
+
+@media (max-width: 480px) {
+  .circle-button {
+    width: 32px;
+    height: 32px;
+  }
+  
+  .circle-button i {
+    font-size: 16px;
+  }
+  
+  .brand-logo {
+    font-size: 18px;
+  }
+  
+  .location-pill {
+    padding: 3px 8px;
+  }
+  
+  .location-name {
+    max-width: 80px;
+    font-size: 10px;
+  }
+  
+  .restaurant-logo {
+    width: 36px;
+    height: 36px;
+  }
+  
+  .category-icon {
+    height: 36px;
+    width: 36px;
+    font-size: 20px;
+  }
+  
+  .category-btn {
+    min-width: 65px;
+    font-size: 11px;
+    padding: 8px 12px;
+  }
+}
+
+/* Enable animations only if user prefers them */
+@media (prefers-reduced-motion: reduce) {
+  * {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
 
 
 /* Reset and base styles */
@@ -2697,78 +2799,78 @@ input:checked + .slider:before {
        
   <!-- App Header -->
 <!-- Header -->
-<header class="app-header">
-  <!-- Left side: menu button + brand info -->
-  <div class="header-left">
-    <button class="circle-button">
-      <i class="fas fa-bars"></i>
-    </button>
-    <div class="brand-info">
-      <div class="brand-logo">Delvrr</div>
-      <div class="location-pill">
-        <i class="fas fa-map-marker-alt location-icon"></i>
-        <p class="location-name">{{ restaurant.restaurant_name }}</p>
-      </div>
-    </div>
-  </div>
-  
-  <!-- Right side: favorite button and restaurant logo -->
-  <div class="header-actions">
-    <button class="circle-button">
-      <i class="fas fa-heart"></i>
-    </button>
-    <img
-      src="{{ restaurant.logo_pic.url }}"
-      alt="{{ restaurant.restaurant_name }} Logo"
-      class="restaurant-logo"
-    />
-  </div>
-</header>
-
-<!-- Search Component -->
-<!-- Search Component -->
-<div class="search-section">
-  <div class="search-bar">
-    <i class="fas fa-search search-icon"></i>
-    <input
-      type="text"
-      class="search-input"
-      placeholder="Search for menu items"
-      aria-label="Search menu"
-    />
-    <button class="circle-button" aria-label="Filter options">
-      <i class="fas fa-sliders-h"></i>
-    </button>
-  </div>
-  <div class="search-results-dropdown" style="display: none;">
-    <div class="search-results-content">
-      <!-- Search results will be populated here -->
-    </div>
-  </div>
-</div>
-    
-<!-- Category Navigation (Sticky) -->
-<nav class="category-nav">
-  <div class="category-scroll">
-    <!-- Default "All" category -->
-    <button class="category-btn active" data-category="featured">
-      <div class="category-icon">
-        🍱
-      </div>
-      <span>All</span>
-    </button>
-    
-    <!-- Dynamic categories from template -->
-    {% for category in categories %}
-      <button class="category-btn {% if category.is_new %}new{% endif %}" data-category="{{ category.name }}">
-        <div class="category-icon">
-          {{ category.emoji|default:"" }}
-        </div>
-        <span>{{ category.name }}</span>
+<!-- Header -->
+  <header class="app-header">
+    <!-- Left side: menu button + brand info -->
+    <div class="header-left">
+      <button class="circle-button" aria-label="Menu">
+        <i class="fas fa-bars"></i>
       </button>
-    {% endfor %}
+      <div class="brand-info">
+        <div class="brand-logo">Delvrr</div>
+        <div class="location-pill">
+          <i class="fas fa-map-marker-alt location-icon"></i>
+          <p class="location-name">{{ restaurant.restaurant_name }}</p>
+        </div>
+      </div>
+    </div>
+    
+    <!-- Right side: favorite button and restaurant logo -->
+    <div class="header-actions">
+      <button class="circle-button" aria-label="Favorites">
+        <i class="fas fa-heart"></i>
+      </button>
+      <img
+        src="{{ restaurant.logo_pic.url }}"
+        alt="{{ restaurant.restaurant_name }} Logo"
+        class="restaurant-logo"
+      />
+    </div>
+  </header>
+
+  <!-- Search Component -->
+  <div class="search-section">
+    <div class="search-bar">
+      <i class="fas fa-search search-icon"></i>
+      <input
+        type="text"
+        class="search-input"
+        placeholder="Search for menu items"
+        aria-label="Search menu"
+      />
+      <button class="circle-button" aria-label="Filter options">
+        <i class="fas fa-sliders-h"></i>
+      </button>
+    </div>
+    <div class="search-results-dropdown">
+      <div class="search-results-content">
+        <!-- Search results will be populated here -->
+      </div>
+    </div>
   </div>
-</nav>
+      
+  <!-- Category Navigation (Sticky) -->
+  <nav class="category-nav">
+    <div class="category-scroll">
+      <!-- Default "All" category -->
+      <button class="category-btn active" data-category="featured">
+        <div class="category-icon">
+          🍱
+        </div>
+        <span>All</span>
+      </button>
+      
+      <!-- Dynamic categories from template -->
+      {% for category in categories %}
+        <button class="category-btn {% if category.is_new %}new{% endif %}" data-category="{{ category.name }}">
+          <div class="category-icon">
+            {{ category.emoji|default:"" }}
+          </div>
+          <span>{{ category.name }}</span>
+        </button>
+      {% endfor %}
+    </div>
+  </nav>
 
 
 
@@ -2790,6 +2892,7 @@ input:checked + .slider:before {
 
     
     <!-- Main Content -->
+    <main class="main-content">
    <div class="main-content" id="menuContent">
   <div class="dish-grid">
     {% for category_products in allProds %}
@@ -2845,6 +2948,7 @@ input:checked + .slider:before {
     {% endfor %}
   </div>
 </div>
+</main>
 
   </section>
 
