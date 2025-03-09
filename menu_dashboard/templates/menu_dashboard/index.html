@@ -1000,13 +1000,14 @@ body {
   background-color: {{ primary_brand_color }};
   color: white;
   border: none;
-  display: flex;
+  display: none;
   align-items: center;
   justify-content: center;
   cursor: pointer;
   box-shadow: var(--shadow-sm);
   transition: all 0.2s ease;
 }
+
 .add-to-cart:active {
   transform: scale(0.9);
 }
@@ -1367,7 +1368,7 @@ body {
 
 .current-price {
     font-weight: 600;
-    font-size: 20px; /* increse the price */
+    font-size: 400px; /* increse the price */
 }
 
 .previous-price {
@@ -1445,7 +1446,7 @@ body {
     }
 
     .current-price {
-        font-size: 20px;
+        font-size: 35px;
     }
 
     .add-to-cart-btn {
@@ -3351,90 +3352,74 @@ input:checked + .slider:before {
   </section>
 
     <!-- Product Detail Modal -->
-<div class="modal fade" id="productDetailModal" tabindex="-1" aria-labelledby="productDetailModalLabel" aria-hidden="true">
-    <div class="modal-dialog modal-dialog-centered">
-        <div class="modal-content" style="max-width: 400px; margin: auto; border-radius: 24px; overflow: hidden; box-shadow: 0 15px 40px rgba(0,0,0,0.15); border: none;">
-            <!-- Main Content Wrapper -->
-            <div class="position-relative">
-                <!-- Close Button -->
-                <button type="button" class="btn-close-custom position-absolute top-3 end-3 z-3" 
-                        data-bs-dismiss="modal" aria-label="Close"
-                        style="background: rgba(255, 255, 255, 0.9); border: none; width: 40px; height: 40px; border-radius: 50%; display: flex; align-items: center; justify-content: center; cursor: pointer; transition: all 0.2s ease;">
-                    <i class="fas fa-times" style="color: #FF0000;"></i>
-                </button>
+    <div class="modal fade" id="productDetailModal" tabindex="-1" aria-labelledby="productDetailModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content" style="max-width: 320px; margin: auto; border-radius: 16px; overflow: hidden; box-shadow: 0 10px 30px rgba(0,0,0,0.15); border: none;">
+      <!-- Main Content Wrapper -->
+      <div class="position-relative">
+        <!-- Close Button -->
+        <button type="button" class="btn-close-custom position-absolute top-2 end-2 z-3" 
+                data-bs-dismiss="modal" aria-label="Close"
+                style="background: rgba(255, 255, 255, 0.9); border: none; width: 32px; height: 32px; border-radius: 50%; display: flex; align-items: center; justify-content: center; cursor: pointer; transition: all 0.2s ease;">
+          <i class="fas fa-times" style="color: #FF0000;"></i>
+        </button>
                 
-                <!-- Image Section -->
-                <div class="position-relative" style="height: 300px; background-color: #f0f0f0;">
-                    <img id="detailProductImage" src="" 
-                         class="w-100 h-100 object-fit-contain" alt="Product Image"
-                         style="transition: transform 0.3s ease; max-height: 100%; max-width: 100%; object-position: center;">
-                    <div class="position-absolute top-0 start-0 w-100 h-100" 
-                         style="background: linear-gradient(to bottom, rgba(0,0,0,0.05), rgba(0,0,0,0.3));"></div>
-                    <div class="position-absolute bottom-0 start-0 w-100 p-3">
-                        <h3 class="h5 mb-2 text-white fw-bold"
-                            style="text-shadow: 0 2px 4px rgba(0,0,0,0.4);"></h3>
-                        <div class="d-flex align-items-center gap-2">
-                            <span class="h5 mb-0 text-white"
-                                  style="text-shadow: 0 2px 4px rgba(0,0,0,0.4);"></span>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Content Card -->
-                <div class="card border-0 mx-3" 
-                     style="margin-top: -40px; border-radius: 24px; background: white; box-shadow: 0 10px 30px rgba(0,0,0,0.08); position: relative; z-index: 10;">
-                    <div class="card-body p-4">
-                        <!-- Product Name and Price Section -->
-                        <div class="mb-4">
-                            <h2 id="detailProductName" class="h4 mb-2 text-dark fw-bold"></h2>
-                            <div class="d-flex align-items-center gap-2">
-                                <span id="detailProductPrice" class="h4 mb-0 text-dark fw-bold"></span>
-                                <span id="detailProductOldPrice" class="small text-muted text-decoration-line-through"></span>
-                            </div>
-                        </div>
-
-                        <!-- Description -->
-                        <div class="mb-4">
-                            <p id="detailProductDescription" class="text-secondary small mb-0"
-                               style="line-height: 1.6;"></p>
-                        </div>
-                        
-                        <!-- Stats -->
-                        <div class="d-flex justify-content-between mb-4">
-                            <div class="text-center px-3 py-2" 
-                                 style="background: rgba(255,0,0,0.1); border-radius: 12px; transition: transform 0.2s ease;">
-                                <i class="fas fa-clock mb-1" style="color: {{ primary_brand_color }};"></i>
-                                <div class="small text-secondary">15-20 min</div>
-                            </div>
-                            <div class="text-center px-3 py-2" 
-                                 style="background: rgba(255,0,0,0.1); border-radius: 12px; transition: transform 0.2s ease;">
-                                <i class="fas fa-utensils mb-1" style="color: {{ primary_brand_color }};"></i>
-                                <div class="small text-secondary">Portion: 1</div>
-                            </div>
-                            <div class="text-center px-3 py-2" 
-                                 style="background: rgba(255,0,0,0.1); border-radius: 12px; transition: transform 0.2s ease;">
-                                <i class="fas fa-star mb-1" style="color: {{ primary_brand_color }};"></i>
-                                <div class="small text-secondary">4.8/5</div>
-                            </div>
-                        </div>
-                        
-                        <!-- Add to Cart Button -->
-                        <button id="detailAddToCart" class="btn w-100 py-3" 
-                                style="background: {{ primary_brand_color }}; 
-                                       color: white; 
-                                       border-radius: 12px; 
-                                       font-weight: 500;
-                                       border: none;
-                                       transition: all 0.2s ease;
-                                       box-shadow: 0 4px 12px rgba(255,0,0,0.2);">
-                            <i class="fas fa-plus me-2"></i>Add to Cart
-                        </button>
-                    </div>
-                </div>
+        <!-- Image Section -->
+        <div class="position-relative" style="height: 200px; background-color: #f0f0f0;">
+          <img id="detailProductImage" src="" 
+               class="w-100 h-100 object-fit-contain" alt="Product Image"
+               style="transition: transform 0.3s ease; object-position: center;">
+          <div class="position-absolute top-0 start-0 w-100 h-100" 
+               style="background: linear-gradient(to bottom, rgba(0,0,0,0.05), rgba(0,0,0,0.3));"></div>
+          <div class="position-absolute bottom-0 start-0 w-100 p-2">
+            <h3 class="h6 mb-1 text-white fw-bold" style="text-shadow: 0 1px 2px rgba(0,0,0,0.4);"></h3>
+            <div class="d-flex align-items-center gap-1">
+              <span class="h6 mb-0 text-white" style="text-shadow: 0 1px 2px rgba(0,0,0,0.4);"></span>
             </div>
+          </div>
         </div>
+
+        <!-- Content Card -->
+        <div class="card border-0 mx-2" style="margin-top: -30px; border-radius: 16px; background: white; box-shadow: 0 8px 20px rgba(0,0,0,0.08); position: relative; z-index: 10;">
+          <div class="card-body p-3">
+            <!-- Product Name and Price Section -->
+            <div class="mb-3">
+              <h2 id="detailProductName" class="h5 mb-1 text-dark fw-bold"></h2>
+              <div class="d-flex align-items-center gap-1">
+                <span id="detailProductPrice" class="h5 mb-0 text-dark fw-bold"></span>
+                <span id="detailProductOldPrice" class="small text-muted text-decoration-line-through"></span>
+              </div>
+            </div>
+
+            <!-- Description -->
+            <div class="mb-3">
+              <p id="detailProductDescription" class="text-secondary small mb-0" style="line-height: 1.4;"></p>
+            </div>
+                        
+            <!-- Stats -->
+            <div class="d-flex justify-content-between mb-3">
+              <div class="text-center px-2 py-1" style="background: rgba(255,0,0,0.1); border-radius: 8px; transition: transform 0.2s ease;">
+                <i class="fas fa-clock mb-1" style="color: {{ primary_brand_color }}; font-size: 0.9rem;"></i>
+                <div class="small text-secondary">15-20 min</div>
+              </div>
+              <div class="text-center px-2 py-1" style="background: rgba(255,0,0,0.1); border-radius: 8px; transition: transform 0.2s ease;">
+                <i class="fas fa-utensils mb-1" style="color: {{ primary_brand_color }}; font-size: 0.9rem;"></i>
+                <div class="small text-secondary">Portion: 1</div>
+              </div>
+              <div class="text-center px-2 py-1" style="background: rgba(255,0,0,0.1); border-radius: 8px; transition: transform 0.2s ease;">
+                <i class="fas fa-star mb-1" style="color: {{ primary_brand_color }}; font-size: 0.9rem;"></i>
+                <div class="small text-secondary">4.8/5</div>
+              </div>
+            </div>
+                        
+            <!-- Add to Cart button removed -->
+          </div>
+        </div>
+      </div>
     </div>
+  </div>
 </div>
+
 
 
 
@@ -4235,11 +4220,10 @@ document.addEventListener('DOMContentLoaded', function() {
 });
 </script>
 
-
- <script>
+<script>
 document.addEventListener('DOMContentLoaded', function() {
     // Product detail modal handling
-    const productCards = document.querySelectorAll('.dish-card');
+    const productCards = document.querySelectorAll('.food-item');
     const productDetailModal = new bootstrap.Modal(document.getElementById('productDetailModal'));
     
     // Add keyframe animations
@@ -4253,21 +4237,11 @@ document.addEventListener('DOMContentLoaded', function() {
             from { transform: translateY(20px); opacity: 0; }
             to { transform: translateY(0); opacity: 1; }
         }
-        @keyframes addedAnimation {
-            0% { transform: scale(1); }
-            50% { transform: scale(1.05); }
-            100% { transform: scale(1); }
-        }
         .modal-image-animate {
             animation: modalImageZoom 0.3s ease-out forwards;
         }
         .modal-content-animate {
             animation: modalContentSlide 0.3s ease-out forwards;
-        }
-        .btn-added {
-            background-color: #FF0000 !important;
-            color: white !important;
-            animation: addedAnimation 0.3s ease-out;
         }
     `;
     document.head.appendChild(style);
@@ -4287,7 +4261,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
                 // Populate modal with animations
                 const detailImage = document.getElementById('detailProductImage');
-                const detailContent = document.querySelector('.modal-body');
+                const detailContent = document.querySelector('.card-body');
                 
                 detailImage.src = productData.image;
                 detailImage.classList.add('modal-image-animate');
@@ -4306,13 +4280,6 @@ document.addEventListener('DOMContentLoaded', function() {
                     oldPriceElement.textContent = '';
                 }
 
-                // Update add to cart button with styling
-                const addToCartBtn = document.getElementById('detailAddToCart');
-                addToCartBtn.dataset.productId = productData.id;
-                addToCartBtn.classList.remove('added', 'btn-added');
-                addToCartBtn.style.transition = 'all 0.3s ease';
-                addToCartBtn.style.transform = 'translateY(0)';
-                
                 // Show modal
                 productDetailModal.show();
 
@@ -4327,47 +4294,29 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     });
 
-    // Handle modal add to cart with enhanced feedback
-    document.getElementById('detailAddToCart').addEventListener('click', function() {
-        const productId = this.dataset.productId;
-        const originalBtn = document.querySelector(`.add-to-cart-btn[data-product-id="${productId}"]`);
-        
-        if(originalBtn) {
-            originalBtn.click();
-            this.classList.add('added', 'btn-added');
-            
-            // Enhanced visual feedback
-            const originalHtml = this.innerHTML;
-            this.innerHTML = `
-                <i class="fas fa-check me-2" style="transform: scale(1.2);"></i>
-                <span style="font-weight: 500;">Added!</span>
-            `;
-            
-            // Add hover effect
-            this.style.transform = 'translateY(-2px)';
-            
-            setTimeout(() => {
-                // Smooth transition out
-                this.style.transform = 'translateY(0)';
-                setTimeout(() => {
-                    productDetailModal.hide();
-                    this.innerHTML = originalHtml;
-                    this.classList.remove('added', 'btn-added');
-                }, 200);
-            }, 800);
-        }
-    });
-
+    // Clean up animations when modal is hidden
     // Clean up animations when modal is hidden
     document.getElementById('productDetailModal').addEventListener('hidden.bs.modal', function () {
+        // Remove animation classes
         document.getElementById('detailProductImage').classList.remove('modal-image-animate');
-        document.querySelector('.modal-body').classList.remove('modal-content-animate');
+        document.querySelector('.card-body').classList.remove('modal-content-animate');
+        
+        // Reset any shadow effects or other styles
         const addToCartBtn = document.getElementById('detailAddToCart');
-        addToCartBtn.classList.remove('added', 'btn-added');
-        addToCartBtn.innerHTML = addToCartBtn.getAttribute('data-original-text') || 'Add to Cart';
+        if (addToCartBtn) {
+            addToCartBtn.style.boxShadow = '0 4px 12px rgba(255,0,0,0.2)'; // Reset to original shadow
+            addToCartBtn.style.transform = 'translateY(0)'; // Reset any transform
+        }
+        
+        // Reset any other elements that might have visual changes
+        const modalContent = document.querySelector('.modal-content');
+        if (modalContent) {
+            modalContent.style.boxShadow = '0 15px 40px rgba(0,0,0,0.15)'; // Reset to original shadow
+        }
     });
-});
 </script>
+
+ 
 
 <!-- ===============================
      JAVASCRIPT TO TOGGLE SECTIONS
@@ -4548,6 +4497,80 @@ document.addEventListener('DOMContentLoaded', function() {
 
 <script>
 document.addEventListener('DOMContentLoaded', function() {
+  // ===== Add Keyframe Animations for Modal =====
+  const modalStyle = document.createElement('style');
+  modalStyle.textContent = `
+    @keyframes modalImageZoom {
+      from { transform: scale(0.95); opacity: 0; }
+      to { transform: scale(1); opacity: 1; }
+    }
+    @keyframes modalContentSlide {
+      from { transform: translateY(20px); opacity: 0; }
+      to { transform: translateY(0); opacity: 1; }
+    }
+    .modal-image-animate {
+      animation: modalImageZoom 0.3s ease-out forwards;
+    }
+    .modal-content-animate {
+      animation: modalContentSlide 0.3s ease-out forwards;
+    }
+  `;
+  document.head.appendChild(modalStyle);
+
+  // ===== Utility Function: Show Product Detail Modal =====
+  function showProductDetail(productData) {
+    const productDetailModalInstance = new bootstrap.Modal(document.getElementById('productDetailModal'));
+    const detailImage = document.getElementById('detailProductImage');
+    const detailContent = document.querySelector('.card-body');
+    
+    // Populate modal elements
+    detailImage.src = productData.image;
+    detailImage.classList.add('modal-image-animate');
+    detailContent.classList.add('modal-content-animate');
+    
+    document.getElementById('detailProductName').textContent = productData.name;
+    document.getElementById('detailProductDescription').textContent = productData.description;
+    document.getElementById('detailProductPrice').textContent = productData.price;
+    
+    const oldPriceElement = document.getElementById('detailProductOldPrice');
+    if(productData.previousPrice) {
+        oldPriceElement.textContent = productData.previousPrice;
+        oldPriceElement.style.textDecoration = 'line-through';
+        oldPriceElement.style.color = '#666';
+    } else {
+        oldPriceElement.textContent = '';
+    }
+    
+    productDetailModalInstance.show();
+    
+    // Clean up animation classes when animations end
+    detailImage.addEventListener('animationend', () => {
+       detailImage.classList.remove('modal-image-animate');
+    });
+    detailContent.addEventListener('animationend', () => {
+       detailContent.classList.remove('modal-content-animate');
+    });
+  }
+
+  // ===== Attach Product Detail Modal to Carousel Items =====
+  document.querySelectorAll('.food-item').forEach(item => {
+    item.addEventListener('click', function(e) {
+      // Prevent modal from triggering when clicking the add-to-cart button
+      if (e.target.closest('.add-to-cart')) return;
+      
+      const productData = {
+        id: item.dataset.productId,
+        name: item.dataset.name,
+        description: item.dataset.description || '',
+        price: `$${item.dataset.price}`,
+        previousPrice: item.dataset.previousPrice ? `$${item.dataset.previousPrice}` : '',
+        image: item.dataset.image
+      };
+      
+      showProductDetail(productData);
+    });
+  });
+
   // ===== View Toggle Functionality =====
   const viewAllButton = document.querySelector('.view-all');
   const featuredSection = document.querySelector('.featured-section');
@@ -4555,13 +4578,14 @@ document.addEventListener('DOMContentLoaded', function() {
   const productGrid = document.getElementById('productGrid');
   const backButton = document.querySelector('.back-to-carousel');
 
-  // Extract all products from the carousel (including category)
+  // Extract all products from the carousel (including description for modal)
   function extractProductsFromCarousel() {
     const foodItems = document.querySelectorAll('.food-item');
     return Array.from(foodItems).map(item => {
       return {
         id: item.dataset.productId,
         name: item.dataset.name,
+        description: item.dataset.description || '',
         price: item.dataset.price,
         previousPrice: item.dataset.previousPrice,
         image: item.dataset.image,
@@ -4571,7 +4595,7 @@ document.addEventListener('DOMContentLoaded', function() {
     });
   }
 
-  // Create the grid view (add data-category attribute for filtering)
+  // Create the grid view and attach modal handlers to each grid item
   function createGridView(products) {
     productGrid.innerHTML = '';
     
@@ -4581,8 +4605,10 @@ document.addEventListener('DOMContentLoaded', function() {
       gridItem.dataset.productId = product.id;
       gridItem.dataset.category = product.category;
       gridItem.dataset.name = product.name;
+      gridItem.dataset.description = product.description;
       gridItem.dataset.price = product.price;
       gridItem.dataset.previousPrice = product.previousPrice;
+      gridItem.dataset.image = product.image;
       
       const isOnSale = product.status === 'Sale';
       
@@ -4611,6 +4637,20 @@ document.addEventListener('DOMContentLoaded', function() {
       `;
       
       productGrid.appendChild(gridItem);
+
+      // When clicking on a grid item (except the add-to-cart button), show product details in the modal
+      gridItem.addEventListener('click', function(e) {
+        if(e.target.closest('.add-to-cart')) return;
+        const productData = {
+          id: product.id,
+          name: product.name,
+          description: product.description,
+          price: `$${product.price}`,
+          previousPrice: product.previousPrice ? `$${product.previousPrice}` : '',
+          image: product.image
+        };
+        showProductDetail(productData);
+      });
     });
   }
 
@@ -4651,7 +4691,7 @@ document.addEventListener('DOMContentLoaded', function() {
     }, 300);
   });
   
-  // Handle add-to-cart for grid items
+  // Handle add-to-cart for grid items (if applicable)
   productGrid.addEventListener('click', function(e) {
     if (e.target.closest('.add-to-cart')) {
       const button = e.target.closest('.add-to-cart');
@@ -4799,6 +4839,7 @@ document.addEventListener('DOMContentLoaded', function() {
   }
 });
 </script>
+
 
 
  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
