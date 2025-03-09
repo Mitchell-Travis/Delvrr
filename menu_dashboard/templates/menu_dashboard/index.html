@@ -23,7 +23,7 @@
     <meta property="og:description" content="Scan and browse the restaurant's digital menu instantly. A seamless way to order your favorite dishes.">
     <meta property="og:image" content="https://delvrr.com/media/preview.jpg">
     <meta property="og:image:alt" content="Delvrr Digital Menu">
-    <meta property="og:url" content="https://delvrr.com/menu">
+    <meta property="og:url" content="https://delvrr.com/">
     <meta property="og:locale" content="en_US">
     
     <!-- Twitter -->
@@ -81,7 +81,7 @@
       "@type": "Restaurant",
       "name": "Delvrr Digital Menu",
       "description": "Scan the QR code to view the restaurant's menu and place orders easily.",
-      "url": "https://delvrr.com/menu",
+      "url": "https://delvrr.com/",
       "image": "https://delvrr.com/media/preview.jpg",
       "logo": "https://delvrr.com/media/Delvrr-logo.JPG",
       "servesCuisine": "Multiple Cuisines",
@@ -259,99 +259,196 @@ body {
 }
 
 /* Modern App Header */
-.aliexpress-header {
+/* ======== Design System Variables ======== */
+:root {
+  /* Brand colors use template variables */
+  --primary-color: {{ primary_brand_color }};
+  --secondary-color: {{ secondary_brand_color }};
+  
+  /* Color system */
+  --background: #ffffff;
+  --text-primary: #333333;
+  --text-secondary: #757575;
+  --light-bg: #f5f5f5;
+  --border-color: rgba(0, 0, 0, 0.08);
+  --success-color: #4CAF50;
+  --warning-color: #FFC107;
+  --danger-color: #F44336;
+  --glass-bg: rgba(255, 255, 255, 0.15);
+  
+  /* Elevation/shadows */
+  --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.1);
+  --shadow-md: 0 4px 6px rgba(0, 0, 0, 0.1);
+  --shadow-lg: 0 10px 15px rgba(0, 0, 0, 0.1);
+  
+  /* Spacing scale */
+  --space-xs: 4px;
+  --space-sm: 8px;
+  --space-md: 16px;
+  --space-lg: 24px;
+  --space-xl: 32px;
+  
+  /* Border radius */
+  --radius-sm: 4px;
+  --radius-md: 8px;
+  --radius-lg: 16px;
+  --radius-pill: 9999px;
+  
+  /* Component sizes */
+  --icon-button-size: 36px;
+}
+
+/* ======== Reset and Base Styles ======== */
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+  color: var(--text-primary);
+  background-color: var(--light-bg);
+  -webkit-tap-highlight-color: transparent;
+}
+
+/* ======== Header Component ======== */
+.app-header {
   display: flex;
-  align-items: flex-start;
+  align-items: center;
   justify-content: space-between;
   background-color: {{ primary_brand_color }};
-  padding: 10px;
+  padding: var(--space-md);
+  box-shadow: var(--shadow-md);
+  position: relative;
+  z-index: 20;
 }
 
-/* Group the hamburger menu and brand info on the left */
+/* Left side grouping */
 .header-left {
   display: flex;
-  align-items: flex-start;
-  gap: 10px;
+  align-items: center;
+  gap: var(--space-md);
 }
 
-.hamburger-menu i {
-  font-size: 18px;
-  color: #fff;
+/* Circular button with glassmorphism */
+.circle-button {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: var(--icon-button-size);
+  height: var(--icon-button-size);
+  border-radius: 50%;
+  background-color: rgba(255, 255, 255, 0.2); /* Semi-transparent white */
+  backdrop-filter: blur(4px);
+  -webkit-backdrop-filter: blur(4px);
+  border: none;
+  color: white; /* For the icon color */
   cursor: pointer;
-  margin-top: 3px;
+  transition: all 0.2s ease;
 }
 
-/* Changed to flexbox approach instead of absolute positioning */
+.circle-button i {
+  color: white; /* Ensure icons are white */
+  font-size: 18px; /* Adjust size to match image */
+}
+
+/* Special case for the filter button in search bar which appears to be dark */
+.search-bar .circle-button {
+  background-color: transparent;
+  color: var(--text-secondary);
+}
+
+.search-bar .circle-button i {
+  color: var(--text-secondary);
+}
+
+.circle-button:active {
+  transform: scale(0.95);
+}
+
+/* Brand styling */
 .brand-info {
   display: flex;
   flex-direction: column;
 }
 
-/* "Delvrr" text stays in its normal flow */
-.logo {
-  font-size: 18px;
+.brand-logo {
+  font-size: 22px;
   font-weight: bold;
   color: #fff;
   line-height: 1.1;
+  letter-spacing: -0.5px;
 }
 
-/* Container for location icon and restaurant name */
-.restaurant-name-container {
+.location-pill {
   display: flex;
   align-items: center;
-  margin-top: 10px; /* Space between Delvrr and restaurant name */
+  margin-top: var(--space-xs);
+  background-color: var(--glass-bg);
+  border-radius: var(--radius-pill);
+  padding: 4px 10px;
+  backdrop-filter: blur(4px);
+  -webkit-backdrop-filter: blur(4px);
 }
 
-/* Style for the location icon */
 .location-icon {
-  font-size: 10px; /* Small icon */
-  color: #fff; /* White icon color */
-  margin-right: 4px; /* Space between icon and text */
+  font-size: 10px;
+  color: #fff;
+  margin-right: var(--space-xs);
 }
 
-/* Restaurant name styling */
-.restaurant-name {
+.location-name {
   font-size: 12px;
-  color: #fff; /* Ensuring text is white */
+  color: #fff;
   margin: 0;
-  line-height: 1;
+  font-weight: 500;
 }
 
-/* Right side: container for the restaurant logo */
-.header-icons {
+/* Right side elements */
+.header-actions {
   display: flex;
   align-items: center;
+  gap: var(--space-sm);
 }
 
-/* Style the restaurant logo as an icon */
 .restaurant-logo {
   width: 40px;
   height: 40px;
   border-radius: 50%;
   object-fit: cover;
+  border: 2px solid rgba(255, 255, 255, 0.8);
+  box-shadow: var(--shadow-sm);
 }
 
-/* ========== Search Section ========== */
-.search-header {
+/* ======== Search Section ======== */
+.search-section {
   width: 100%;
-  background-color: #fff;
-  padding: 10px;
+  background-color: var(--background);
+  padding: var(--space-md);
+  position: relative;
+  z-index: 15; /* Higher than category nav, lower than header */
+  border-top-left-radius: var(--radius-lg);
+  border-top-right-radius: var(--radius-lg);
+  margin-top: -0px; /* Slight overlap with header */
+  box-shadow: var(--shadow-sm);
 }
 
-.search-container {
+.search-bar {
   width: 100%;
-  background-color: #f1f1f1;
-  border-radius: 20px;
+  background-color: var(--light-bg); /* Light gray background */
+  border-radius: var(--radius-pill); /* Very rounded */
   display: flex;
   align-items: center;
-  padding: 5px 10px;
+  padding: 5px 16px;
   position: relative;
+  box-shadow: var(--shadow-sm);
 }
 
 .search-icon {
   font-size: 16px;
-  color: #888;
-  margin-right: 8px;
+  color: var(--text-secondary);
+  margin-right: var(--space-sm);
 }
 
 .search-input {
@@ -359,25 +456,28 @@ body {
   border: none;
   background: transparent;
   outline: none;
-  font-size: 14px;
+  font-size: 15px;
+  padding: 12px 0;
+  color: var(--text-primary);
 }
 
-.search-results-dropdown {
+.search-input::placeholder {
+  color: var(--text-secondary);
+}
+
+.search-results {
   position: absolute;
   top: 100%;
   left: 0;
   right: 0;
-  background: #fff;
-  border: 1px solid #ccc;
-  border-radius: 4px;
+  background: var(--background);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-md);
   z-index: 999;
-}
-
-/* Optional: Pulse animation (if needed) */
-@keyframes pulse {
-  0% { transform: scale(1); }
-  50% { transform: scale(1.05); }
-  100% { transform: scale(1); }
+  margin-top: var(--space-sm);
+  box-shadow: var(--shadow-md);
+  overflow: hidden;
+  display: none;
 }
 
 /* PROMO BANNER - Modern, App-like */
@@ -562,19 +662,20 @@ body {
 .search-results-dropdown {
   position: absolute;
   top: 100%;
-  left: 0;
-  right: 0;
-  background: white;
-  border-radius: 8px;
-  box-shadow: 0 4px 12px rgba(0,0,0,0.1);
-  max-height: 300px;
-  overflow-y: auto;
-  z-index: 1002;
-  margin-top: 4px;
+  left: var(--space-md);
+  right: var(--space-md);
+  background: var(--background);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-md);
+  z-index: 999;
+  margin-top: var(--space-sm);
+  box-shadow: var(--shadow-md);
+  overflow: hidden;
+  width: calc(100% - 32px); /* Adjust width to match the search bar */
 }
 
 .search-results-content {
-  padding: 8px 0;
+  padding: 5px 0;
 }
 
 .search-result-item {
@@ -637,183 +738,134 @@ body {
 }
 
 /* Category Navigation */
-/* Category Navigation */
+/* ======== Category Navigation ======== */
 .category-nav {
-    position: sticky;
-    top: 0;
-    z-index: 1000;
-    margin-top: -15px;
-    padding: 8px 0;
-    border-bottom: 1px solid rgba(0, 0, 0, 0.08);
-    background: var(--background);
-    backdrop-filter: blur(10px);
-    -webkit-backdrop-filter: blur(10px);
-    transition: all 0.3s ease;
-    width: 100%;
-    box-shadow: none;
+  position: sticky;
+  top: 0;
+  z-index: 10; /* Lower than search section */
+  padding: var(--space-sm) 0;
+  border-bottom: 1px solid var(--border-color);
+  background: var(--background);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  transition: all 0.3s ease;
+  width: 100%;
 }
 
 .category-scroll {
-    display: flex;
-    overflow-x: auto;
-    gap: 12px;
-    padding: 4px 16px;
-    -webkit-overflow-scrolling: touch;
-    scroll-behavior: smooth;
-    scrollbar-width: none;
-    /* Smoother scroll mask at edges */
-    mask-image: linear-gradient(to right, transparent, black 2%, black 98%, transparent);
-    -webkit-mask-image: linear-gradient(to right, transparent, black 2%, black 98%, transparent);
-    position: relative;
-    max-width: 100%;  /* Always 100% width */
-    flex-wrap: nowrap;
+  display: flex;
+  overflow-x: auto;
+  gap: 12px;
+  padding: 4px 16px;
+  -webkit-overflow-scrolling: touch;
+  scroll-behavior: smooth;
+  scrollbar-width: none;
+  /* Gradient fade for edges */
+  mask-image: linear-gradient(to right, transparent, black 2%, black 98%, transparent);
+  -webkit-mask-image: linear-gradient(to right, transparent, black 2%, black 98%, transparent);
+  max-width: 100%;
 }
 
 .category-scroll::-webkit-scrollbar {
-    display: none;
+  display: none;
 }
 
-/* Category buttons */
 .category-btn {
-    background: transparent;
-    border: none;
-    color: var(--text-secondary);
-    font-size: clamp(11px, 3.2vw, 13px);
-    font-weight: 600;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    padding: clamp(8px, 2vw, 10px) clamp(14px, 3.5vw, 18px);
-    cursor: pointer;
-    transition: none;
-    white-space: nowrap;
-    position: relative;
-    min-width: clamp(70px, 20vw, 80px);
-    max-width: 100px;
-    outline: none;
-    flex: 0 0 auto;
-    touch-action: manipulation;
+  background: transparent;
+  border: none;
+  color: var(--text-secondary);
+  font-size: 13px;
+  font-weight: 600;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 10px 16px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  white-space: nowrap;
+  position: relative;
+  min-width: 75px;
+  max-width: 100px;
+  outline: none;
+  flex: 0 0 auto;
+  touch-action: manipulation;
 }
 
 .category-btn:hover {
-    color: {{ secondary_brand_color }};
-    background-color: transparent;
-    border: none;
+  color: var(--secondary-color);
 }
 
 .category-btn:active {
-    transform: none;
+  transform: scale(0.97);
 }
 
-/* Icon styling */
 .category-icon {
-    font-size: clamp(22px, 6vw, 26px);
-    margin-bottom: clamp(4px, 1.5vw, 6px);
-    transition: none;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    height: clamp(36px, 10vw, 44px);
-    width: clamp(36px, 10vw, 44px);
-    border-radius: clamp(12px, 4vw, 16px);
-    background-color: rgba(0, 0, 0, 0.03);
-    padding: clamp(5px, 1.5vw, 6px);
-    border: none;
+  font-size: 24px;
+  margin-bottom: 5px;
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 40px;
+  width: 40px;
+  border-radius: 14px;
+  background-color: rgba(0, 0, 0, 0.03);
+  padding: 6px;
 }
 
-.category-btn:hover .category-icon {
-    transform: none;
-}
-
-/* Active state */
+/* Active state styling */
 .category-btn.active {
-    color: {{ secondary_brand_color }};
-    font-weight: 700;
-    background-color: transparent;
-    box-shadow: none;
-    border: none;
+  color: var(--secondary-color);
+  font-weight: 700;
 }
 
 .category-btn.active .category-icon {
-    background-color: {{ secondary_brand_color }};
+  background-color: var(--secondary-color);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  transform: translateY(-2px);
 }
 
-/* Fixed active indicator */
+/* Active indicator bar */
 .category-btn::after {
-    content: "";
-    display: block;
-    width: 0;
-    height: clamp(3px, 1vw, 4px);
-    background: {{ secondary_brand_color }};
-    border-radius: 4px;
-    margin-top: clamp(4px, 1.5vw, 6px);
-    opacity: 0;
-    min-height: 4px;
-    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
-    transition: width 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275), opacity 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+  content: "";
+  display: block;
+  width: 0;
+  height: 4px;
+  background: var(--secondary-color);
+  border-radius: 4px;
+  margin-top: 5px;
+  opacity: 0;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  transition: width 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275), 
+              opacity 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
 }
 
 .category-btn.active::after {
-    width: 40%;
-    opacity: 1;
+  width: 40%;
+  opacity: 1;
 }
 
-/* Badge for new categories */
-.category-btn.new::before { 
-    border-radius: 10px;
-    border: 2px solid var(--background);
-    animation: pulse 2s infinite;
-    line-height: 1;
-    letter-spacing: 0.5px;
+/* NEW badge */
+.category-btn.new::before {
+  content: "NEW";
+  position: absolute;
+  top: 0;
+  right: 0;
+  font-size: 8px;
+  background-color: var(--danger-color);
+  color: white;
+  padding: 2px 4px;
+  border-radius: 10px;
+  border: 2px solid var(--background);
+  animation: pulse 2s infinite;
+  line-height: 1;
+  letter-spacing: 0.5px;
 }
 
 @keyframes pulse {
-    0% { transform: scale(1); }
-    50% { transform: scale(1.1); }
-    100% { transform: scale(1); }
-}
-
-/* For drag scrolling effect */
-.category-scroll.dragging {
-    cursor: grabbing;
-    scroll-behavior: auto;
-}
-
-/* Arrow indicators for more content */
-.category-nav::before,
-.category-nav::after {
-    content: "";
-    position: absolute;
-    top: 0;
-    bottom: 0;
-    width: 20px;
-    z-index: 1001;
-    pointer-events: none;
-}
-
-.category-nav::before {
-    left: 0;
-    background: linear-gradient(to right, var(--background), transparent);
-}
-
-.category-nav::after {
-    right: 0;
-    background: linear-gradient(to left, var(--background), transparent);
-}
-
-/* Dark mode support */
-@media (prefers-color-scheme: dark) {
-    .category-nav {
-        border-bottom-color: rgba(255, 255, 255, 0.1);
-    }
-    
-    .category-icon {
-        background-color: rgba(255, 255, 255, 0.06);
-    }
-    
-    .category-btn.active::after {
-        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
-    }
+  0% { transform: scale(1); }
+  50% { transform: scale(1.1); }
+  100% { transform: scale(1); }
 }
 
 
@@ -2645,61 +2697,69 @@ input:checked + .slider:before {
   <section id="menuSection" class="menu-app-container">
        
   <!-- App Header -->
-    <!-- Header -->
-    <div class="aliexpress-header">
-  <!-- Left side: hamburger menu + brand info -->
+<!-- Header -->
+<header class="app-header">
+  <!-- Left side: menu button + brand info -->
   <div class="header-left">
-    <div class="hamburger-menu">
+    <button class="circle-button">
       <i class="fas fa-bars"></i>
-    </div>
+    </button>
     <div class="brand-info">
-      <div class="logo">Delvrr</div>
-      <div class="restaurant-name-container">
+      <div class="brand-logo">Delvrr</div>
+      <div class="location-pill">
         <i class="fas fa-map-marker-alt location-icon"></i>
-        <p class="restaurant-name" style="color: white;">{{ restaurant.restaurant_name }}</p>
+        <p class="location-name">{{ restaurant.restaurant_name }}</p>
       </div>
     </div>
   </div>
-  <!-- Right side: restaurant logo -->
-  <div class="header-icons">
+  
+  <!-- Right side: favorite button and restaurant logo -->
+  <div class="header-actions">
+    <button class="circle-button">
+      <i class="fas fa-heart"></i>
+    </button>
     <img
       src="{{ restaurant.logo_pic.url }}"
-      alt="Restaurant Logo"
+      alt="{{ restaurant.restaurant_name }} Logo"
       class="restaurant-logo"
     />
   </div>
-</div>
-<!-- Search Section -->
-<div class="search-header">
-  <div class="search-container">
+</header>
+
+<!-- Search Component -->
+<!-- Search Component -->
+<div class="search-section">
+  <div class="search-bar">
     <i class="fas fa-search search-icon"></i>
     <input
       type="text"
       class="search-input"
       placeholder="Search for menu items"
+      aria-label="Search menu"
     />
-    <div class="search-results-dropdown" style="display: none;">
-      <div class="search-results-content"></div>
+    <button class="circle-button" aria-label="Filter options">
+      <i class="fas fa-sliders-h"></i>
+    </button>
+  </div>
+  <div class="search-results-dropdown" style="display: none;">
+    <div class="search-results-content">
+      <!-- Search results will be populated here -->
     </div>
   </div>
 </div>
-  
-
-
-
-
-
     
 <!-- Category Navigation (Sticky) -->
-<div class="category-nav">
+<nav class="category-nav">
   <div class="category-scroll">
-    <!-- Default category button for "All" food -->
+    <!-- Default "All" category -->
     <button class="category-btn active" data-category="featured">
       <div class="category-icon">
         🍱
       </div>
       <span>All</span>
     </button>
+    
+    <!-- Dynamic categories from template -->
     {% for category in categories %}
       <button class="category-btn {% if category.is_new %}new{% endif %}" data-category="{{ category.name }}">
         <div class="category-icon">
@@ -2709,7 +2769,7 @@ input:checked + .slider:before {
       </button>
     {% endfor %}
   </div>
-</div>
+</nav>
 
 
 
