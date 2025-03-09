@@ -34,7 +34,17 @@ SECRET_KEY = 'django-insecure--imqw09akhzp4l9k(-qvmxs2wi&#9@w@s)%kafewhcut)bsf*j
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = ['localhost', '172.20.10.3', '127.0.0.1', '[::1]', '0.0.0.0']
+ALLOWED_HOSTS = [
+
+    'localhost', 
+    '172.20.10.3', 
+    '127.0.0.1', 
+    '[::1]', 
+    '0.0.0.0',
+    'https://delvrr.onrender.com'
+
+]
+
 
 
 AUTH_USER_MODEL = 'accounts.User'
