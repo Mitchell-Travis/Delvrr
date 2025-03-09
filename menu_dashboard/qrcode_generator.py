@@ -14,7 +14,7 @@ def generate_qrcode(table):
         logger.error("No restaurant associated with the table.")
         return None, None  # Early return if no restaurant
 
-    base_url = "https://delvrr.onrender.com/"
+    base_url = "https://delvrr.com/"
     restaurant_name_slug = slugify(table.restaurant.restaurant_name)
     
     # Use the restaurant's hashed_slug if available; otherwise, fallback
