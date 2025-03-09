@@ -79,3 +79,4 @@ Follow these steps to get the project up and running on your local machine.
 To start the project, use the following command:
 ```sh
 python manage.py runserver
+# Delvrr
