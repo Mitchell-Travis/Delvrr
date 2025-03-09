@@ -259,13 +259,12 @@ body {
 }
 
 /* Modern App Header */
-/* ======== Design System Variables ======== */
 :root {
-  /* Brand colors use template variables */
+  /* Use the existing primary brand color */
   --primary-color: {{ primary_brand_color }};
   --secondary-color: {{ secondary_brand_color }};
   
-  /* Color system */
+  /* Define a consistent design system */
   --background: #ffffff;
   --text-primary: #333333;
   --text-secondary: #757575;
@@ -274,7 +273,6 @@ body {
   --success-color: #4CAF50;
   --warning-color: #FFC107;
   --danger-color: #F44336;
-  --glass-bg: rgba(255, 255, 255, 0.15);
   
   /* Elevation/shadows */
   --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.1);
@@ -293,22 +291,13 @@ body {
   --radius-md: 8px;
   --radius-lg: 16px;
   --radius-pill: 9999px;
-  
-  /* Component sizes */
-  --icon-button-size: 36px;
 }
 
-/* ======== Reset and Base Styles ======== */
+/* Reset and base styles */
 * {
   margin: 0;
   padding: 0;
   box-sizing: border-box;
-}
-
-html, body {
-  height: 100%;
-  width: 100%;
-  overflow-x: hidden;
 }
 
 body {
@@ -316,64 +305,47 @@ body {
   color: var(--text-primary);
   background-color: var(--light-bg);
   -webkit-tap-highlight-color: transparent;
-  line-height: 1.5;
 }
 
 /* ======== Header Component ======== */
-.app-header {
+.aliexpress-header {
   display: flex;
   align-items: center;
   justify-content: space-between;
   background-color: {{ primary_brand_color }};
-  padding: var(--space-md);
+  padding: var(--space-md) var(--space-md);
   box-shadow: var(--shadow-md);
   position: relative;
   z-index: 20;
-  width: 100%;
 }
 
-/* Left side grouping */
+/* Group the hamburger menu and brand info on the left */
 .header-left {
   display: flex;
   align-items: center;
   gap: var(--space-md);
 }
 
-/* Circular button with glassmorphism */
-.circle-button {
+.hamburger-menu {
   display: flex;
   align-items: center;
   justify-content: center;
-  width: var(--icon-button-size);
-  height: var(--icon-button-size);
+  width: 36px;
+  height: 36px;
   border-radius: 50%;
-  background-color: rgba(255, 255, 255, 0.2); /* Semi-transparent white */
+  background-color: rgba(255, 255, 255, 0.15);
   backdrop-filter: blur(4px);
   -webkit-backdrop-filter: blur(4px);
-  border: none;
-  color: white; /* For the icon color */
-  cursor: pointer;
   transition: all 0.2s ease;
 }
 
-.circle-button i {
-  color: white; /* Ensure icons are white */
-  font-size: 18px; /* Adjust size to match image */
-}
-
-/* Special case for the filter button in search bar which appears to be dark */
-.search-bar .circle-button {
-  background-color: transparent;
-  color: var(--text-secondary);
-}
-
-.search-bar .circle-button i {
-  color: var(--text-secondary);
-}
-
-.circle-button:active, .circle-button:hover {
+.hamburger-menu:active {
   transform: scale(0.95);
-  opacity: 0.9;
+}
+
+.hamburger-menu i {
+  font-size: 16px;
+  color: #fff;
 }
 
 /* Brand styling */
@@ -382,7 +354,7 @@ body {
   flex-direction: column;
 }
 
-.brand-logo {
+.logo {
   font-size: 22px;
   font-weight: bold;
   color: #fff;
@@ -390,11 +362,11 @@ body {
   letter-spacing: -0.5px;
 }
 
-.location-pill {
+.restaurant-name-container {
   display: flex;
   align-items: center;
   margin-top: var(--space-xs);
-  background-color: var(--glass-bg);
+  background-color: rgba(255, 255, 255, 0.15);
   border-radius: var(--radius-pill);
   padding: 4px 10px;
   backdrop-filter: blur(4px);
@@ -407,22 +379,38 @@ body {
   margin-right: var(--space-xs);
 }
 
-.location-name {
+.restaurant-name {
   font-size: 12px;
   color: #fff;
   margin: 0;
   font-weight: 500;
-  max-width: 120px;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
 }
 
-/* Right side elements */
-.header-actions {
+/* Right side: container for the restaurant logo */
+.header-icons {
   display: flex;
   align-items: center;
   gap: var(--space-sm);
+}
+
+.action-button {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: rgba(255, 255, 255, 0.15);
+  border: none;
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  color: white;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  backdrop-filter: blur(4px);
+  -webkit-backdrop-filter: blur(4px);
+}
+
+.action-button:active {
+  transform: scale(0.95);
 }
 
 .restaurant-logo {
@@ -435,34 +423,34 @@ body {
 }
 
 /* ======== Search Section ======== */
-.search-section {
+/* ======== Search Section ======== */
+.search-header {
   width: 100%;
   background-color: var(--background);
   padding: var(--space-md);
+  margin-top: 0;
   position: relative;
-  z-index: 15; /* Higher than category nav, lower than header */
-  border-top-left-radius: var(--radius-lg);
-  border-top-right-radius: var(--radius-lg);
-  margin-top: -0.4px; /* Slight overlap with header */
+  z-index: 19;
+  border-radius: var(--radius-lg) var(--radius-lg) 0 0;
   box-shadow: var(--shadow-sm);
 }
 
-.search-bar {
+.search-container {
   width: 100%;
-  background-color: var(--light-bg); /* Light gray background */
-  border-radius: var(--radius-pill); /* Very rounded */
+  background-color: var(--light-bg);
+  border-radius: var(--radius-pill);
   display: flex;
   align-items: center;
-  padding: 0 var(--space-md);
+  /* Reduced vertical padding while keeping horizontal padding the same */
+  padding: 6px 24px;
   position: relative;
-  box-shadow: var(--shadow-sm);
+  border: 1px solid rgba(0, 0, 0, 0.05);
 }
 
 .search-icon {
-  font-size: 16px;
+  font-size: 18px;
   color: var(--text-secondary);
   margin-right: var(--space-sm);
-  flex-shrink: 0;
 }
 
 .search-input {
@@ -470,14 +458,27 @@ body {
   border: none;
   background: transparent;
   outline: none;
-  font-size: 15px;
-  padding: 12px 0;
+  font-size: 16px;
+  /* Reduced vertical padding to make it less tall */
+  padding: 3px 0;
   color: var(--text-primary);
-  width: 100%;
 }
 
 .search-input::placeholder {
   color: var(--text-secondary);
+}
+
+.filter-button {
+  background: none;
+  border: none;
+  /* Adjusted padding for a more compact look */
+  padding: 6px;
+  color: var(--text-secondary);
+  cursor: pointer;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .search-results-dropdown {
@@ -492,13 +493,6 @@ body {
   margin-top: var(--space-sm);
   box-shadow: var(--shadow-md);
   overflow: hidden;
-  display: none;
-  max-height: 300px;
-  overflow-y: auto;
-}
-
-.search-results-content {
-  padding: var(--space-md);
 }
 
 /* PROMO BANNER - Modern, App-like */
@@ -683,16 +677,16 @@ body {
 .search-results-dropdown {
   position: absolute;
   top: 100%;
-  left: var(--space-md);
-  right: var(--space-md);
-  background: var(--background);
-  border: 1px solid var(--border-color);
-  border-radius: var(--radius-md);
-  z-index: 999;
-  margin-top: var(--space-sm);
-  box-shadow: var(--shadow-md);
-  overflow: hidden;
-  width: calc(100% - 32px); /* Adjust width to match the search bar */
+  left: 50%;
+  transform: translateX(-50%);
+  width: 350px; /* or any width you prefer */
+  background: white;
+  border-radius: 8px;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+  max-height: 300px;
+  overflow-y: auto;
+  z-index: 1002;
+  margin-top: 4px;
 }
 
 .search-results-content {
@@ -763,7 +757,7 @@ body {
 .category-nav {
   position: sticky;
   top: 0;
-  z-index: 10; /* Lower than search section */
+  z-index: 1000;
   padding: var(--space-sm) 0;
   border-bottom: 1px solid var(--border-color);
   background: var(--background);
@@ -771,6 +765,7 @@ body {
   -webkit-backdrop-filter: blur(10px);
   transition: all 0.3s ease;
   width: 100%;
+  box-shadow: none;
 }
 
 .category-scroll {
@@ -781,31 +776,34 @@ body {
   -webkit-overflow-scrolling: touch;
   scroll-behavior: smooth;
   scrollbar-width: none;
-  /* Gradient fade for edges */
+  /* Smoother scroll mask at edges */
   mask-image: linear-gradient(to right, transparent, black 2%, black 98%, transparent);
   -webkit-mask-image: linear-gradient(to right, transparent, black 2%, black 98%, transparent);
+  position: relative;
   max-width: 100%;
+  flex-wrap: nowrap;
 }
 
 .category-scroll::-webkit-scrollbar {
   display: none;
 }
 
+/* Category buttons */
 .category-btn {
   background: transparent;
   border: none;
   color: var(--text-secondary);
-  font-size: 13px;
+  font-size: clamp(11px, 3.2vw, 13px);
   font-weight: 600;
   display: flex;
   flex-direction: column;
   align-items: center;
-  padding: 10px 16px;
+  padding: clamp(8px, 2vw, 10px) clamp(14px, 3.5vw, 18px);
   cursor: pointer;
   transition: all 0.2s ease;
   white-space: nowrap;
   position: relative;
-  min-width: 75px;
+  min-width: clamp(70px, 20vw, 80px);
   max-width: 100px;
   outline: none;
   flex: 0 0 auto;
@@ -820,21 +818,22 @@ body {
   transform: scale(0.97);
 }
 
+/* Icon styling */
 .category-icon {
-  font-size: 24px;
-  margin-bottom: 5px;
+  font-size: clamp(22px, 6vw, 26px);
+  margin-bottom: clamp(4px, 1.5vw, 6px);
   transition: all 0.2s ease;
   display: flex;
   align-items: center;
   justify-content: center;
-  height: 40px;
-  width: 40px;
-  border-radius: 14px;
+  height: clamp(36px, 10vw, 44px);
+  width: clamp(36px, 10vw, 44px);
+  border-radius: clamp(12px, 4vw, 16px);
   background-color: rgba(0, 0, 0, 0.03);
-  padding: 6px;
+  padding: clamp(5px, 1.5vw, 6px);
 }
 
-/* Active state styling */
+/* Active state */
 .category-btn.active {
   color: var(--secondary-color);
   font-weight: 700;
@@ -846,19 +845,19 @@ body {
   transform: translateY(-2px);
 }
 
-/* Active indicator bar */
+/* Fixed active indicator */
 .category-btn::after {
   content: "";
   display: block;
   width: 0;
-  height: 4px;
+  height: clamp(3px, 1vw, 4px);
   background: var(--secondary-color);
   border-radius: 4px;
-  margin-top: 5px;
+  margin-top: clamp(4px, 1.5vw, 6px);
   opacity: 0;
+  min-height: 4px;
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
-  transition: width 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275), 
-              opacity 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+  transition: width 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275), opacity 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
 }
 
 .category-btn.active::after {
@@ -866,7 +865,7 @@ body {
   opacity: 1;
 }
 
-/* NEW badge */
+/* Badge for new categories */
 .category-btn.new::before {
   content: "NEW";
   position: absolute;
@@ -883,92 +882,339 @@ body {
   letter-spacing: 0.5px;
 }
 
-/* Main content area */
-.main-content {
-  padding: var(--space-md);
-  background-color: var(--background);
-}
-
-/* Animation */
 @keyframes pulse {
   0% { transform: scale(1); }
   50% { transform: scale(1.1); }
   100% { transform: scale(1); }
 }
 
-/* ======== Responsive Adjustments ======== */
-@media (max-width: 768px) {
-  .app-header {
-    padding: var(--space-sm) var(--space-md);
+/* ======== Featured Items Section ======== */
+.featured-section {
+  padding: var(--space-md);
+  background-color: var(--background);
+}
+.section-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: var(--space-md);
+}
+.section-header h2 {
+  font-size: 18px;
+  font-weight: 700;
+  color: var(--text-primary);
+}
+.view-all {
+  font-size: 14px;
+  color: var(--secondary-color);
+  background: none;
+  border: none;
+  font-weight: 600;
+  cursor: pointer;
+}
+.items-carousel {
+  display: flex;
+  gap: var(--space-md);
+  overflow-x: auto;
+  padding-bottom: var(--space-md);
+  scrollbar-width: none;
+  -webkit-overflow-scrolling: touch;
+  scroll-behavior: smooth;
+}
+.items-carousel::-webkit-scrollbar {
+  display: none;
+}
+.food-item {
+  flex: 0 0 auto;
+  width: 160px;
+  background-color: var(--background);
+  border-radius: var(--radius-md);
+  overflow: hidden;
+  box-shadow: var(--shadow-sm);
+  border: 1px solid var(--border-color);
+  transition: all 0.3s ease;
+}
+.food-item:active {
+  transform: scale(0.98);
+}
+.food-image-container {
+  position: relative;
+  height: 120px;
+  overflow: hidden;
+}
+.food-image {
+  width: 100%;
+  height: 100%;
+  background-color: var(--light-bg);
+  background-image: linear-gradient(45deg, var(--light-bg), #e0e0e0);
+}
+.discount-badge {
+  position: absolute;
+  top: var(--space-xs);
+  left: var(--space-xs);
+  background-color: var(--danger-color);
+  color: white;
+  font-size: 10px;
+  font-weight: bold;
+  padding: 2px 6px;
+  border-radius: var(--radius-pill);
+  z-index: 2;
+}
+.food-details {
+  padding: var(--space-sm);
+}
+.food-details h3 {
+  font-size: 14px;
+  font-weight: 600;
+  margin-bottom: var(--space-xs);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.rating {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  margin-bottom: var(--space-xs);
+  font-size: 12px;
+}
+.rating i {
+  color: var(--warning-color);
+}
+.review-count {
+  color: var(--text-secondary);
+}
+.price-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+.price {
+  font-weight: 700;
+  color: var(--text-primary);
+}
+.add-to-cart {
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  background-color: {{ primary_brand_color }};
+  color: white;
+  border: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  box-shadow: var(--shadow-sm);
+  transition: all 0.2s ease;
+}
+.add-to-cart:active {
+  transform: scale(0.9);
+}
+/* Media queries for responsive design */
+@media (max-width: 480px) {
+  .food-item {
+    width: 140px;
   }
   
-  .brand-logo {
-    font-size: 20px;
-  }
-  
-  .header-left {
-    gap: var(--space-sm);
-  }
-  
-  .location-name {
-    max-width: 100px;
-  }
-  
-  .search-section {
-    padding: var(--space-sm);
+  .food-image-container {
+    height: 100px;
   }
 }
 
-@media (max-width: 480px) {
-  .circle-button {
-    width: 32px;
-    height: 32px;
-  }
-  
-  .circle-button i {
-    font-size: 16px;
-  }
-  
-  .brand-logo {
-    font-size: 18px;
-  }
-  
-  .location-pill {
-    padding: 3px 8px;
-  }
-  
-  .location-name {
-    max-width: 80px;
-    font-size: 10px;
-  }
-  
-  .restaurant-logo {
-    width: 36px;
-    height: 36px;
+/* ======== View All Grid Section ======== */
+.product-grid-container {
+  padding: var(--space-md);
+  background-color: var(--background);
+  display: none; /* Hidden by default, shown when View All is clicked */
+}
+
+.product-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: var(--space-md);
+  width: 100%;
+}
+
+.grid-item {
+  background-color: var(--background);
+  border-radius: var(--radius-md);
+  overflow: hidden;
+  box-shadow: var(--shadow-sm);
+  border: 1px solid var(--border-color);
+  transition: all 0.3s ease;
+}
+
+.grid-item:active {
+  transform: scale(0.98);
+}
+
+.grid-image-container {
+  position: relative;
+  height: 150px;
+  overflow: hidden;
+}
+
+.grid-image {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  background-color: var(--light-bg);
+  background-image: linear-gradient(45deg, var(--light-bg), #e0e0e0);
+}
+
+.grid-details {
+  padding: var(--space-md);
+}
+
+.grid-details h3 {
+  font-size: 16px;
+  font-weight: 600;
+  margin-bottom: var(--space-xs);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  min-height: 42px;
+}
+
+.grid-details .description {
+  font-size: 12px;
+  color: var(--text-secondary);
+  margin-bottom: var(--space-sm);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  min-height: 36px;
+}
+
+.grid-footer {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.back-to-carousel {
+  display: inline-block;
+  font-size: 14px;
+  color: var(--secondary-color);
+  background: none;
+  border: none;
+  font-weight: 600;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.back-to-carousel i {
+  font-size: 12px;
+}
+
+.category-badge {
+  display: inline-block;
+  background-color: var(--light-bg);
+  color: var(--text-secondary);
+  font-size: 10px;
+  padding: 3px 8px;
+  border-radius: var(--radius-pill);
+  margin-bottom: var(--space-xs);
+}
+
+/* Animation for view transitions */
+.fade-in {
+  animation: fadeIn 0.3s ease-in;
+}
+
+/* Shared styles for both views */
+.shared-view {
+  padding: var(--space-md);
+  background-color: var(--background);
+}
+
+/* Existing styling for the featured section */
+.featured-section {
+  /* Other specific styles can remain here */
+}
+
+/* For grid view container, keep its unique properties if any */
+.product-grid-container {
+  display: none; /* Hidden by default */
+}
+
+
+.fade-out {
+  animation: fadeOut 0.3s ease-out;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes fadeOut {
+  from { opacity: 1; }
+  to { opacity: 0; }
+}
+
+/* Add to cart animation */
+.add-to-cart.added {
+  background-color: var(--success-color);
+}
+
+/* Dark mode support */
+@media (prefers-color-scheme: dark) {
+  :root {
+    --background: #121212;
+    --text-primary: #e0e0e0;
+    --text-secondary: #a0a0a0;
+    --light-bg: #1e1e1e;
+    --border-color: rgba(255, 255, 255, 0.1);
   }
   
   .category-icon {
-    height: 36px;
-    width: 36px;
-    font-size: 20px;
+    background-color: rgba(255, 255, 255, 0.06);
   }
   
-  .category-btn {
-    min-width: 65px;
-    font-size: 11px;
-    padding: 8px 12px;
+  .food-image {
+    background-image: linear-gradient(45deg, var(--light-bg), #2a2a2a);
+  }
+  
+  .search-container {
+    border-color: rgba(255, 255, 255, 0.05);
+  }
+  
+  .grid-image {
+    background-image: linear-gradient(45deg, var(--light-bg), #2a2a2a);
+  }
+  
+  .category-badge {
+    background-color: rgba(255, 255, 255, 0.08);
   }
 }
 
-/* Enable animations only if user prefers them */
-@media (prefers-reduced-motion: reduce) {
-  * {
-    animation-duration: 0.01ms !important;
-    animation-iteration-count: 1 !important;
-    transition-duration: 0.01ms !important;
-    scroll-behavior: auto !important;
+/* Responsive adjustments for smaller screens */
+@media (max-width: 480px) {
+  .product-grid {
+    gap: var(--space-sm);
+  }
+  
+  .grid-image-container {
+    height: 120px;
+  }
+  
+  .grid-details {
+    padding: var(--space-sm);
+  }
+  
+  .grid-details h3 {
+    font-size: 14px;
+    min-height: 38px;
   }
 }
+
 
 
 /* Reset and base styles */
@@ -1145,7 +1391,7 @@ body {
     border: none;
     white-space: nowrap;
 
-    display: none; !important; /* Use flex to ensure visibility */
+    display: flex !important; /* Use flex to ensure visibility */
    
     
 }
@@ -2799,84 +3045,75 @@ input:checked + .slider:before {
        
   <!-- App Header -->
 <!-- Header -->
-<!-- Header -->
-  <header class="app-header">
-    <!-- Left side: menu button + brand info -->
-    <div class="header-left">
-      <button class="circle-button" aria-label="Menu">
-        <i class="fas fa-bars"></i>
-      </button>
-      <div class="brand-info">
-        <div class="brand-logo">Delvrr</div>
-        <div class="location-pill">
-          <i class="fas fa-map-marker-alt location-icon"></i>
-          <p class="location-name">{{ restaurant.restaurant_name }}</p>
-        </div>
-      </div>
+<div class="aliexpress-header">
+  <!-- Left side: hamburger menu + brand info -->
+  <div class="header-left">
+    <div class="hamburger-menu">
+      <i class="fas fa-bars"></i>
     </div>
-    
-    <!-- Right side: favorite button and restaurant logo -->
-    <div class="header-actions">
-      <button class="circle-button" aria-label="Favorites">
-        <i class="fas fa-heart"></i>
-      </button>
-      <img
-        src="{{ restaurant.logo_pic.url }}"
-        alt="{{ restaurant.restaurant_name }} Logo"
-        class="restaurant-logo"
-      />
-    </div>
-  </header>
-
-  <!-- Search Component -->
-  <div class="search-section">
-    <div class="search-bar">
-      <i class="fas fa-search search-icon"></i>
-      <input
-        type="text"
-        class="search-input"
-        placeholder="Search for menu items"
-        aria-label="Search menu"
-      />
-      <button class="circle-button" aria-label="Filter options">
-        <i class="fas fa-sliders-h"></i>
-      </button>
-    </div>
-    <div class="search-results-dropdown">
-      <div class="search-results-content">
-        <!-- Search results will be populated here -->
+    <div class="brand-info">
+      <div class="logo">Delvrr</div>
+      <div class="restaurant-name-container">
+        <i class="fas fa-map-marker-alt location-icon"></i>
+        <p class="restaurant-name">{{ restaurant.restaurant_name }}</p>
       </div>
     </div>
   </div>
-      
-  <!-- Category Navigation (Sticky) -->
-  <nav class="category-nav">
-    <div class="category-scroll">
-      <!-- Default "All" category -->
-      <button class="category-btn active" data-category="featured">
-        <div class="category-icon">
-          🍱
-        </div>
-        <span>All</span>
-      </button>
-      
-      <!-- Dynamic categories from template -->
-      {% for category in categories %}
-        <button class="category-btn {% if category.is_new %}new{% endif %}" data-category="{{ category.name }}">
-          <div class="category-icon">
-            {{ category.emoji|default:"" }}
-          </div>
-          <span>{{ category.name }}</span>
-        </button>
-      {% endfor %}
+  <!-- Right side: restaurant logo and actions -->
+  <div class="header-icons">
+    <button class="action-button">
+      <i class="fas fa-heart"></i>
+    </button>
+    <img
+      src="{{ restaurant.logo_pic.url }}"
+      alt="Restaurant Logo"
+      class="restaurant-logo"
+    />
+  </div>
+</div>
+
+<!-- Search Section -->
+<div class="search-header">
+  <div class="search-container">
+    <i class="fas fa-search search-icon"></i>
+    <input
+      type="text"
+      class="search-input"
+      placeholder="Search for menu items"
+    />
+    <button class="filter-button">
+      <i class="fas fa-sliders-h"></i>
+    </button>
+    <div class="search-results-dropdown" style="display: none;">
+      <div class="search-results-content"></div>
     </div>
-  </nav>
+  </div>
+</div>
 
+<!-- Category Navigation (Sticky) -->
+ <!-- Category Navigation (Sticky) -->
+<div class="category-nav">
+  <div class="category-scroll">
+    <!-- Default category button for "All" food -->
+    <button class="category-btn active" data-category="featured">
+      <div class="category-icon">
+        🍱
+      </div>
+      <span>All</span>
+    </button>
+    {% for category in categories %}
+      <button class="category-btn {% if category.is_new %}new{% endif %}" data-category="{{ category.name }}">
+        <div class="category-icon">
+          {{ category.emoji|default:"" }}
+        </div>
+        <span>{{ category.name }}</span>
+      </button>
+    {% endfor %}
+  </div>
+</div>
 
-
-
-
-<!-- <div class="promo-banner">
+<!-- 
+<div class="promo-banner">
   <div class="promo-content">
     <h2>Get 32% Promo</h2>
     <button class="buy-button">Order Now</button>
@@ -2890,65 +3127,86 @@ input:checked + .slider:before {
   </div>
 </div> -->
 
-    
-    <!-- Main Content -->
-    <main class="main-content">
-   <div class="main-content" id="menuContent">
-  <div class="dish-grid">
-    {% for category_products in allProds %}
-      {% for product in category_products %}
-        <div class="dish-card"
-             data-category="{{ product.category.name|lower }}"
-             data-product-id="{{ product.id }}"
-             data-name="{{ product.name }}"
-             data-description="{{ product.description }}"
-             data-price="{{ product.price }}"
-             data-previous-price="{{ product.previous_price|default:'' }}"
-             data-image="{{ product.product_image.url }}">
-          <div class="dish-image">
-            <img src="{{ product.product_image.url }}" alt="{{ product.name }}" class="product-image-trigger">
-            <!-- <button class="favorite-btn">
-              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="heart-icon">
-                <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/>
-              </svg>
-            </button> -->
-            {% if product.status == 'Sale' %}
-              <span class="dish-badge">Sale</span>
-            {% endif %}
-          </div>
-          <div class="dish-info">
-            <div class="dish-details">
-              <h3 class="dish-name">{{ product.name }}</h3>
-              
-              <div class="rating">
-                <span class="star">★</span>
-                <span class="rating-number">4.9</span>
+<!-- Featured Items Section (Sample) -->
+<!-- Main Content -->
+<!-- Main Content -->
+<div class="main-content" id="menuContent">
+  <!-- Featured Section with Carousel View -->
+  <div class="featured-section  shared-view">
+    <div class="section-header">
+      <h2>Menu Items</h2>
+      <button class="view-all">View All</button>
+    </div>
+    <div class="items-carousel">
+      {% for category_products in allProds %}
+        {% for product in category_products %}
+          <div class="food-item"
+               data-category="{{ product.category.name|lower }}"
+               data-product-id="{{ product.id }}"
+               data-name="{{ product.name }}"
+               data-description="{{ product.description }}"
+               data-price="{{ product.price }}"
+               data-previous-price="{{ product.previous_price|default:'' }}"
+               data-image="{{ product.product_image.url }}">
+            <div class="food-image-container">
+              {% if product.status == 'Sale' %}
+                <span class="discount-badge">Sale</span>
+              {% endif %}
+              <div class="food-image">
+                <img src="{{ product.product_image.url }}" alt="{{ product.name }}" class="product-image-trigger" style="width: 100%; height: 100%; object-fit: cover;">
               </div>
             </div>
-            <div class="dish-price-action">
-              <div class="price-container">
-                <span class="current-price">${{ product.price }}</span>
-                {% if product.previous_price %}
-                  <span class="previous-price">${{ product.previous_price }}</span>
+            <div class="food-details">
+              <h3>{{ product.name }}</h3>
+              <div class="rating">
+                <i class="fas fa-star"></i>
+                <span>4.9</span>
+                <span class="review-count">(203)</span>
+              </div>
+              <div class="price-row">
+                <div class="price">
+                  <span>${{ product.price }}</span>
+                  {% if product.previous_price %}
+                    <span class="previous-price" style="text-decoration: line-through; font-size: 12px; color: var(--text-secondary); margin-left: 4px;">${{ product.previous_price }}</span>
+                  {% endif %}
+                </div>
+                {% if product.status != 'Unavailable' %}
+                  <button class="add-to-cart"
+                         data-product-id="{{ product.id }}"
+                         data-name="{{ product.name }}"
+                         data-price="{{ product.price }}"
+                         data-image="{{ product.product_image.url }}">
+                    <i class="fas fa-plus"></i>
+                  </button>
                 {% endif %}
               </div>
-              {% if product.status != 'Unavailable' %}
-              <button class="add-to-cart-btn cart"
-                    data-product-id="{{ product.id }}"
-                    data-name="{{ product.name }}"
-                    data-price="{{ product.price }}"
-                    data-image="{{ product.product_image.url }}">
-              <strong>Choose</strong>
-            </button>
-              {% endif %}
             </div>
           </div>
-        </div>
+        {% endfor %}
       {% endfor %}
-    {% endfor %}
+    </div>
+  </div>
+
+  <!-- Grid View for "View All" -->
+  <div class="product-grid-container  shared-view" id="productGridContainer">
+    <div class="section-header">
+      <h2>All Menu Items</h2>
+      <button class="back-to-carousel"><i class="fas fa-chevron-left"></i> Back</button>
+    </div>
+    <div class="product-grid" id="productGrid">
+      <!-- Grid items will be dynamically populated here -->
+    </div>
   </div>
 </div>
-</main>
+
+
+
+
+
+
+
+    
+    
 
   </section>
 
@@ -3092,9 +3350,6 @@ input:checked + .slider:before {
   </nav> -->
   </section>
 
-    <!-- Product Detail Modal -->
-    <!-- Product Detail Modal -->
-    <!-- Product Detail Modal -->
     <!-- Product Detail Modal -->
 <div class="modal fade" id="productDetailModal" tabindex="-1" aria-labelledby="productDetailModalLabel" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered">
@@ -3662,36 +3917,56 @@ input:checked + .slider:before {
 
 <script>
 document.addEventListener('DOMContentLoaded', () => {
-  // Cache DOM elements
+  // Cache view toggling containers
+  const featuredSection = document.querySelector('.featured-section');
+  const productGridContainer = document.getElementById('productGridContainer');
+
+  // Ensure grid view is hidden on page load
+  if (productGridContainer) {
+    productGridContainer.style.display = 'none';
+  }
+
+  // Cache DOM elements for filtering and search
   const categoryButtons = document.querySelectorAll('.category-btn');
-  const dishCards = document.querySelectorAll('.dish-card');
   const searchInput = document.querySelector('.search-input');
   const searchDropdown = document.querySelector('.search-results-dropdown');
   const searchResultsContent = document.querySelector('.search-results-content');
 
-  // Helper to show all dish cards
-  const showAllCards = () => {
-    dishCards.forEach(card => card.style.display = '');
+  // Helper: Returns active items based on which view is visible.
+  // Here we check the featured (carousel) section because it's only visible in carousel mode.
+  const getActiveItems = () => {
+    if (featuredSection && window.getComputedStyle(featuredSection).display !== 'none') {
+      return document.querySelectorAll('.food-item');
+    } else {
+      return document.querySelectorAll('.grid-item');
+    }
   };
 
-  // Initially display all cards
-  showAllCards();
+  // Helper: Show all active items (reset filtering)
+  const showAllItems = () => {
+    const activeItems = getActiveItems();
+    activeItems.forEach(item => item.style.display = '');
+  };
 
-  // Handle category button click
+  // Initially display all items
+  showAllItems();
+
+  // --- Category Filtering ---
   const handleCategoryClick = (button) => {
     // Update active state on buttons
     categoryButtons.forEach(btn => btn.classList.remove('active'));
     button.classList.add('active');
 
     const selectedCategory = button.dataset.category.toLowerCase();
-
-    dishCards.forEach(card => {
-      const cardCategory = card.dataset.category.toLowerCase();
-      // If 'featured' (or "all") is selected, show all cards; otherwise, filter by category
-      card.style.display = (selectedCategory === 'featured' || cardCategory === selectedCategory) ? '' : 'none';
+    const activeItems = getActiveItems();
+    
+    activeItems.forEach(item => {
+      const itemCategory = item.dataset.category.toLowerCase();
+      // If "featured" is selected, show all; otherwise, filter by category
+      item.style.display = (selectedCategory === 'featured' || itemCategory === selectedCategory) ? '' : 'none';
     });
 
-    // Hide the search dropdown if it's visible
+    // Hide the search dropdown if visible
     if (searchDropdown) searchDropdown.style.display = 'none';
   };
 
@@ -3700,11 +3975,20 @@ document.addEventListener('DOMContentLoaded', () => {
     button.addEventListener('click', () => handleCategoryClick(button));
   });
 
-  // Create a search result item for a dish card
-  const createSearchResultItem = (card) => {
-    const name = card.querySelector('.dish-name').textContent;
-    const category = card.dataset.category;
-    const image = card.querySelector('.dish-image img').src;
+  // --- Search Functionality ---
+  // Create a search result item that works for both views
+  const createSearchResultItem = (item) => {
+    let nameElem, imageElem;
+    if (item.classList.contains('grid-item')) {
+      nameElem = item.querySelector('.grid-details h3');
+      imageElem = item.querySelector('.grid-image');
+    } else {
+      nameElem = item.querySelector('h3');
+      imageElem = item.querySelector('.food-image img');
+    }
+    const name = nameElem ? nameElem.textContent : '';
+    const category = item.dataset.category;
+    const image = imageElem ? imageElem.src : '';
 
     const div = document.createElement('div');
     div.className = 'search-result-item';
@@ -3716,54 +4000,54 @@ document.addEventListener('DOMContentLoaded', () => {
       </div>
     `;
 
-    // Clicking a search result scrolls to the corresponding card
+    // Clicking the result scrolls to and briefly highlights the item
     div.addEventListener('click', () => {
-      card.scrollIntoView({ behavior: 'smooth', block: 'center' });
-      card.style.transform = 'scale(1.02)';
-      setTimeout(() => { card.style.transform = ''; }, 300);
+      item.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      item.style.transform = 'scale(1.02)';
+      setTimeout(() => { item.style.transform = ''; }, 300);
       if (searchDropdown) searchDropdown.style.display = 'none';
       if (searchInput) searchInput.value = '';
     });
-
     return div;
   };
 
-  // Search functionality
   if (searchInput && searchDropdown && searchResultsContent) {
     searchInput.addEventListener('input', (e) => {
       const searchTerm = e.target.value.toLowerCase().trim();
-
       if (searchTerm === '') {
         searchDropdown.style.display = 'none';
-        showAllCards();
+        showAllItems();
         return;
       }
 
       // Clear previous results
       searchResultsContent.innerHTML = '';
       let matches = 0;
+      const activeItems = getActiveItems();
 
-      dishCards.forEach(card => {
-        const name = card.querySelector('.dish-name').textContent.toLowerCase();
-        const category = card.dataset.category.toLowerCase();
-        if (name.includes(searchTerm) || category.includes(searchTerm)) {
+      activeItems.forEach(item => {
+        let nameElem;
+        if (item.classList.contains('grid-item')) {
+          nameElem = item.querySelector('.grid-details h3');
+        } else {
+          nameElem = item.querySelector('h3');
+        }
+        const name = nameElem ? nameElem.textContent.toLowerCase() : '';
+        const itemCategory = item.dataset.category.toLowerCase();
+
+        if (name.includes(searchTerm) || itemCategory.includes(searchTerm)) {
           matches++;
-          searchResultsContent.appendChild(createSearchResultItem(card));
+          searchResultsContent.appendChild(createSearchResultItem(item));
         }
       });
 
       if (matches === 0) {
-        searchResultsContent.innerHTML = `
-          <div class="no-results-message">
-            No results found for "${searchTerm}"
-          </div>
-        `;
+        searchResultsContent.innerHTML = `<div class="no-results-message">No results found for "${searchTerm}"</div>`;
       }
-
       searchDropdown.style.display = 'block';
     });
 
-    // Hide dropdown when clicking outside search input and dropdown
+    // Hide dropdown when clicking outside
     document.addEventListener('click', (e) => {
       if (!searchInput.contains(e.target) && !searchDropdown.contains(e.target)) {
         searchDropdown.style.display = 'none';
@@ -3778,6 +4062,9 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 });
 </script>
+
+
+
 
 
 
@@ -4258,6 +4545,260 @@ document.addEventListener('DOMContentLoaded', function() {
             }
         });
     </script>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+  // ===== View Toggle Functionality =====
+  const viewAllButton = document.querySelector('.view-all');
+  const featuredSection = document.querySelector('.featured-section');
+  const productGridContainer = document.getElementById('productGridContainer');
+  const productGrid = document.getElementById('productGrid');
+  const backButton = document.querySelector('.back-to-carousel');
+
+  // Extract all products from the carousel (including category)
+  function extractProductsFromCarousel() {
+    const foodItems = document.querySelectorAll('.food-item');
+    return Array.from(foodItems).map(item => {
+      return {
+        id: item.dataset.productId,
+        name: item.dataset.name,
+        price: item.dataset.price,
+        previousPrice: item.dataset.previousPrice,
+        image: item.dataset.image,
+        status: item.querySelector('.discount-badge') ? 'Sale' : 'Regular',
+        category: item.dataset.category  // include category for filtering
+      };
+    });
+  }
+
+  // Create the grid view (add data-category attribute for filtering)
+  function createGridView(products) {
+    productGrid.innerHTML = '';
+    
+    products.forEach(product => {
+      const gridItem = document.createElement('div');
+      gridItem.className = 'grid-item';
+      gridItem.dataset.productId = product.id;
+      gridItem.dataset.category = product.category;
+      gridItem.dataset.name = product.name;
+      gridItem.dataset.price = product.price;
+      gridItem.dataset.previousPrice = product.previousPrice;
+      
+      const isOnSale = product.status === 'Sale';
+      
+      gridItem.innerHTML = `
+        <div class="grid-image-container">
+          ${isOnSale ? '<span class="discount-badge">Sale</span>' : ''}
+          <img src="${product.image}" alt="${product.name}" class="grid-image">
+        </div>
+        <div class="grid-details">
+          <h3>${product.name}</h3>
+          <div class="rating">
+            <i class="fas fa-star"></i>
+            <span>4.9</span>
+            <span class="review-count">(203)</span>
+          </div>
+          <div class="price-row">
+            <div class="price">
+              <span>$${product.price}</span>
+              ${product.previousPrice ? `<span class="previous-price" style="text-decoration: line-through; font-size: 12px; color: var(--text-secondary); margin-left: 4px;">$${product.previousPrice}</span>` : ''}
+            </div>
+            <button class="add-to-cart" data-product-id="${product.id}" data-name="${product.name}" data-price="${product.price}" data-image="${product.image}">
+              <i class="fas fa-plus"></i>
+            </button>
+          </div>
+        </div>
+      `;
+      
+      productGrid.appendChild(gridItem);
+    });
+  }
+
+  // Toggle from carousel to grid view
+  viewAllButton.addEventListener('click', function() {
+    const products = extractProductsFromCarousel();
+    createGridView(products);
+    
+    featuredSection.classList.add('fade-out');
+    
+    setTimeout(() => {
+      featuredSection.style.display = 'none';
+      productGridContainer.style.display = 'block';
+      productGridContainer.classList.add('fade-in');
+      
+      // Scroll to top
+      window.scrollTo(0, 0);
+      
+      setTimeout(() => {
+        productGridContainer.classList.remove('fade-in');
+      }, 300);
+    }, 300);
+  });
+  
+  // Toggle back from grid to carousel view
+  backButton.addEventListener('click', function() {
+    productGridContainer.classList.add('fade-out');
+    
+    setTimeout(() => {
+      productGridContainer.style.display = 'none';
+      featuredSection.style.display = 'block';
+      featuredSection.classList.add('fade-in');
+      
+      setTimeout(() => {
+        featuredSection.classList.remove('fade-in', 'fade-out');
+        productGridContainer.classList.remove('fade-out');
+      }, 300);
+    }, 300);
+  });
+  
+  // Handle add-to-cart for grid items
+  productGrid.addEventListener('click', function(e) {
+    if (e.target.closest('.add-to-cart')) {
+      const button = e.target.closest('.add-to-cart');
+      const productId = button.dataset.productId;
+      const productName = button.dataset.name;
+      const productPrice = button.dataset.price;
+      
+      if (typeof addToCart === 'function') {
+        addToCart(productId, productName, productPrice);
+      } else {
+        console.log('Adding to cart:', productName);
+        button.classList.add('added');
+        setTimeout(() => {
+          button.classList.remove('added');
+        }, 300);
+      }
+    }
+  });
+  
+  // ===== Search and Category Filter Functionality =====
+  const categoryButtons = document.querySelectorAll('.category-btn');
+  const searchInput = document.querySelector('.search-input');
+  const searchDropdown = document.querySelector('.search-results-dropdown');
+  const searchResultsContent = document.querySelector('.search-results-content');
+
+  // Helper: Return currently visible product items (grid or carousel)
+  function getActiveItems() {
+    if (productGridContainer.style.display !== 'none') {
+      return document.querySelectorAll('.grid-item');
+    } else {
+      return document.querySelectorAll('.food-item');
+    }
+  }
+
+  // Helper: Show all active items (reset filtering)
+  function showAllItems() {
+    const activeItems = getActiveItems();
+    activeItems.forEach(item => item.style.display = '');
+  }
+  
+  // Category button filtering
+  categoryButtons.forEach(button => {
+    button.addEventListener('click', function() {
+      // Update active state on category buttons
+      categoryButtons.forEach(btn => btn.classList.remove('active'));
+      button.classList.add('active');
+
+      const selectedCategory = button.dataset.category.toLowerCase();
+      const activeItems = getActiveItems();
+      
+      activeItems.forEach(item => {
+        const itemCategory = item.dataset.category.toLowerCase();
+        item.style.display = (selectedCategory === 'featured' || itemCategory === selectedCategory) ? '' : 'none';
+      });
+
+      if (searchDropdown) searchDropdown.style.display = 'none';
+    });
+  });
+  
+  // Create a search result item element
+  function createSearchResultItem(item) {
+    let nameElem;
+    // Different selectors for carousel vs. grid view
+    if (item.classList.contains('grid-item')) {
+      nameElem = item.querySelector('.grid-details h3');
+    } else {
+      nameElem = item.querySelector('.food-details h3');
+    }
+    const name = nameElem ? nameElem.textContent : '';
+    const category = item.dataset.category;
+    
+    let imageElem;
+    if (item.classList.contains('grid-item')) {
+      imageElem = item.querySelector('.grid-image');
+    } else {
+      imageElem = item.querySelector('.food-image img');
+    }
+    const image = imageElem ? imageElem.src : '';
+
+    const div = document.createElement('div');
+    div.className = 'search-result-item';
+    div.innerHTML = `
+      <img src="${image}" alt="${name}" class="search-result-image">
+      <div class="search-result-info">
+        <div class="search-result-name">${name}</div>
+        <div class="search-result-category">${category}</div>
+      </div>
+    `;
+    
+    // Scroll to and highlight the item when clicked
+    div.addEventListener('click', function() {
+      item.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      item.style.transform = 'scale(1.02)';
+      setTimeout(() => { item.style.transform = ''; }, 300);
+      if (searchDropdown) searchDropdown.style.display = 'none';
+      if (searchInput) searchInput.value = '';
+    });
+    
+    return div;
+  }
+  
+  // Search functionality
+  if (searchInput && searchDropdown && searchResultsContent) {
+    searchInput.addEventListener('input', function(e) {
+      const searchTerm = e.target.value.toLowerCase().trim();
+      if (searchTerm === '') {
+        searchDropdown.style.display = 'none';
+        showAllItems();
+        return;
+      }
+      
+      searchResultsContent.innerHTML = '';
+      let matches = 0;
+      const activeItems = getActiveItems();
+      
+      activeItems.forEach(item => {
+        let nameElem;
+        if (item.classList.contains('grid-item')) {
+          nameElem = item.querySelector('.grid-details h3');
+        } else {
+          nameElem = item.querySelector('.food-details h3');
+        }
+        const name = nameElem ? nameElem.textContent.toLowerCase() : '';
+        const itemCategory = item.dataset.category.toLowerCase();
+        
+        if (name.includes(searchTerm) || itemCategory.includes(searchTerm)) {
+          matches++;
+          searchResultsContent.appendChild(createSearchResultItem(item));
+        }
+      });
+      
+      if (matches === 0) {
+        searchResultsContent.innerHTML = `<div class="no-results-message">No results found for "${searchTerm}"</div>`;
+      }
+      
+      searchDropdown.style.display = 'block';
+    });
+    
+    // Hide the search dropdown when clicking outside
+    document.addEventListener('click', function(e) {
+      if (!searchInput.contains(e.target) && !searchDropdown.contains(e.target)) {
+        searchDropdown.style.display = 'none';
+      }
+    });
+  }
+});
+</script>
 
 
  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
