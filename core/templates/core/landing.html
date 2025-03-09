@@ -1,436 +1,1081 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Restaurant Chat - Detail without Nav</title>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet" />
-  <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js"></script>
-  <style>
-    :root {
-      --primary: #ffb74d;
-      --secondary: #ffa726;
-      --background: #f0f0f5;
-      --surface: #ffffff;
-      --text-dark: #2e2e2e;
-      --text-light: #8e8e93;
-      --shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-      --header-height: 60px;
-      /* Brand colors for chat detail view header and sent messages */
-      --brand-color: #f7c028;
-      --brand-color-end: #f9d56e;
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Delvrr | Scan. Order. Enjoy.</title>
+    <link rel="stylesheet" href="styles.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+
+    <style type="text/css">
+        :root {
+    --brand: #f7c028;
+    --brand-dark: #d6a021;
+    --brand-light: rgba(247, 192, 40, 0.1);
+    --background: #ffffff;
+    --surface: #f8f9fa;
+    --text-primary: #1a1a1a;
+    --text-secondary: #6c757d;
+    --border: #e9ecef;
+    --primary-color: #f7c028;
+    --shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+    --transition: all 0.3s ease;
+}
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: 'Poppins', sans-serif;
+    color: var(--text-primary);
+    background-color: var(--background);
+    line-height: 1.6;
+}
+
+.container {
+    width: 90%;
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 0 20px;
+}
+
+h1, h2, h3, h4, h5, h6 {
+    font-weight: 700;
+    line-height: 1.2;
+    margin-bottom: 0.5em;
+}
+
+h1 {
+    font-size: 2.5rem;
+}
+
+h2 {
+    font-size: 2rem;
+}
+
+h3 {
+    font-size: 1.5rem;
+}
+
+p {
+    margin-bottom: 1rem;
+    color: var(--text-secondary);
+}
+
+a {
+    text-decoration: none;
+    color: var(--text-primary);
+    transition: var(--transition);
+}
+
+a:hover {
+    color: var(--brand);
+}
+
+.btn {
+    display: inline-block;
+    padding: 12px 24px;
+    border-radius: 6px;
+    font-weight: 600;
+    font-size: 16px;
+    cursor: pointer;
+    transition: var(--transition);
+    border: none;
+}
+
+.btn-primary {
+    background-color: var(--brand);
+    color: white;
+    box-shadow: 0 4px 6px rgba(215, 160, 33, 0.2);
+}
+
+.btn-primary:hover {
+    background-color: var(--brand-dark);
+    transform: translateY(-2px);
+    box-shadow: 0 6px 8px rgba(215, 160, 33, 0.3);
+}
+
+.btn-outline {
+    background-color: transparent;
+    color: var(--text-primary);
+    border: 2px solid var(--brand);
+}
+
+.btn-outline:hover {
+    background-color: var(--brand-light);
+    color: var(--brand-dark);
+    transform: translateY(-2px);
+}
+
+/* Header & Navigation */
+header {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    background-color: var(--background);
+    box-shadow: var(--shadow);
+    z-index: 1000;
+}
+
+nav {
+    padding: 15px 0;
+}
+
+nav .container {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.logo img {
+    height: 40px;
+}
+
+.nav-links {
+    display: flex;
+    gap: 30px;
+}
+
+.nav-links a {
+    font-weight: 500;
+}
+
+.mobile-menu-icon {
+    display: none;
+    font-size: 24px;
+    cursor: pointer;
+}
+
+/* Hero Section */
+.hero {
+    padding: 120px 0 80px;
+    background-color: var(--surface);
+    overflow: hidden;
+}
+
+.hero .container {
+    display: flex;
+    align-items: center;
+    gap: 40px;
+}
+
+.hero-content {
+    flex: 1;
+}
+
+.hero-content h1 span {
+    color: var(--brand);
+    position: relative;
+}
+
+.hero-content h1 span::after {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    height: 8px;
+    background-color: var(--brand-light);
+    z-index: -1;
+}
+
+.hero-image {
+    flex: 1;
+    position: relative;
+}
+
+.hero-image img {
+    width: 100%;
+    border-radius: 8px;
+    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+}
+
+.cta-buttons {
+    display: flex;
+    gap: 16px;
+    margin-top: 24px;
+}
+
+/* Features Section */
+.features {
+    padding: 80px 0;
+}
+
+.section-header {
+    text-align: center;
+    margin-bottom: 60px;
+}
+
+.section-header p {
+    max-width: 600px;
+    margin: 0 auto;
+}
+
+.features-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 30px;
+}
+
+.feature-card {
+    background-color: var(--surface);
+    padding: 30px;
+    border-radius: 8px;
+    text-align: center;
+    box-shadow: var(--shadow);
+    transition: var(--transition);
+}
+
+.feature-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 10px 20px rgba(0, 0, 0, 0.08);
+}
+
+.feature-icon {
+    font-size: 36px;
+    color: var(--brand);
+    margin-bottom: 20px;
+}
+
+/* How It Works */
+.how-it-works {
+    padding: 80px 0;
+    background-color: var(--surface);
+}
+
+.steps {
+    display: flex;
+    flex-direction: column;
+    gap: 40px;
+    max-width: 800px;
+    margin: 0 auto;
+}
+
+.step {
+    display: flex;
+    gap: 30px;
+    align-items: flex-start;
+}
+
+.step-number {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 60px;
+    height: 60px;
+    border-radius: 50%;
+    background-color: var(--brand);
+    color: white;
+    font-size: 24px;
+    font-weight: 700;
+    flex-shrink: 0;
+}
+
+.step-content {
+    flex: 1;
+}
+
+/* Testimonial */
+.testimonial {
+    padding: 80px 0;
+}
+
+.testimonial-card {
+    background-color: var(--surface);
+    padding: 40px;
+    border-radius: 8px;
+    box-shadow: var(--shadow);
+    max-width: 800px;
+    margin: 0 auto;
+    position: relative;
+}
+
+.quote {
+    font-size: 40px;
+    color: var(--brand);
+    margin-bottom: 20px;
+}
+
+.testimonial-text {
+    font-size: 18px;
+    font-style: italic;
+    margin-bottom: 30px;
+}
+
+.testimonial-author {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+}
+
+.testimonial-author img {
+    width: 60px;
+    height: 60px;
+    border-radius: 50%;
+    object-fit: cover;
+}
+
+.testimonial-author h4 {
+    margin-bottom: 0;
+}
+
+/* Benefits */
+.benefits {
+    padding: 80px 0;
+}
+
+.benefits-container {
+    display: flex;
+    align-items: center;
+    gap: 60px;
+}
+
+.benefit-image {
+    flex: 1;
+}
+
+.benefit-image img {
+    width: 100%;
+    border-radius: 8px;
+    box-shadow: var(--shadow);
+}
+
+.benefit-list {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 30px;
+}
+
+.benefit-item {
+    display: flex;
+    gap: 16px;
+    align-items: flex-start;
+}
+
+.benefit-item i {
+    color: var(--brand);
+    font-size: 24px;
+    margin-top: 5px;
+}
+
+.benefit-item h3 {
+    margin-bottom: 5px;
+}
+
+/* Pricing */
+.pricing {
+    padding: 80px 0;
+    background-color: var(--surface);
+}
+
+.pricing-cards {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 30px;
+}
+
+.pricing-card {
+    background-color: var(--background);
+    border-radius: 8px;
+    padding: 40px 30px;
+    box-shadow: var(--shadow);
+    text-align: center;
+    transition: var(--transition);
+    position: relative;
+}
+
+.pricing-card.featured {
+    border: 2px solid var(--brand);
+    transform: scale(1.05);
+}
+
+.popular-tag {
+    position: absolute;
+    top: -15px;
+    left: 50%;
+    transform: translateX(-50%);
+    background-color: var(--brand);
+    color: white;
+    padding: 8px 16px;
+    border-radius: 20px;
+    font-weight: 600;
+    font-size: 14px;
+}
+
+.pricing-header {
+    margin-bottom: 30px;
+}
+
+.price {
+    display: flex;
+    align-items: baseline;
+    justify-content: center;
+    gap: 4px;
+    margin-top: 16px;
+}
+
+.currency {
+    font-size: 20px;
+    font-weight: 600;
+}
+
+.amount {
+    font-size: 48px;
+    font-weight: 700;
+    line-height: 1;
+}
+
+.period {
+    color: var(--text-secondary);
+    font-size: 16px;
+}
+
+.pricing-features {
+    list-style: none;
+    text-align: left;
+    margin-bottom: 30px;
+}
+
+.pricing-features li {
+    margin-bottom: 15px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.pricing-features i {
+    color: var(--brand);
+}
+
+.pricing-card .btn {
+    width: 100%;
+}
+
+.pricing-card:hover {
+    transform: translateY(-10px);
+    box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
+}
+
+.pricing-card.featured:hover {
+    transform: scale(1.05) translateY(-10px);
+}
+
+/* CTA Section */
+.cta-section {
+    padding: 80px 0;
+    text-align: center;
+    background: linear-gradient(135deg, var(--brand-light) 0%, rgba(255, 255, 255, 0) 100%);
+}
+
+.cta-section h2 {
+    margin-bottom: 16px;
+}
+
+.cta-section p {
+    max-width: 600px;
+    margin: 0 auto 30px;
+}
+
+/* Footer */
+footer {
+    background-color: var(--surface);
+    padding: 80px 0 20px;
+}
+
+.footer-content {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 60px;
+}
+
+.footer-logo {
+    max-width: 300px;
+}
+
+.footer-logo p {
+    margin-top: 16px;
+}
+
+.footer-links {
+    display: flex;
+    gap: 60px;
+}
+
+.footer-column h4 {
+    margin-bottom: 20px;
+    position: relative;
+    display: inline-block;
+}
+
+.footer-column h4::after {
+    content: '';
+    position: absolute;
+    bottom: -5px;
+    left: 0;
+    width: 30px;
+    height: 3px;
+    background-color: var(--brand);
+}
+
+.footer-column a {
+    display: block;
+    margin-bottom: 12px;
+    color: var(--text-secondary);
+}
+
+.social-icons {
+    display: flex;
+    gap: 16px;
+}
+
+.social-icons a {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    background-color: var(--brand-light);
+    color: var(--brand-dark);
+    transition: var(--transition);
+}
+
+.social-icons a:hover {
+    background-color: var(--brand);
+    color: white;
+    transform: translateY(-3px);
+}
+
+.footer-bottom {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding-top: 20px;
+    border-top: 1px solid var(--border);
+}
+
+.footer-bottom-links {
+    display: flex;
+    gap: 20px;
+}
+
+/* Responsive */
+@media (max-width: 992px) {
+    .hero .container {
+        flex-direction: column;
     }
-    * {
-      margin: 0;
-      padding: 0;
-      box-sizing: border-box;
-      font-family: 'Inter', sans-serif;
-    }
-    html, body {
-      height: 100%;
-      background: var(--background);
-      overflow: hidden;
-      color: var(--text-dark);
-    }
-    .app {
-      height: 100%;
-      max-width: 480px;
-      margin: 0 auto;
-      background: var(--surface);
-      box-shadow: var(--shadow);
-      display: flex;
-      flex-direction: column;
-    }
-    .views-container {
-      flex: 1;
-      position: relative;
-      overflow: hidden;
-    }
-    .view {
-      position: absolute;
-      width: 100%;
-      height: 100%;
-      background: var(--surface);
-      transition: transform 0.35s ease;
-      display: flex;
-      flex-direction: column;
-    }
-    /* Positions for sliding transitions */
-    .chat-list { transform: translateX(0); }
-    .chat-detail { transform: translateX(100%); }
-    .chat-detail.active { transform: translateX(0); }
-    .chat-list.inactive { transform: translateX(-100%); }
     
-    /* Chat List Header */
-    .header {
-      height: var(--header-height);
-      background: var(--primary);
-      color: #fff;
-      display: flex;
-      align-items: center;
-      padding: 0 16px;
-      box-shadow: var(--shadow);
-    }
-    .header h1 {
-      font-size: 1.25rem;
-      font-weight: 700;
-    }
-    .header .back-button {
-      background: none;
-      border: none;
-      margin-right: 12px;
-      color: #fff;
-      cursor: pointer;
-      font-size: 1.25rem;
+    .benefits-container {
+        flex-direction: column;
     }
     
-    /* Chat List Container */
-    .chat-list-container {
-      flex: 1;
-      overflow-y: auto;
-      background: var(--background);
-      /* Removed padding so the border spans full width */
-      padding: 0;
-    }
-    /* Updated Chat Item Styling */
-    .chat-item {
-      background: var(--surface);
-      padding: 12px 16px;
-      display: flex;
-      align-items: center;
-      cursor: pointer;
-      border-bottom: 1px solid #e6e6e6;  /* Subtle line under each chat */
-      transition: background 0.2s ease;
-    }
-    .chat-item:hover {
-      background: #f8f8f8;
-    }
-    .chat-item .avatar {
-      width: 48px;
-      height: 48px;
-      border-radius: 50%;
-      background: linear-gradient(135deg, var(--primary), var(--secondary));
-      color: #fff;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-size: 1.1rem;
-      font-weight: 600;
-      margin-right: 16px;
-      flex-shrink: 0;
-    }
-    .chat-item .details {
-      flex: 1;
-    }
-    .chat-item .details .name {
-      font-weight: 600;
-      font-size: 1rem;
-      margin-bottom: 4px;
-      color: var(--text-dark);
-    }
-    .chat-item .details .last-message {
-      font-size: 0.9rem;
-      color: var(--text-light);
-      white-space: nowrap;
-      overflow: hidden;
-      text-overflow: ellipsis;
-    }
-    .chat-item .time {
-      font-size: 0.8rem;
-      color: var(--text-light);
-      margin-left: auto;
-    }
-    .unread-badge {
-      background: red;
-      color: #fff;
-      font-size: 0.75rem;
-      padding: 2px 6px;
-      border-radius: 12px;
-      margin-left: 8px;
+    .footer-content {
+        flex-direction: column;
+        gap: 40px;
     }
     
-    /* Chat Detail Header with Brand Colors */
-    .chat-detail header {
-      height: var(--header-height);
-      background: linear-gradient(135deg, var(--brand-color) 0%, var(--brand-color-end) 100%);
-      color: #fff;
-      display: flex;
-      align-items: center;
-      padding: 0 16px;
-      box-shadow: var(--shadow);
-    }
-    .chat-detail header .back-button {
-      color: #fff;
-    }
-    .chat-detail header .avatar {
-      width: 48px;
-      height: 48px;
-      border-radius: 50%;
-      background: #fff;
-      color: var(--brand-color);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-size: 1.1rem;
-      font-weight: 600;
-      margin-right: 16px;
-    }
-    .chat-detail header .chat-details h2 {
-      font-size: 1rem;
-      font-weight: 600;
-      margin-bottom: 4px;
-    }
-    .chat-detail header .chat-details p {
-      font-size: 0.85rem;
-      color: #fff;
+    .footer-links {
+        flex-wrap: wrap;
+        gap: 30px;
     }
     
-    /* Chat Messages: Left & Right Layout */
-    .chat-messages {
-      flex: 1;
-      overflow-y: auto;
-      padding: 16px;
-      display: flex;
-      flex-direction: column;
-      gap: 10px;
-      background: var(--background);
+    .footer-column {
+        min-width: 150px;
     }
-    .message {
-      max-width: 75%;
-      padding: 10px 14px;
-      border-radius: 16px;
-      font-size: 0.95rem;
-      line-height: 1.4;
-      word-wrap: break-word;
-      opacity: 0;
-      animation: fadeIn 0.3s forwards;
-    }
-    .message.sent {
-      background: linear-gradient(135deg, var(--brand-color) 0%, var(--brand-color-end) 100%);
-      color: #fff;
-      align-self: flex-end;
-      border-radius: 16px 16px 4px 16px;
-    }
-    .message.received {
-      background: #e0e0e0;
-      color: var(--text-dark);
-      align-self: flex-start;
-      border-radius: 16px 16px 16px 4px;
-    }
-    @keyframes fadeIn {
-      from { opacity: 0; transform: translateY(5px); }
-      to { opacity: 1; transform: translateY(0); }
+}
+
+@media (max-width: 768px) {
+    h1 {
+        font-size: 2rem;
     }
     
-    .input-area {
-      padding: 12px 16px;
-      background: var(--surface);
-      border-top: 1px solid #e0e0e0;
-      display: flex;
-      align-items: center;
-    }
-    .message-input {
-      flex: 1;
-      padding: 10px 14px;
-      border: 1px solid #ccc;
-      border-radius: 20px;
-      font-size: 1rem;
-      outline: none;
-      transition: border-color 0.2s;
-    }
-    .message-input:focus {
-      border-color: var(--brand-color);
-    }
-    .send-button {
-      background: var(--brand-color);
-      border: none;
-      padding: 10px;
-      margin-left: 12px;
-      border-radius: 50%;
-      color: #fff;
-      cursor: pointer;
-      transition: background 0.2s, transform 0.2s;
-    }
-    .send-button:hover {
-      background: var(--brand-color-end);
-      transform: scale(1.1);
+    h2 {
+        font-size: 1.75rem;
     }
     
-    /* Navigation */
-    .navigation {
-      height: 60px;
-      background: var(--surface);
-      border-top: 1px solid #e0e0e0;
-      display: flex;
-      align-items: center;
-      justify-content: space-around;
-    }
-    .nav-item, .new-chat-button {
-      background: none;
-      border: none;
-      color: var(--text-light);
-      font-size: 1.1rem;
-      cursor: pointer;
-      padding: 8px 16px;
-      border-radius: 12px;
-      transition: background 0.2s;
-    }
-    .nav-item.active, .new-chat-button:hover {
-      background: rgba(255, 183, 77, 0.2);
-      color: var(--primary);
+    .nav-links, .btn {
+        display: none;
     }
     
-    /* Hide navigation when not needed */
-    .hidden {
-      display: none;
+    .mobile-menu-icon {
+        display: block;
     }
     
-    @media (min-width: 769px) {
-      .app {
-        max-width: 600px;
-        border-radius: 12px;
-      }
+    .pricing-cards {
+        grid-template-columns: 1fr;
     }
-  </style>
+    
+    .pricing-card.featured {
+        transform: scale(1);
+    }
+    
+    .pricing-card.featured:hover {
+        transform: translateY(-10px);
+    }
+    
+    .footer-bottom {
+        flex-direction: column;
+        gap: 20px;
+        text-align: center;
+    }
+}
+
+/* Mobile Menu */
+.mobile-menu {
+    position: fixed;
+    top: 70px;
+    left: 0;
+    width: 100%;
+    background-color: var(--background);
+    padding: 20px;
+    box-shadow: var(--shadow);
+    display: none;
+    flex-direction: column;
+    gap: 20px;
+    z-index: 999;
+}
+
+.mobile-menu.active {
+    display: flex;
+}
+
+.mobile-menu a {
+    font-weight: 500;
+    padding: 10px 0;
+    border-bottom: 1px solid var(--border);
+}
+
+.mobile-menu .btn {
+    display: inline-block;
+    margin-top: 20px;
+}
+    </style>
 </head>
 <body>
-  <div class="app">
-    <div class="views-container">
-      <!-- Chat List View -->
-      <section class="view chat-list active">
-        <header class="header">
-          <h1>Orders</h1>
-        </header>
-        <div class="chat-list-container" id="chatListContainer">
-          <!-- Chat items will be rendered here -->
+    <header>
+        <nav>
+            <div class="container">
+                <div class="logo">
+                    <img src="/api/placeholder/120/40" alt="Delvrr Logo">
+                </div>
+                <div class="nav-links">
+                    <a href="#features">Features</a>
+                    <a href="#how-it-works">How It Works</a>
+                    <a href="#benefits">Benefits</a>
+                    <a href="#pricing">Pricing</a>
+                </div>
+                <button class="btn btn-primary">Get Started</button>
+                <div class="mobile-menu-icon">
+                    <i class="fas fa-bars"></i>
+                </div>
+            </div>
+        </nav>
+    </header>
+
+    <section class="hero">
+        <div class="container">
+            <div class="hero-content">
+                <h1>Transform Your Restaurant with <span>Contactless Ordering</span></h1>
+                <p>Scan. Order. Enjoy. Delvrr's digital menu system streamlines ordering, enhances customer experience, and boosts your restaurant's efficiency.</p>
+                <div class="cta-buttons">
+                    <button class="btn btn-primary">Request Demo</button>
+                    <button class="btn btn-outline">Learn More</button>
+                </div>
+            </div>
+            <div class="hero-image">
+                <img src="/api/placeholder/600/400" alt="Delvrr App Demo">
+            </div>
         </div>
-      </section>
-      <!-- Chat Detail View -->
-      <section class="view chat-detail" id="chatDetailView">
-        <header class="header">
-          <button class="back-button" id="backButton"><i data-lucide="chevron-left"></i></button>
-          <div class="avatar" id="chatAvatar">T1</div>
-          <div class="chat-details">
-            <h2 id="chatName">Table 1</h2>
-            <p class="chat-status" id="chatStatus">Active now</p>
-          </div>
-        </header>
-        <div class="chat-messages" id="chatMessages">
-          <!-- Chat messages will appear here -->
+    </section>
+
+    <section id="features" class="features">
+        <div class="container">
+            <div class="section-header">
+                <h2>Why Choose Delvrr?</h2>
+                <p>A complete digital ordering solution for modern restaurants</p>
+            </div>
+            <div class="features-grid">
+                <div class="feature-card">
+                    <div class="feature-icon">
+                        <i class="fas fa-qrcode"></i>
+                    </div>
+                    <h3>QR Code Menus</h3>
+                    <p>Replace physical menus with easy-to-scan QR codes at each table</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">
+                        <i class="fas fa-comments"></i>
+                    </div>
+                    <h3>Direct Chat</h3>
+                    <p>Real-time communication between customers and staff</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">
+                        <i class="fas fa-receipt"></i>
+                    </div>
+                    <h3>Auto Receipts</h3>
+                    <p>Automatic order confirmations and digital receipts</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">
+                        <i class="fas fa-mobile-alt"></i>
+                    </div>
+                    <h3>Restaurant App</h3>
+                    <p>Dedicated app for staff to manage incoming orders efficiently</p>
+                </div>
+            </div>
         </div>
-        <div class="input-area">
-          <input type="text" class="message-input" id="messageInput" placeholder="Type a message..." />
-          <button class="send-button" id="sendButton"><i data-lucide="send"></i></button>
+    </section>
+
+    <section id="how-it-works" class="how-it-works">
+        <div class="container">
+            <div class="section-header">
+                <h2>How Delvrr Works</h2>
+                <p>A seamless experience for both customers and restaurants</p>
+            </div>
+            <div class="steps">
+                <div class="step">
+                    <div class="step-number">1</div>
+                    <div class="step-content">
+                        <h3>Scan QR Code</h3>
+                        <p>Customers scan the QR code at their table to access the digital menu</p>
+                    </div>
+                </div>
+                <div class="step">
+                    <div class="step-number">2</div>
+                    <div class="step-content">
+                        <h3>Browse & Order</h3>
+                        <p>Browse the menu, select items, and place orders directly from their phones</p>
+                    </div>
+                </div>
+                <div class="step">
+                    <div class="step-number">3</div>
+                    <div class="step-content">
+                        <h3>Real-time Chat</h3>
+                        <p>Communicate with staff for special requests or assistance</p>
+                    </div>
+                </div>
+                <div class="step">
+                    <div class="step-number">4</div>
+                    <div class="step-content">
+                        <h3>Cash on Delivery</h3>
+                        <p>Pay at the table when food arrives or use the integrated payment system</p>
+                    </div>
+                </div>
+            </div>
         </div>
-      </section>
-    </div>
-    <nav class="navigation" id="navigation">
-      <button class="nav-item active"><i data-lucide="home"></i></button>
-      <button class="new-chat-button" id="newChatButton">+ New Order</button>
-      <button class="nav-item"><i data-lucide="user"></i></button>
-    </nav>
-  </div>
+    </section>
 
-  <script>
-    const orders = [
-      { id: 1, name: 'Table 1', lastMessage: 'Order: 2 Burgers', unread: 2, status: 'Active now', time: '02:49' },
-      { id: 2, name: 'Table 2', lastMessage: 'Waiting...', unread: 0, status: '5m ago', time: '01:37' },
-      { id: 3, name: 'Table 3', lastMessage: 'Ready to serve', unread: 1, status: 'Active now', time: '01:18' }
-    ];
-
-    const sampleMessages = [
-      { text: 'Hello! Ready to take your order?', type: 'received' },
-      { text: '2 Burgers and 1 Fries, please.', type: 'sent' },
-      { text: 'Would you like any drinks with that?', type: 'received' }
-    ];
-
-    const chatListContainer = document.getElementById('chatListContainer');
-    const chatDetailView = document.getElementById('chatDetailView');
-    const backButton = document.getElementById('backButton');
-    const chatAvatar = document.getElementById('chatAvatar');
-    const chatName = document.getElementById('chatName');
-    const chatStatus = document.getElementById('chatStatus');
-    const chatMessages = document.getElementById('chatMessages');
-    const messageInput = document.getElementById('messageInput');
-    const sendButton = document.getElementById('sendButton');
-    const newChatButton = document.getElementById('newChatButton');
-    const navigation = document.getElementById('navigation');
-
-    function renderChatList() {
-      chatListContainer.innerHTML = orders.map(order => `
-        <div class="chat-item" onclick="openChat(${order.id})" data-id="${order.id}">
-          <div class="avatar">${order.name.slice(-1)}</div>
-          <div class="details">
-            <div class="name">${order.name}</div>
-            <div class="last-message">${order.lastMessage}</div>
-          </div>
-          <div class="time">${order.time}</div>
-          ${order.unread ? `<div class="unread-badge">${order.unread}</div>` : ''}
+    <section class="testimonial">
+        <div class="container">
+            <div class="testimonial-card">
+                <div class="quote">
+                    <i class="fas fa-quote-left"></i>
+                </div>
+                <p class="testimonial-text">"Delvrr has completely transformed how we handle orders. Our staff is more efficient, our customers love the convenience, and we've seen a 20% increase in average order value."</p>
+                <div class="testimonial-author">
+                    <img src="/api/placeholder/60/60" alt="Restaurant Owner">
+                    <div>
+                        <h4>Sarah Johnson</h4>
+                        <p>Owner, The Bistro</p>
+                    </div>
+                </div>
+            </div>
         </div>
-      `).join('');
+    </section>
+
+    <section id="benefits" class="benefits">
+        <div class="container">
+            <div class="section-header">
+                <h2>Benefits for Your Restaurant</h2>
+                <p>Increase efficiency, reduce costs, and enhance customer satisfaction</p>
+            </div>
+            <div class="benefits-container">
+                <div class="benefit-image">
+                    <img src="/api/placeholder/500/400" alt="Restaurant using Delvrr">
+                </div>
+                <div class="benefit-list">
+                    <div class="benefit-item">
+                        <i class="fas fa-check-circle"></i>
+                        <div>
+                            <h3>Eliminate Menu Printing Costs</h3>
+                            <p>Save money on printing and updating physical menus</p>
+                        </div>
+                    </div>
+                    <div class="benefit-item">
+                        <i class="fas fa-check-circle"></i>
+                        <div>
+                            <h3>Reduce Order Errors</h3>
+                            <p>Digital ordering eliminates miscommunication and mistakes</p>
+                        </div>
+                    </div>
+                    <div class="benefit-item">
+                        <i class="fas fa-check-circle"></i>
+                        <div>
+                            <h3>Increase Table Turnover</h3>
+                            <p>Speed up the ordering process and serve more customers</p>
+                        </div>
+                    </div>
+                    <div class="benefit-item">
+                        <i class="fas fa-check-circle"></i>
+                        <div>
+                            <h3>Enhanced Customer Experience</h3>
+                            <p>Provide a modern, convenient ordering experience</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section id="pricing" class="pricing">
+        <div class="container">
+            <div class="section-header">
+                <h2>Simple, Transparent Pricing</h2>
+                <p>Choose the plan that fits your restaurant's needs</p>
+            </div>
+            <div class="pricing-cards">
+                <div class="pricing-card">
+                    <div class="pricing-header">
+                        <h3>Starter</h3>
+                        <div class="price">
+                            <span class="currency">$</span>
+                            <span class="amount">49</span>
+                            <span class="period">/month</span>
+                        </div>
+                    </div>
+                    <ul class="pricing-features">
+                        <li><i class="fas fa-check"></i> Up to 10 tables</li>
+                        <li><i class="fas fa-check"></i> Digital menu with QR codes</li>
+                        <li><i class="fas fa-check"></i> Basic chat functionality</li>
+                        <li><i class="fas fa-check"></i> Email support</li>
+                    </ul>
+                    <button class="btn btn-outline">Get Started</button>
+                </div>
+                <div class="pricing-card featured">
+                    <div class="popular-tag">Most Popular</div>
+                    <div class="pricing-header">
+                        <h3>Professional</h3>
+                        <div class="price">
+                            <span class="currency">$</span>
+                            <span class="amount">99</span>
+                            <span class="period">/month</span>
+                        </div>
+                    </div>
+                    <ul class="pricing-features">
+                        <li><i class="fas fa-check"></i> Up to 30 tables</li>
+                        <li><i class="fas fa-check"></i> Advanced menu customization</li>
+                        <li><i class="fas fa-check"></i> Full chat system</li>
+                        <li><i class="fas fa-check"></i> Digital payments integration</li>
+                        <li><i class="fas fa-check"></i> Priority support</li>
+                    </ul>
+                    <button class="btn btn-primary">Get Started</button>
+                </div>
+                <div class="pricing-card">
+                    <div class="pricing-header">
+                        <h3>Enterprise</h3>
+                        <div class="price">
+                            <span class="currency">$</span>
+                            <span class="amount">199</span>
+                            <span class="period">/month</span>
+                        </div>
+                    </div>
+                    <ul class="pricing-features">
+                        <li><i class="fas fa-check"></i> Unlimited tables</li>
+                        <li><i class="fas fa-check"></i> Full menu customization</li>
+                        <li><i class="fas fa-check"></i> Advanced analytics</li>
+                        <li><i class="fas fa-check"></i> Multiple restaurant locations</li>
+                        <li><i class="fas fa-check"></i> 24/7 dedicated support</li>
+                    </ul>
+                    <button class="btn btn-outline">Contact Sales</button>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section class="cta-section">
+        <div class="container">
+            <h2>Ready to Transform Your Restaurant?</h2>
+            <p>Join hundreds of restaurants already using Delvrr to streamline their operations</p>
+            <div class="cta-buttons">
+                <button class="btn btn-primary">Get Started Free</button>
+                <button class="btn btn-outline">Schedule Demo</button>
+            </div>
+        </div>
+    </section>
+
+    <footer>
+        <div class="container">
+            <div class="footer-content">
+                <div class="footer-logo">
+                    <img src="/api/placeholder/120/40" alt="Delvrr Logo">
+                    <p>Scan. Order. Enjoy.</p>
+                </div>
+                <div class="footer-links">
+                    <div class="footer-column">
+                        <h4>Product</h4>
+                        <a href="#">Features</a>
+                        <a href="#">Pricing</a>
+                        <a href="#">Demo</a>
+                        <a href="#">Updates</a>
+                    </div>
+                    <div class="footer-column">
+                        <h4>Company</h4>
+                        <a href="#">About Us</a>
+                        <a href="#">Careers</a>
+                        <a href="#">Contact</a>
+                        <a href="#">Blog</a>
+                    </div>
+                    <div class="footer-column">
+                        <h4>Resources</h4>
+                        <a href="#">Help Center</a>
+                        <a href="#">Partners</a>
+                        <a href="#">Success Stories</a>
+                        <a href="#">FAQ</a>
+                    </div>
+                    <div class="footer-column">
+                        <h4>Follow Us</h4>
+                        <div class="social-icons">
+                            <a href="#"><i class="fab fa-facebook-f"></i></a>
+                            <a href="#"><i class="fab fa-twitter"></i></a>
+                            <a href="#"><i class="fab fa-instagram"></i></a>
+                            <a href="#"><i class="fab fa-linkedin-in"></i></a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="footer-bottom">
+                <p>&copy; 2025 Delvrr. All rights reserved.</p>
+                <div class="footer-bottom-links">
+                    <a href="#">Privacy Policy</a>
+                    <a href="#">Terms of Service</a>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <script type="text/javascript">
+        document.addEventListener('DOMContentLoaded', function() {
+    // Mobile menu toggle
+    const mobileMenuButton = document.querySelector('.mobile-menu-icon');
+    
+    if (mobileMenuButton) {
+        mobileMenuButton.addEventListener('click', function() {
+            // Create mobile menu if it doesn't exist
+            let mobileMenu = document.querySelector('.mobile-menu');
+            
+            if (!mobileMenu) {
+                mobileMenu = document.createElement('div');
+                mobileMenu.classList.add('mobile-menu');
+                
+                // Clone nav links
+                const navLinks = document.querySelector('.nav-links').cloneNode(true);
+                mobileMenu.appendChild(navLinks);
+                
+                // Clone button
+                const button = document.querySelector('nav .btn').cloneNode(true);
+                mobileMenu.appendChild(button);
+                
+                // Insert after header
+                document.querySelector('header').after(mobileMenu);
+            }
+            
+            // Toggle mobile menu
+            mobileMenu.classList.toggle('active');
+        });
     }
-
-    function openChat(id) {
-      const order = orders.find(o => o.id === id);
-      chatAvatar.textContent = order.name.slice(-1);
-      chatName.textContent = order.name;
-      chatStatus.textContent = order.status;
-      loadMessages();
-      document.querySelector('.chat-list').classList.add('inactive');
-      chatDetailView.classList.add('active');
-      navigation.classList.add('hidden');
-    }
-
-    function loadMessages() {
-      chatMessages.innerHTML = sampleMessages.map(msg => `
-        <div class="message ${msg.type}">${msg.text}</div>
-      `).join('');
-      chatMessages.scrollTop = chatMessages.scrollHeight;
-    }
-
-    function sendMessage() {
-      const text = messageInput.value.trim();
-      if (!text) return;
-      chatMessages.insertAdjacentHTML('beforeend', `<div class="message sent">${text}</div>`);
-      chatMessages.scrollTop = chatMessages.scrollHeight;
-      messageInput.value = '';
-      setTimeout(() => {
-        chatMessages.insertAdjacentHTML('beforeend', `<div class="message received">Got it! Processing...</div>`);
-        chatMessages.scrollTop = chatMessages.scrollHeight;
-      }, 1000);
-    }
-
-    function goBack() {
-      document.querySelector('.chat-list').classList.remove('inactive');
-      chatDetailView.classList.remove('active');
-      chatMessages.innerHTML = '';
-      navigation.classList.remove('hidden');
-    }
-
-    function addNewOrder() {
-      const newId = orders.length + 1;
-      const newOrder = {
-        id: newId,
-        name: `Table ${newId}`,
-        lastMessage: 'New order received',
-        unread: 0,
-        status: 'Active now',
-        time: new Date().toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' })
-      };
-      orders.push(newOrder);
-      renderChatList();
-      alert(`Added new order for ${newOrder.name}`);
-    }
-
-    backButton.addEventListener('click', goBack);
-    sendButton.addEventListener('click', sendMessage);
-    messageInput.addEventListener('keypress', (e) => { if (e.key === 'Enter') sendMessage(); });
-    newChatButton.addEventListener('click', addNewOrder);
-
-    document.addEventListener('DOMContentLoaded', () => {
-      renderChatList();
-      lucide.createIcons();
+    
+    // Smooth scrolling for anchor links
+    document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+        anchor.addEventListener('click', function(e) {
+            e.preventDefault();
+            
+            const targetId = this.getAttribute('href');
+            
+            if (targetId === '#') return;
+            
+            const targetElement = document.querySelector(targetId);
+            
+            if (targetElement) {
+                // Close mobile menu if open
+                const mobileMenu = document.querySelector('.mobile-menu.active');
+                if (mobileMenu) {
+                    mobileMenu.classList.remove('active');
+                }
+                
+                // Scroll to target
+                window.scrollTo({
+                    top: targetElement.offsetTop - 80, // Adjust for header height
+                    behavior: 'smooth'
+                });
+            }
+        });
     });
-  </script>
+    
+    // Sticky header
+    const header = document.querySelector('header');
+    const heroSection = document.querySelector('.hero');
+    
+    if (header && heroSection) {
+        window.addEventListener('scroll', function() {
+            if (window.scrollY > 50) {
+                header.style.boxShadow = '0 4px 6px rgba(0, 0, 0, 0.1)';
+                header.style.background = 'rgba(255, 255, 255, 0.98)';
+            } else {
+                header.style.boxShadow = 'none';
+                header.style.background = 'var(--background)';
+            }
+        });
+    }
+    
+    // Animation on scroll
+    const animateElements = document.querySelectorAll('.feature-card, .step, .benefit-item, .pricing-card');
+    
+    function checkScroll() {
+        animateElements.forEach(element => {
+            const elementTop = element.getBoundingClientRect().top;
+            const windowHeight = window.innerHeight;
+            
+            if (elementTop < windowHeight - 100) {
+                element.style.opacity = '1';
+                element.style.transform = element.classList.contains('pricing-card') && element.classList.contains('featured') 
+                    ? 'scale(1.05) translateY(0)' 
+                    : 'translateY(0)';
+            }
+        });
+    }
+    
+    // Set initial state for animation
+    animateElements.forEach(element => {
+        element.style.opacity = '0';
+        element.style.transform = 'translateY(20px)';
+        element.style.transition = 'opacity 0.6s ease, transform 0.6s ease';
+    });
+    
+    // Check elements on load
+    window.addEventListener('load', checkScroll);
+    // Check elements on scroll
+    window.addEventListener('scroll', checkScroll);
+    
+    // Form submission handlers
+    const buttons = document.querySelectorAll('.btn');
+    buttons.forEach(button => {
+        button.addEventListener('click', function(e) {
+            if (this.textContent.includes('Demo') || this.textContent.includes('Started') || this.textContent.includes('Sales')) {
+                e.preventDefault();
+                alert('Thank you for your interest in Delvrr! A member of our team will contact you shortly.');
+            }
+        });
+    });
+});
+    </script>
 </body>
 </html>

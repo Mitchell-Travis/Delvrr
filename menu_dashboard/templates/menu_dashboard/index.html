@@ -1,55 +1,65 @@
 {% load static %}
 <!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="en">
-   <head>
-      <!-- Required meta tags -->
-      <meta charset="utf-8" />
-      <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no" />
-      <meta name="viewport" content="width=device-width, initial-scale=1.0">
-      <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1" />
-      <meta content="Codescandy" name="author" />
-      <meta name="theme-color" content="#FFC107" /> <!-- Add theme color for mobile browsers -->
-        <meta name="apple-mobile-web-app-capable" content="yes" /> <!-- Enable standalone mode for iOS -->
-      <title>Delvrr</title>
-
-      <link href="../../../static/menu_dashboard/libs/slick-carousel/slick/slick.css" rel="stylesheet" />
-      <link href="../../../static/menu_dashboard/libs/slick-carousel/slick/slick-theme.css" rel="stylesheet" />
-      <link href="../../../static/menu_dashboard/libs/tiny-slider/dist/tiny-slider.css" rel="stylesheet" />
-
-      <!-- Favicon icon-->
-      <link rel="shortcut icon" type="image/x-icon" href="../../../static/menu_dashboard/images/favicon/favicon.ico" />
-      <link
-      rel="stylesheet"
-      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css"
-        />
-
-      <!-- Libs CSS -->
-      <link href="../../../static/menu_dashboard/libs/bootstrap-icons/font/bootstrap-icons.min.css" rel="stylesheet" />
-      <link href="../../../static/menu_dashboard/libs/feather-webfont/dist/feather-icons.css" rel="stylesheet" />
-      <link href="../../../static/menu_dashboard/libs/simplebar/dist/simplebar.min.css" rel="stylesheet" />
-      <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
-      <link rel="stylesheet" href="../../../static/menu_dashboard/css/style.css"/>
-
-
-      <!-- Theme CSS -->
-      <link rel="stylesheet" href="../../../static/menu_dashboard/css/theme.min.css" />
-      <!-- <link rel="stylesheet" href="../../static/css/style.css"/> -->
-
-
-      <link rel="stylesheet" href="{% static 'menu_dashboard/css/style.css' %}">
-
-      <link rel="stylesheet" href="{% static 'menu_dashboard/css/menu.css' %}">
-
-
+<head>
+    <!-- Essential Meta Tags -->
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="author" content="Delvrr">
+    <meta name="theme-color" content="#FFC107">
+    <meta name="apple-mobile-web-app-capable" content="yes">
     
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css" rel="stylesheet">
-    <link rel="stylesheet" href="{% static 'menu_dashboard/css/style.css' %}">
-      <style>
+    <!-- SEO Meta Tags -->
+    <meta name="description" content="Scan the QR code to access the digital menu of your favorite restaurant. Browse dishes, place orders, and enjoy a seamless dining experience with Delvrr.">
+    <meta name="keywords" content="QR code menu, digital menu, restaurant ordering, contactless dining, online food menu">
+    <meta name="robots" content="index, follow">
+    <meta property="og:title" content="Delvrr - QR Code Digital Menu">
+    <meta property="og:description" content="Scan and browse the restaurant’s digital menu instantly. A seamless way to order your favorite dishes.">
+    <meta property="og:image" content="https://delvrr.com/media/preview.jpg">
+    <meta property="og:url" content="https://delvrr.com/menu">
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="Delvrr - QR Code Digital Menu">
+    <meta name="twitter:description" content="Scan and browse the restaurant’s digital menu instantly. A seamless way to order your favorite dishes.">
+    <meta name="twitter:image" content="https://delvrr.com/media/preview.jpg">
+    
+    <title>Delvrr - QR Code Digital Menu</title>
+    
+    <!-- Canonical URL -->
+    <link rel="canonical" href="https://delvrr.com/menu">
+
+    <!-- Favicon -->
+    <link rel="icon" type="image/x-icon" href="../../../static/menu_dashboard/images/favicon/favicon.ico">
+
+    <!-- CSS Dependencies -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link rel="stylesheet" href="../../../static/menu_dashboard/libs/bootstrap-icons/font/bootstrap-icons.min.css">
+    <link rel="stylesheet" href="../../../static/menu_dashboard/libs/feather-webfont/dist/feather-icons.css">
+    <link rel="stylesheet" href="../../../static/menu_dashboard/libs/simplebar/dist/simplebar.min.css">
+    <link rel="stylesheet" href="../../../static/menu_dashboard/css/style.css">
+    <link rel="stylesheet" href="../../../static/menu_dashboard/css/theme.min.css">
+    <link rel="stylesheet" href="{% static 'menu_dashboard/css/menu.css' %}">
+
+    <style>
         .navbar-toggler-icon {
-            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 30 30'%3E%3Cpath stroke='rgba%2888, 88, 88, 0.7%29' stroke-width='2' linecap='round' linejoin='round' d='M4 7h22M4 15h22M4 23h22'/%3E%3C/svg%3E");
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 30 30'%3E%3Cpath stroke='rgba(88, 88, 88, 0.7)' stroke-width='2' stroke-linecap='round' stroke-linejoin='round' d='M4 7h22M4 15h22M4 23h22'/%3E%3C/svg%3E");
         }
     </style>
+
+     <!-- Structured Data (Schema.org) -->
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "Restaurant",
+      "name": "Delvrr Digital Menu",
+      "description": "Scan the QR code to view the restaurant’s menu and place orders easily.",
+      "url": "https://delvrr.com/menu",
+      "image": "https://delvrr.com/media/preview.jpg",
+      "servesCuisine": "Multiple Cuisines",
+      "hasMenu": "https://delvrr.com/menu"
+    }
+    </script>
 
 
     <style type="text/css">
