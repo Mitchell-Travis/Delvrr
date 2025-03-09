@@ -70,5 +70,6 @@ uritemplate==4.1.1
 urllib3==1.26.20
 weasyprint==63.0
 webencodings==0.5.1
+whitenoise==6.9.0
 yarl==1.17.1
 zopfli==0.2.3.post1
