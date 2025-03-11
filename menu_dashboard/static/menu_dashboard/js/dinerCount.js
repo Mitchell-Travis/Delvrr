@@ -80,9 +80,9 @@ document.addEventListener('DOMContentLoaded', function() {
     });
 
     // Show the modal only if user hasn't selected guests before
-    // if (!hasSelectedGuests) {
-    //     tableInfoModal.show();
-    // }
+    if (!hasSelectedGuests) {
+        tableInfoModal.show();
+    }
 });
 
 // Add this CSS for the fade effect
