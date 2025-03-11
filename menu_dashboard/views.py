@@ -130,16 +130,22 @@ def contact(request):
     return render(request, 'menu_dashboard/contact.html', context)
 
 
+from django.utils.timezone import now
+
 def restaurant_menu(request, restaurant_name_slug, hashed_slug):
-    """Retrieve restaurant securely using hashed slug."""
     restaurant = get_object_or_404(Restaurant, hashed_slug=hashed_slug)
 
+    # Capture user details
+    ip_address = request.META.get('REMOTE_ADDR')
+    user_agent = request.META.get('HTTP_USER_AGENT', '')
+
+    # Log visit
+    MenuVisit.objects.create(restaurant=restaurant, ip_address=ip_address, user_agent=user_agent)
+
+    # Existing logic
     categories = Category.objects.filter(products__restaurant=restaurant).distinct()
     categorized_products = []
-
-
     
-
     for category in categories:
         category_products = Product.objects.filter(restaurant=restaurant, category=category)
         if category_products.exists():
@@ -174,6 +180,7 @@ def restaurant_menu(request, restaurant_name_slug, hashed_slug):
         messages.info(request, "To place an order, please log in or continue as a guest.")
 
     return render(request, 'menu_dashboard/index.html', context)
+
 
 
 
