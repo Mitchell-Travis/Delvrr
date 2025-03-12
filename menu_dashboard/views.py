@@ -134,14 +134,11 @@ from django.utils.timezone import now
 
 def restaurant_menu(request, restaurant_name_slug, hashed_slug):
     restaurant = get_object_or_404(Restaurant, hashed_slug=hashed_slug)
-
     # Capture user details
     ip_address = request.META.get('REMOTE_ADDR')
     user_agent = request.META.get('HTTP_USER_AGENT', '')
-
     # Log visit
     MenuVisit.objects.create(restaurant=restaurant, ip_address=ip_address, user_agent=user_agent)
-
     # Existing logic
     categories = Category.objects.filter(products__restaurant=restaurant).distinct()
     categorized_products = []
@@ -150,23 +147,19 @@ def restaurant_menu(request, restaurant_name_slug, hashed_slug):
         category_products = Product.objects.filter(restaurant=restaurant, category=category)
         if category_products.exists():
             categorized_products.append(list(category_products))
-
     uncategorized_products = Product.objects.filter(restaurant=restaurant, category__isnull=True)
     if uncategorized_products.exists():
         categorized_products.append(list(uncategorized_products))
-
     if not categorized_products:
         categorized_products = [[]]
-
     if request.user.is_authenticated:
         customer, created = Customer.objects.get_or_create(user=request.user)
         customer.assign_restaurant(restaurant)
-
+        
     brand_colors = restaurant.brand_colors.all()
     primary_brand_color = brand_colors.first().color if brand_colors.exists() else "#f7c028"
     secondary_brand_color = brand_colors[1].color if brand_colors.count() >= 2 else "#000000"
     third_brand_color = brand_colors[2].color if brand_colors.count() >= 3 else "#ffffff"
-
     context = {
         'restaurant': restaurant,
         'allProds': categorized_products,
@@ -174,11 +167,10 @@ def restaurant_menu(request, restaurant_name_slug, hashed_slug):
         'primary_brand_color': primary_brand_color,
         'secondary_brand_color': secondary_brand_color,
         'third_brand_color': third_brand_color,
+        'hide_all_category': restaurant.id == 9,  # Flag to hide "All" button for restaurant ID 9
     }
-
     if not request.user.is_authenticated:
         messages.info(request, "To place an order, please log in or continue as a guest.")
-
     return render(request, 'menu_dashboard/index.html', context)
 
 
