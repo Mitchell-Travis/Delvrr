@@ -326,28 +326,96 @@ body {
   gap: var(--space-md);
 }
 
-.hamburger-menu {
+.filter-button {
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 36px;
-  height: 36px;
-  border-radius: 50%;
-  background-color: rgba(255, 255, 255, 0.15);
-  backdrop-filter: blur(4px);
-  -webkit-backdrop-filter: blur(4px);
-  transition: all 0.2s ease;
+  width: 38px;
+  height: 38px;
+  border-radius: 12px;
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.25), rgba(255, 255, 255, 0.1));
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1), 
+              inset 0 1px 1px rgba(255, 255, 255, 0.2);
+  backdrop-filter: blur(5px);
+  -webkit-backdrop-filter: blur(5px);
+  transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+  position: relative;
+  overflow: hidden;
+  cursor: pointer;
 }
 
-.hamburger-menu:active {
-  transform: scale(0.95);
+/* Hover effect */
+.filter-button:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15), 
+              inset 0 1px 1px rgba(255, 255, 255, 0.3);
 }
 
-.hamburger-menu i {
+/* Active/click state */
+.filter-button:active {
+  transform: translateY(1px) scale(0.96);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1),
+              inset 0 1px 1px rgba(255, 255, 255, 0.1);
+}
+
+/* Icon styling */
+.filter-button i {
   font-size: 16px;
   color: #fff;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
+  transition: transform 0.2s ease;
 }
 
+/* Subtle icon animation on hover */
+.filter-button:hover i {
+  transform: rotate(15deg);
+}
+
+/* Add ripple effect on click */
+.filter-button::after {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 5px;
+  height: 5px;
+  background: rgba(255, 255, 255, 0.7);
+  opacity: 0;
+  border-radius: 100%;
+  transform: scale(1, 1) translate(-50%, -50%);
+  transform-origin: 50% 50%;
+}
+
+/* Animation for the ripple effect */
+@keyframes ripple {
+  0% {
+    transform: scale(0, 0);
+    opacity: 0.5;
+  }
+  100% {
+    transform: scale(40, 40);
+    opacity: 0;
+  }
+}
+
+/* Apply animation on click using JavaScript */
+.filter-button.ripple::after {
+  animation: ripple 0.6s ease-out;
+}
+
+/* Focus state for accessibility */
+.filter-button:focus {
+  outline: none;
+  box-shadow: 0 0 0 2px rgba(255, 255, 255, 0.4), 
+              0 6px 12px rgba(0, 0, 0, 0.1);
+}
+
+/* State when filter is active */
+.filter-button.active {
+  background: linear-gradient(135deg, rgba(70, 130, 255, 0.5), rgba(70, 130, 255, 0.3));
+  border-color: rgba(100, 150, 255, 0.3);
+}
 /* Brand styling */
 .brand-info {
   display: flex;
@@ -3049,9 +3117,9 @@ input:checked + .slider:before {
 <div class="aliexpress-header">
   <!-- Left side: hamburger menu + brand info -->
   <div class="header-left">
-    <div class="hamburger-menu">
-      <i class="fas fa-bars"></i>
-    </div>
+    <button class="filter-button">
+      <i class="fas fa-sliders-h"></i>
+    </button>
     <div class="brand-info">
       <div class="logo">Delvrr</div>
       <div class="restaurant-name-container">
@@ -3082,9 +3150,6 @@ input:checked + .slider:before {
       class="search-input"
       placeholder="Search for menu items"
     />
-    <button class="filter-button">
-      <i class="fas fa-sliders-h"></i>
-    </button>
     <div class="search-results-dropdown" style="display: none;">
       <div class="search-results-content"></div>
     </div>
@@ -4541,77 +4606,274 @@ document.addEventListener('DOMContentLoaded', function() {
     button.addEventListener('click', () => handleCategoryClick(button));
   });
 
-  // ===== 5.1. Filter Dropdown for Categories (Improved Styling) =====
+  // ===== 5.1. Filter Button Styling - FIXED =====
   const filterButton = document.querySelector('.filter-button');
-  // Create a dropdown container for filter options
-  const filterDropdown = document.createElement('div');
-  filterDropdown.className = 'filter-dropdown';
-  filterDropdown.style.cssText = `
-    display: none;
-    position: absolute;
-    top: 100%;
-    right: 0;
-    background-color: #ffffff;
-    border: 1px solid #ddd;
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
-    border-radius: 4px;
-    padding: 5px 0;
-    z-index: 1000;
-    width: 150px;
-  `;
-
-  // Create an unordered list to hold category options
-  const filterList = document.createElement('ul');
-  filterList.style.cssText = `
-    list-style: none;
-    margin: 0;
-    padding: 0;
-  `;
-
-  // Populate the list using your category buttons
-  categoryButtons.forEach(button => {
-    const li = document.createElement('li');
-    li.textContent = button.dataset.category;
-    li.style.cssText = `
-      padding: 10px 16px;
+  // Apply enhanced filter button styling
+  if (filterButton) {
+    filterButton.style.cssText = `
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      width: 36px;
+      height: 36px;
+      border-radius: 50%;
+      background-color: rgba(255, 255, 255, 0.15);
+      backdrop-filter: blur(4px);
+      -webkit-backdrop-filter: blur(4px);
+      transition: all 0.2s ease;
+      border: none;
       cursor: pointer;
-      transition: background-color 0.2s ease;
     `;
-    
-    li.addEventListener('click', () => {
-      handleCategoryClick(button);
-      filterDropdown.style.display = 'none';
-    });
-    
-    li.addEventListener('mouseover', () => {
-      li.style.backgroundColor = '#f8f8f8';
-    });
-    li.addEventListener('mouseout', () => {
-      li.style.backgroundColor = '';
-    });
-    
-    filterList.appendChild(li);
-  });
-  filterDropdown.appendChild(filterList);
-  // Append the dropdown to the search container so it’s positioned relative to it
-  const searchContainer = document.querySelector('.search-container');
-  searchContainer.style.position = 'relative';
-  searchContainer.appendChild(filterDropdown);
 
-  // Toggle dropdown visibility when filter button is clicked
-  filterButton.addEventListener('click', (e) => {
-    e.stopPropagation();
-    filterDropdown.style.display = filterDropdown.style.display === 'none' ? 'block' : 'none';
-  });
+    // Add active state with event listeners
+    filterButton.addEventListener('mousedown', () => {
+      filterButton.style.transform = 'scale(0.95)';
+    });
 
-  // Hide the filter dropdown when clicking outside of it
-  document.addEventListener('click', (e) => {
-    if (!filterButton.contains(e.target) && !filterDropdown.contains(e.target)) {
-      filterDropdown.style.display = 'none';
+    filterButton.addEventListener('mouseup', () => {
+      filterButton.style.transform = '';
+    });
+
+    // Style the icon if it exists
+    const filterIcon = filterButton.querySelector('i');
+    if (filterIcon) {
+      filterIcon.style.cssText = `
+        font-size: 16px;
+        color: #fff;
+      `;
     }
-  });
+  }
 
-  // ===== 5.2. Helper: Create search result item element =====
+  // ===== 5.2. Filter Dropdown for Categories - FIXED =====
+  // First, remove any existing dropdown to prevent duplicates
+    // ===== 5.2. Filter Dropdown for Categories - IMPROVED FIX =====
+// First, remove any existing dropdown to prevent duplicates
+const existingDropdown = document.querySelector('.filter-dropdown');
+if (existingDropdown) {
+  existingDropdown.remove();
+}
+
+// Create a dropdown container for filter options
+const filterDropdown = document.createElement('div');
+filterDropdown.className = 'filter-dropdown';
+filterDropdown.style.cssText = `
+  display: none;
+  position: fixed;
+  background-color: rgba(255, 255, 255, 0.95);
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.12);
+  border-radius: 16px;
+  padding: 8px 0;
+  z-index: 9999;
+  width: 200px;
+  max-height: 70vh;
+  overflow-y: auto;
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  transform-origin: top center;
+`;
+
+// Create an unordered list to hold category options
+const filterList = document.createElement('ul');
+filterList.style.cssText = `
+  list-style: none;
+  margin: 0;
+  padding: 0;
+`;
+
+// Add heading to the dropdown
+const filterHeading = document.createElement('div');
+filterHeading.textContent = 'Filter by Category';
+filterHeading.style.cssText = `
+  padding: 12px 16px;
+  font-weight: 600;
+  font-size: 15px;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+  margin-bottom: 6px;
+  color: #333;
+  display: flex;
+  align-items: center;
+`;
+
+// Add filter icon to heading
+const filterIcon = document.createElement('span');
+filterIcon.innerHTML = '<i class="fas fa-sliders-h"></i>';
+filterIcon.style.cssText = `
+  margin-right: 8px;
+  color: #4682B4;
+  font-size: 14px;
+`;
+filterHeading.prepend(filterIcon);
+
+filterDropdown.appendChild(filterHeading);
+
+// Populate the list using your category buttons
+categoryButtons.forEach(button => {
+  const li = document.createElement('li');
+  const categoryName = button.dataset.category;
+  const categoryEmoji = button.querySelector('.category-icon')?.textContent.trim() || '';
+  const isActive = categoryName.toLowerCase() === lastSelectedCategory;
+  
+  li.innerHTML = `
+    <span class="category-emoji">${categoryEmoji}</span>
+    <span class="category-name">${categoryName}</span>
+    ${isActive ? '<span class="active-indicator"><i class="fas fa-check"></i></span>' : ''}
+  `;
+  
+  li.style.cssText = `
+    padding: 12px 16px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    position: relative;
+    margin: 2px 6px;
+    border-radius: 8px;
+    ${isActive ? 'background-color: rgba(70, 130, 255, 0.08);' : ''}
+    ${isActive ? 'font-weight: 500;' : ''}
+    ${isActive ? 'color: #4682B4;' : ''}
+  `;
+  
+  // Add active indicator styling if this is the selected category
+  if (isActive) {
+    const activeIndicator = li.querySelector('.active-indicator');
+    if (activeIndicator) {
+      activeIndicator.style.cssText = `
+        margin-left: auto;
+        color: #4682B4;
+        font-size: 12px;
+      `;
+    }
+  }
+  
+  li.addEventListener('click', () => {
+    handleCategoryClick(button);
+    filterDropdown.style.display = 'none';
+    
+    // Add ripple effect to the clicked item
+    const ripple = document.createElement('span');
+    ripple.style.cssText = `
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      width: 5px;
+      height: 5px;
+      background: rgba(70, 130, 255, 0.3);
+      opacity: 0;
+      border-radius: 100%;
+      transform: scale(1, 1) translate(-50%, -50%);
+      transform-origin: 50% 50%;
+      animation: ripple 0.6s ease-out;
+    `;
+    li.appendChild(ripple);
+    setTimeout(() => ripple.remove(), 600);
+  });
+  
+  li.addEventListener('mouseover', () => {
+    li.style.backgroundColor = isActive ? 'rgba(70, 130, 255, 0.12)' : 'rgba(0, 0, 0, 0.03)';
+  });
+  
+  li.addEventListener('mouseout', () => {
+    li.style.backgroundColor = isActive ? 'rgba(70, 130, 255, 0.08)' : '';
+  });
+  
+  filterList.appendChild(li);
+});
+filterDropdown.appendChild(filterList);
+
+// Add a ripple animation keyframe if it doesn't exist
+if (!document.querySelector('style#ripple-animation')) {
+  const rippleStyle = document.createElement('style');
+  rippleStyle.id = 'ripple-animation';
+  rippleStyle.textContent = `
+    @keyframes ripple {
+      0% {
+        transform: scale(0, 0);
+        opacity: 0.5;
+      }
+      100% {
+        transform: scale(40, 40);
+        opacity: 0;
+      }
+    }
+  `;
+  document.head.appendChild(rippleStyle);
+}
+
+// Append the dropdown to the body for better positioning
+document.body.appendChild(filterDropdown);
+
+// Function to position the dropdown based on filter button location
+function positionDropdown() {
+  if (!filterButton) return;
+  
+  const buttonRect = filterButton.getBoundingClientRect();
+  
+  // Position dropdown below the button
+  filterDropdown.style.top = `${buttonRect.bottom + window.scrollY + 10}px`;
+  filterDropdown.style.left = `${buttonRect.left + window.scrollX - 5}px`;
+  
+  // Adjust if overflowing right edge of viewport
+  const dropdownWidth = 200; // Width of the dropdown
+  if (buttonRect.left + dropdownWidth > window.innerWidth) {
+    filterDropdown.style.left = `${buttonRect.right + window.scrollX - dropdownWidth + 5}px`;
+  }
+}
+
+// Toggle dropdown visibility with improved animation and positioning
+filterButton.addEventListener('click', (e) => {
+  e.stopPropagation();
+  
+  if (filterDropdown.style.display === 'none') {
+    // Position the dropdown before showing
+    positionDropdown();
+    
+    // Show with animation
+    filterDropdown.style.display = 'block';
+    filterDropdown.style.opacity = '0';
+    filterDropdown.style.transform = 'translateY(-10px) scale(0.98)';
+    
+    setTimeout(() => {
+      filterDropdown.style.transition = 'opacity 0.25s cubic-bezier(0.4, 0, 0.2, 1), transform 0.25s cubic-bezier(0.4, 0, 0.2, 1)';
+      filterDropdown.style.opacity = '1';
+      filterDropdown.style.transform = 'translateY(0) scale(1)';
+    }, 10);
+    
+    // Add active class to filter button (if you use the CSS from the previous example)
+    filterButton.classList.add('active');
+  } else {
+    // Hide with animation
+    filterDropdown.style.opacity = '0';
+    filterDropdown.style.transform = 'translateY(-10px) scale(0.98)';
+    
+    setTimeout(() => {
+      filterDropdown.style.display = 'none';
+      filterDropdown.style.transition = '';
+    }, 250);
+    
+    // Remove active class from filter button
+    filterButton.classList.remove('active');
+  }
+});
+
+// Update dropdown position on window resize
+window.addEventListener('resize', () => {
+  if (filterDropdown.style.display !== 'none') {
+    positionDropdown();
+  }
+});
+
+// Hide the filter dropdown when clicking outside of it
+document.addEventListener('click', (e) => {
+  if (!filterButton.contains(e.target) && !filterDropdown.contains(e.target)) {
+    filterDropdown.style.display = 'none';
+    filterDropdown.style.transition = '';
+    filterButton.classList.remove('active');
+  }
+});
+
+  // ===== 5.3. Helper: Create search result item element =====
   function createSearchResultItem(item) {
     const name = item.dataset.name || '';
     const category = item.dataset.category || '';
@@ -4651,7 +4913,7 @@ document.addEventListener('DOMContentLoaded', function() {
     return div;
   }
 
-  // ===== 5.3. Search Functionality =====
+  // ===== 5.4. Search Functionality =====
   if (searchInput && searchDropdown && searchResultsContent) {
     searchInput.addEventListener('input', function(e) {
       const searchTerm = e.target.value.toLowerCase().trim();

@@ -36,9 +36,9 @@ from django.db.models import Sum
 
 @admin.register(MenuVisit)
 class MenuVisitAdmin(admin.ModelAdmin):
-    list_display = ('restaurant', 'timestamp', 'ip_address')
+    list_display = ('restaurant', 'timestamp', 'device')
     list_filter = ('restaurant', 'timestamp')
-    search_fields = ('restaurant__name', 'ip_address')
+    search_fields = ('restaurant__name', 'device')
 
 
 # Register your models here.

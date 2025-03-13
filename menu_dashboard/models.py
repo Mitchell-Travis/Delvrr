@@ -399,6 +399,7 @@ class MenuVisit(models.Model):
     timestamp = models.DateTimeField(default=now)
     ip_address = models.GenericIPAddressField()
     user_agent = models.TextField()
+    device = models.CharField(max_length=100, blank=True, null=True)  # New field
 
     def __str__(self):
         if self.restaurant and hasattr(self.restaurant, 'name'):
