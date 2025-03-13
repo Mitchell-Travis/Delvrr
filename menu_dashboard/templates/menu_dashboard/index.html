@@ -3880,20 +3880,16 @@ input:checked + .slider:before {
 </script>
 
 <script>
-// First file (paste.txt) remains unchanged
-document.addEventListener('DOMContentLoaded', () => {
-  // Check if we're on restaurant ID 9 by seeing if there's no "featured" category button
+document.addEventListener('DOMContentLoaded', function() {
+  // Check if we're on restaurant ID 9
   const featuredButton = document.querySelector('[data-category="featured"]');
   const isRestaurantId9 = !featuredButton;
   
   // Cache view toggling containers
   const featuredSection = document.querySelector('.featured-section');
   const productGridContainer = document.getElementById('productGridContainer');
-
-  // Ensure grid view is hidden on page load
-  if (productGridContainer) {
-    productGridContainer.style.display = 'none';
-  }
+  const viewAllButton = document.querySelector('.view-all');
+  const backButton = document.querySelector('.back-to-carousel');
 
   // Cache DOM elements for filtering and search
   const categoryButtons = document.querySelectorAll('.category-btn');
@@ -3901,7 +3897,17 @@ document.addEventListener('DOMContentLoaded', () => {
   const searchDropdown = document.querySelector('.search-results-dropdown');
   const searchResultsContent = document.querySelector('.search-results-content');
 
-  // Helper: Returns active items based on which view is visible.
+  // Track the last selected category
+  let lastSelectedCategory = 'featured';
+  if (isRestaurantId9) {
+    // For restaurant ID 9, get the active category from the initially active button
+    const activeButton = document.querySelector('.category-btn.active');
+    if (activeButton) {
+      lastSelectedCategory = activeButton.dataset.category.toLowerCase();
+    }
+  }
+
+  // Helper: Returns active items based on which view is visible
   const getActiveItems = () => {
     if (featuredSection && window.getComputedStyle(featuredSection).display !== 'none') {
       return document.querySelectorAll('.food-item');
@@ -3939,8 +3945,11 @@ document.addEventListener('DOMContentLoaded', () => {
     categoryButtons.forEach(btn => btn.classList.remove('active'));
     button.classList.add('active');
 
-    const selectedCategory = button.dataset.category;
-    filterItemsByCategory(selectedCategory);
+    // Store the last selected category
+    lastSelectedCategory = button.dataset.category.toLowerCase();
+    
+    // Apply the filter
+    filterItemsByCategory(lastSelectedCategory);
 
     // Hide the search dropdown if visible
     if (searchDropdown) searchDropdown.style.display = 'none';
@@ -3951,191 +3960,10 @@ document.addEventListener('DOMContentLoaded', () => {
     button.addEventListener('click', () => handleCategoryClick(button));
   });
 
-  // --- Search Functionality ---
-  const createSearchResultItem = (item) => {
-    let nameElem, imageElem;
-    if (item.classList.contains('grid-item')) {
-      nameElem = item.querySelector('.grid-details h3');
-      imageElem = item.querySelector('.grid-image');
-    } else {
-      nameElem = item.querySelector('h3');
-      imageElem = item.querySelector('.food-image img');
-    }
-    const name = nameElem ? nameElem.textContent : '';
-    const category = item.dataset.category;
-    const image = imageElem ? imageElem.src : '';
-
-    const div = document.createElement('div');
-    div.className = 'search-result-item';
-    div.innerHTML = `
-      <img src="${image}" alt="${name}" class="search-result-image">
-      <div class="search-result-info">
-        <div class="search-result-name">${name}</div>
-        <div class="search-result-category">${category}</div>
-      </div>
-    `;
-
-    div.addEventListener('click', () => {
-      item.scrollIntoView({ behavior: 'smooth', block: 'center' });
-      item.style.transform = 'scale(1.02)';
-      setTimeout(() => { item.style.transform = ''; }, 300);
-      if (searchDropdown) searchDropdown.style.display = 'none';
-      if (searchInput) searchInput.value = '';
-    });
-    return div;
-  };
-
-  if (searchInput && searchDropdown && searchResultsContent) {
-    searchInput.addEventListener('input', (e) => {
-      const searchTerm = e.target.value.toLowerCase().trim();
-      if (searchTerm === '') {
-        searchDropdown.style.display = 'none';
-        showAllItems();
-        return;
-      }
-
-      // Clear previous results
-      searchResultsContent.innerHTML = '';
-      let matches = 0;
-      const activeItems = getActiveItems();
-
-      activeItems.forEach(item => {
-        let nameElem;
-        if (item.classList.contains('grid-item')) {
-          nameElem = item.querySelector('.grid-details h3');
-        } else {
-          nameElem = item.querySelector('h3');
-        }
-        const name = nameElem ? nameElem.textContent.toLowerCase() : '';
-        const itemCategory = item.dataset.category.toLowerCase();
-
-        if (name.includes(searchTerm) || itemCategory.includes(searchTerm)) {
-          matches++;
-          searchResultsContent.appendChild(createSearchResultItem(item));
-        }
-      });
-
-      if (matches === 0) {
-        searchResultsContent.innerHTML = `<div class="no-results-message">No results found for "${searchTerm}"</div>`;
-      }
-      searchDropdown.style.display = 'block';
-    });
-
-    // Hide dropdown when clicking outside
-    document.addEventListener('click', (e) => {
-      if (!searchInput.contains(e.target) && !searchDropdown.contains(e.target)) {
-        searchDropdown.style.display = 'none';
-      }
-    });
-  }
-
-  // Initialize page with correct filtering
-  if (isRestaurantId9) {
-    // For restaurant ID 9, find the active button and filter by its category immediately
-    const activeButton = document.querySelector('.category-btn.active');
-    if (activeButton) {
-      // Apply filtering without requiring a click
-      filterItemsByCategory(activeButton.dataset.category);
-    }
-  } else if (featuredButton) {
-    // For other restaurants, make sure the "featured" button is active
-    categoryButtons.forEach(btn => btn.classList.remove('active'));
-    featuredButton.classList.add('active');
-    // No filtering needed as "featured" shows all items
-  }
-});
-
-// Second file (paste-2.txt) with modifications
-document.addEventListener('DOMContentLoaded', function() {
-  // ===== Add Keyframe Animations for Modal =====
-  const modalStyle = document.createElement('style');
-  modalStyle.textContent = `
-    @keyframes modalImageZoom {
-      from { transform: scale(0.95); opacity: 0; }
-      to { transform: scale(1); opacity: 1; }
-    }
-    @keyframes modalContentSlide {
-      from { transform: translateY(20px); opacity: 0; }
-      to { transform: translateY(0); opacity: 1; }
-    }
-    .modal-image-animate {
-      animation: modalImageZoom 0.3s ease-out forwards;
-    }
-    .modal-content-animate {
-      animation: modalContentSlide 0.3s ease-out forwards;
-    }
-  `;
-  document.head.appendChild(modalStyle);
-
-  // Check if we're on restaurant ID 9 (moved up for global access)
-  const featuredButton = document.querySelector('[data-category="featured"]');
-  const isRestaurantId9 = !featuredButton;
-
-  // ===== Utility Function: Show Product Detail Modal =====
-  function showProductDetail(productData) {
-    const productDetailModalInstance = new bootstrap.Modal(document.getElementById('productDetailModal'));
-    const detailImage = document.getElementById('detailProductImage');
-    const detailContent = document.querySelector('.card-body');
-    
-    // Populate modal elements
-    detailImage.src = productData.image;
-    detailImage.classList.add('modal-image-animate');
-    detailContent.classList.add('modal-content-animate');
-    
-    document.getElementById('detailProductName').textContent = productData.name;
-    document.getElementById('detailProductDescription').textContent = productData.description;
-    document.getElementById('detailProductPrice').textContent = productData.price;
-    
-    const oldPriceElement = document.getElementById('detailProductOldPrice');
-    if(productData.previousPrice) {
-        oldPriceElement.textContent = productData.previousPrice;
-        oldPriceElement.style.textDecoration = 'line-through';
-        oldPriceElement.style.color = '#666';
-    } else {
-        oldPriceElement.textContent = '';
-    }
-    
-    productDetailModalInstance.show();
-    
-    // Clean up animation classes when animations end
-    detailImage.addEventListener('animationend', () => {
-       detailImage.classList.remove('modal-image-animate');
-    });
-    detailContent.addEventListener('animationend', () => {
-       detailContent.classList.remove('modal-content-animate');
-    });
-  }
-
-  // ===== Attach Product Detail Modal to Carousel Items =====
-  document.querySelectorAll('.food-item').forEach(item => {
-    item.addEventListener('click', function(e) {
-      // Prevent modal from triggering when clicking the add-to-cart button
-      if (e.target.closest('.add-to-cart')) return;
-      
-      const productData = {
-        id: item.dataset.productId,
-        name: item.dataset.name,
-        description: item.dataset.description || '',
-        price: `$${item.dataset.price}`,
-        previousPrice: item.dataset.previousPrice ? `$${item.dataset.previousPrice}` : '',
-        image: item.dataset.image
-      };
-      
-      showProductDetail(productData);
-    });
-  });
-
-  // ===== View Toggle Functionality =====
-  const viewAllButton = document.querySelector('.view-all');
-  const featuredSection = document.querySelector('.featured-section');
-  const productGridContainer = document.getElementById('productGridContainer');
-  const productGrid = document.getElementById('productGrid');
-  const backButton = document.querySelector('.back-to-carousel');
-
-  // Extract all products from the carousel (including description for modal)
-  function extractProductsFromCarousel() {
-    const foodItems = document.querySelectorAll('.food-item');
-    return Array.from(foodItems).map(item => {
+  // Toggle from carousel to grid view
+  viewAllButton.addEventListener('click', function() {
+    // Extract all products from the carousel
+    const products = Array.from(document.querySelectorAll('.food-item')).map(item => {
       return {
         id: item.dataset.productId,
         name: item.dataset.name,
@@ -4144,13 +3972,66 @@ document.addEventListener('DOMContentLoaded', function() {
         previousPrice: item.dataset.previousPrice,
         image: item.dataset.image,
         status: item.querySelector('.discount-badge') ? 'Sale' : 'Regular',
-        category: item.dataset.category  // include category for filtering
+        category: item.dataset.category
       };
     });
-  }
+    
+    // Create grid view with all products
+    createGridView(products);
+    
+    featuredSection.classList.add('fade-out');
+    
+    setTimeout(() => {
+      featuredSection.style.display = 'none';
+      productGridContainer.style.display = 'block';
+      productGridContainer.classList.add('fade-in');
+      
+      // Scroll to top
+      window.scrollTo(0, 0);
+      
+      // Apply the last selected category filter to the grid view
+      filterItemsByCategory(lastSelectedCategory);
+      
+      setTimeout(() => {
+        productGridContainer.classList.remove('fade-in');
+      }, 300);
+    }, 300);
+  });
+  
+  // Toggle back from grid to carousel view
+  backButton.addEventListener('click', function() {
+    productGridContainer.classList.add('fade-out');
+    
+    setTimeout(() => {
+      productGridContainer.style.display = 'none';
+      featuredSection.style.display = 'block';
+      featuredSection.classList.add('fade-in');
+      
+      // Apply the last selected category filter to the carousel view
+      // First find the button with the matching category
+      const buttonToActivate = Array.from(categoryButtons).find(
+        btn => btn.dataset.category.toLowerCase() === lastSelectedCategory
+      );
+      
+      if (buttonToActivate) {
+        // Update active state on buttons
+        categoryButtons.forEach(btn => btn.classList.remove('active'));
+        buttonToActivate.classList.add('active');
+        
+        // Apply the filter
+        filterItemsByCategory(lastSelectedCategory);
+      }
+      
+      setTimeout(() => {
+        featuredSection.classList.remove('fade-in', 'fade-out');
+        productGridContainer.classList.remove('fade-out');
+      }, 300);
+    }, 300);
+  });
 
-  // Create the grid view and attach modal handlers to each grid item
+  // Helper function to create the grid view
   function createGridView(products) {
+    const productGrid = document.getElementById('productGrid');
     productGrid.innerHTML = '';
     
     products.forEach(product => {
@@ -4192,7 +4073,7 @@ document.addEventListener('DOMContentLoaded', function() {
       
       productGrid.appendChild(gridItem);
 
-      // When clicking on a grid item (except the add-to-cart button), show product details in the modal
+      // Modal click handler
       gridItem.addEventListener('click', function(e) {
         if(e.target.closest('.add-to-cart')) return;
         const productData = {
@@ -4203,138 +4084,62 @@ document.addEventListener('DOMContentLoaded', function() {
           previousPrice: product.previousPrice ? `$${product.previousPrice}` : '',
           image: product.image
         };
-        showProductDetail(productData);
+        if (typeof showProductDetail === 'function') {
+          showProductDetail(productData);
+        }
       });
     });
   }
 
-  // Toggle from carousel to grid view (MODIFIED)
-  viewAllButton.addEventListener('click', function() {
-    const products = extractProductsFromCarousel();
-    createGridView(products);
-    
-    featuredSection.classList.add('fade-out');
-    
-    setTimeout(() => {
-      featuredSection.style.display = 'none';
-      productGridContainer.style.display = 'block';
-      productGridContainer.classList.add('fade-in');
-      
-      // Scroll to top
-      window.scrollTo(0, 0);
-      
-      // Apply current category filter after grid view is created
-      const activeButton = document.querySelector('.category-btn.active');
-      if (activeButton) {
-        const selectedCategory = activeButton.dataset.category.toLowerCase();
-        const activeItems = document.querySelectorAll('.grid-item');
-        
-        activeItems.forEach(item => {
-          const itemCategory = item.dataset.category.toLowerCase();
-          
-          if (isRestaurantId9) {
-            // For restaurant ID 9, only show exact category matches
-            item.style.display = (itemCategory === selectedCategory) ? '' : 'none';
-          } else {
-            // For all other restaurants, keep original logic
-            item.style.display = (selectedCategory === 'featured' || itemCategory === selectedCategory) ? '' : 'none';
-          }
-        });
+  // Search functionality
+  if (searchInput && searchDropdown && searchResultsContent) {
+    searchInput.addEventListener('input', (e) => {
+      const searchTerm = e.target.value.toLowerCase().trim();
+      if (searchTerm === '') {
+        searchDropdown.style.display = 'none';
+        // Apply the last category filter rather than showing all items
+        filterItemsByCategory(lastSelectedCategory);
+        return;
       }
-      
-      setTimeout(() => {
-        productGridContainer.classList.remove('fade-in');
-      }, 300);
-    }, 300);
-  });
-  
-  // Toggle back from grid to carousel view
-  backButton.addEventListener('click', function() {
-    productGridContainer.classList.add('fade-out');
-    
-    setTimeout(() => {
-      productGridContainer.style.display = 'none';
-      featuredSection.style.display = 'block';
-      featuredSection.classList.add('fade-in');
-      
-      setTimeout(() => {
-        featuredSection.classList.remove('fade-in', 'fade-out');
-        productGridContainer.classList.remove('fade-out');
-      }, 300);
-    }, 300);
-  });
-  
-  // Handle add-to-cart for grid items (if applicable)
-  productGrid.addEventListener('click', function(e) {
-    if (e.target.closest('.add-to-cart')) {
-      const button = e.target.closest('.add-to-cart');
-      const productId = button.dataset.productId;
-      const productName = button.dataset.name;
-      const productPrice = button.dataset.price;
-      
-      if (typeof addToCart === 'function') {
-        addToCart(productId, productName, productPrice);
-      } else {
-        console.log('Adding to cart:', productName);
-        button.classList.add('added');
-        setTimeout(() => {
-          button.classList.remove('added');
-        }, 300);
-      }
-    }
-  });
-  
-  // ===== Search and Category Filter Functionality =====
-  const categoryButtons = document.querySelectorAll('.category-btn');
-  const searchInput = document.querySelector('.search-input');
-  const searchDropdown = document.querySelector('.search-results-dropdown');
-  const searchResultsContent = document.querySelector('.search-results-content');
 
-  // Helper: Return currently visible product items (grid or carousel)
-  function getActiveItems() {
-    if (productGridContainer.style.display !== 'none') {
-      return document.querySelectorAll('.grid-item');
-    } else {
-      return document.querySelectorAll('.food-item');
-    }
-  }
-
-  // Helper: Show all active items (reset filtering)
-  function showAllItems() {
-    const activeItems = getActiveItems();
-    activeItems.forEach(item => item.style.display = '');
-  }
-  
-  // Category button filtering (MODIFIED)
-  categoryButtons.forEach(button => {
-    button.addEventListener('click', function() {
-      // Update active state on category buttons
-      categoryButtons.forEach(btn => btn.classList.remove('active'));
-      button.classList.add('active');
-
-      const selectedCategory = button.dataset.category.toLowerCase();
+      // Clear previous results
+      searchResultsContent.innerHTML = '';
+      let matches = 0;
       const activeItems = getActiveItems();
-      
+
       activeItems.forEach(item => {
-        const itemCategory = item.dataset.category.toLowerCase();
-        
-        if (isRestaurantId9) {
-          // For restaurant ID 9, only show exact category matches
-          item.style.display = (itemCategory === selectedCategory) ? '' : 'none';
+        let nameElem;
+        if (item.classList.contains('grid-item')) {
+          nameElem = item.querySelector('.grid-details h3');
         } else {
-          // For all other restaurants, keep original logic
-          item.style.display = (selectedCategory === 'featured' || itemCategory === selectedCategory) ? '' : 'none';
+          nameElem = item.querySelector('.food-details h3');
+        }
+        const name = nameElem ? nameElem.textContent.toLowerCase() : '';
+        const itemCategory = item.dataset.category.toLowerCase();
+
+        if (name.includes(searchTerm) || itemCategory.includes(searchTerm)) {
+          matches++;
+          searchResultsContent.appendChild(createSearchResultItem(item));
         }
       });
 
-      if (searchDropdown) searchDropdown.style.display = 'none';
+      if (matches === 0) {
+        searchResultsContent.innerHTML = `<div class="no-results-message">No results found for "${searchTerm}"</div>`;
+      }
+      searchDropdown.style.display = 'block';
     });
-  });
-  
-  // Create a search result item element
+
+    // Hide dropdown when clicking outside
+    document.addEventListener('click', (e) => {
+      if (!searchInput.contains(e.target) && !searchDropdown.contains(e.target)) {
+        searchDropdown.style.display = 'none';
+      }
+    });
+  }
+
+  // Helper function to create search result items
   function createSearchResultItem(item) {
     let nameElem;
-    // Different selectors for carousel vs. grid view
     if (item.classList.contains('grid-item')) {
       nameElem = item.querySelector('.grid-details h3');
     } else {
@@ -4361,61 +4166,29 @@ document.addEventListener('DOMContentLoaded', function() {
       </div>
     `;
     
-    // Scroll to and highlight the item when clicked
-    div.addEventListener('click', function() {
+    div.addEventListener('click', () => {
       item.scrollIntoView({ behavior: 'smooth', block: 'center' });
       item.style.transform = 'scale(1.02)';
       setTimeout(() => { item.style.transform = ''; }, 300);
       if (searchDropdown) searchDropdown.style.display = 'none';
       if (searchInput) searchInput.value = '';
     });
-    
     return div;
   }
-  
-  // Search functionality
-  if (searchInput && searchDropdown && searchResultsContent) {
-    searchInput.addEventListener('input', function(e) {
-      const searchTerm = e.target.value.toLowerCase().trim();
-      if (searchTerm === '') {
-        searchDropdown.style.display = 'none';
-        showAllItems();
-        return;
-      }
-      
-      searchResultsContent.innerHTML = '';
-      let matches = 0;
-      const activeItems = getActiveItems();
-      
-      activeItems.forEach(item => {
-        let nameElem;
-        if (item.classList.contains('grid-item')) {
-          nameElem = item.querySelector('.grid-details h3');
-        } else {
-          nameElem = item.querySelector('.food-details h3');
-        }
-        const name = nameElem ? nameElem.textContent.toLowerCase() : '';
-        const itemCategory = item.dataset.category.toLowerCase();
-        
-        if (name.includes(searchTerm) || itemCategory.includes(searchTerm)) {
-          matches++;
-          searchResultsContent.appendChild(createSearchResultItem(item));
-        }
-      });
-      
-      if (matches === 0) {
-        searchResultsContent.innerHTML = `<div class="no-results-message">No results found for "${searchTerm}"</div>`;
-      }
-      
-      searchDropdown.style.display = 'block';
-    });
-    
-    // Hide the search dropdown when clicking outside
-    document.addEventListener('click', function(e) {
-      if (!searchInput.contains(e.target) && !searchDropdown.contains(e.target)) {
-        searchDropdown.style.display = 'none';
-      }
-    });
+
+  // Initialize page with correct filtering
+  if (isRestaurantId9) {
+    // For restaurant ID 9, find the active button and filter by its category immediately
+    const activeButton = document.querySelector('.category-btn.active');
+    if (activeButton) {
+      lastSelectedCategory = activeButton.dataset.category.toLowerCase();
+      filterItemsByCategory(lastSelectedCategory);
+    }
+  } else if (featuredButton) {
+    // For other restaurants, make sure the "featured" button is active
+    categoryButtons.forEach(btn => btn.classList.remove('active'));
+    featuredButton.classList.add('active');
+    lastSelectedCategory = 'featured';
   }
 });
 </script>
