@@ -281,7 +281,7 @@ body {
   
   /* Spacing scale */
   --space-xs: 4px;
-  --space-sm: 8px;
+  --space-sm: 7px;
   --space-md: 16px;
   --space-lg: 24px;
   --space-xl: 32px;
@@ -313,7 +313,7 @@ body {
   align-items: center;
   justify-content: space-between;
   background-color: {{ primary_brand_color }};
-  padding: var(--space-md) var(--space-md);
+  padding: var(--space-sm) var(--space-sm);
   box-shadow: var(--shadow-md);
   position: relative;
   z-index: 20;
@@ -390,7 +390,7 @@ body {
 .header-icons {
   display: flex;
   align-items: center;
-  gap: var(--space-sm);
+  gap: var(--space-md);
 }
 
 .action-button {
@@ -3879,319 +3879,7 @@ input:checked + .slider:before {
 });
 </script>
 
-<script>
-document.addEventListener('DOMContentLoaded', function() {
-  // Check if we're on restaurant ID 9
-  const featuredButton = document.querySelector('[data-category="featured"]');
-  const isRestaurantId9 = !featuredButton;
-  
-  // Cache view toggling containers
-  const featuredSection = document.querySelector('.featured-section');
-  const productGridContainer = document.getElementById('productGridContainer');
-  const viewAllButton = document.querySelector('.view-all');
-  const backButton = document.querySelector('.back-to-carousel');
 
-  // Cache DOM elements for filtering and search
-  const categoryButtons = document.querySelectorAll('.category-btn');
-  const searchInput = document.querySelector('.search-input');
-  const searchDropdown = document.querySelector('.search-results-dropdown');
-  const searchResultsContent = document.querySelector('.search-results-content');
-
-  // Track the last selected category
-  let lastSelectedCategory = 'featured';
-  if (isRestaurantId9) {
-    // For restaurant ID 9, get the active category from the initially active button
-    const activeButton = document.querySelector('.category-btn.active');
-    if (activeButton) {
-      lastSelectedCategory = activeButton.dataset.category.toLowerCase();
-    }
-  }
-
-  // Helper: Returns active items based on which view is visible
-  const getActiveItems = () => {
-    if (featuredSection && window.getComputedStyle(featuredSection).display !== 'none') {
-      return document.querySelectorAll('.food-item');
-    } else {
-      return document.querySelectorAll('.grid-item');
-    }
-  };
-
-  // Helper: Show all items (reset filtering)
-  const showAllItems = () => {
-    const activeItems = getActiveItems();
-    activeItems.forEach(item => item.style.display = '');
-  };
-
-  // Filter items based on category
-  const filterItemsByCategory = (categoryName) => {
-    const activeItems = getActiveItems();
-    
-    activeItems.forEach(item => {
-      const itemCategory = item.dataset.category.toLowerCase();
-      
-      if (isRestaurantId9) {
-        // For restaurant ID 9, only show exact category matches
-        item.style.display = (itemCategory === categoryName.toLowerCase()) ? '' : 'none';
-      } else {
-        // For all other restaurants, keep original logic
-        item.style.display = (categoryName === 'featured' || itemCategory === categoryName.toLowerCase()) ? '' : 'none';
-      }
-    });
-  };
-
-  // Category click handler
-  const handleCategoryClick = (button) => {
-    // Update active state on buttons
-    categoryButtons.forEach(btn => btn.classList.remove('active'));
-    button.classList.add('active');
-
-    // Store the last selected category
-    lastSelectedCategory = button.dataset.category.toLowerCase();
-    
-    // Apply the filter
-    filterItemsByCategory(lastSelectedCategory);
-
-    // Hide the search dropdown if visible
-    if (searchDropdown) searchDropdown.style.display = 'none';
-  };
-
-  // Attach click events to category buttons
-  categoryButtons.forEach(button => {
-    button.addEventListener('click', () => handleCategoryClick(button));
-  });
-
-  // Toggle from carousel to grid view
-  viewAllButton.addEventListener('click', function() {
-    // Extract all products from the carousel
-    const products = Array.from(document.querySelectorAll('.food-item')).map(item => {
-      return {
-        id: item.dataset.productId,
-        name: item.dataset.name,
-        description: item.dataset.description || '',
-        price: item.dataset.price,
-        previousPrice: item.dataset.previousPrice,
-        image: item.dataset.image,
-        status: item.querySelector('.discount-badge') ? 'Sale' : 'Regular',
-        category: item.dataset.category
-      };
-    });
-    
-    // Create grid view with all products
-    createGridView(products);
-    
-    featuredSection.classList.add('fade-out');
-    
-    setTimeout(() => {
-      featuredSection.style.display = 'none';
-      productGridContainer.style.display = 'block';
-      productGridContainer.classList.add('fade-in');
-      
-      // Scroll to top
-      window.scrollTo(0, 0);
-      
-      // Apply the last selected category filter to the grid view
-      filterItemsByCategory(lastSelectedCategory);
-      
-      setTimeout(() => {
-        productGridContainer.classList.remove('fade-in');
-      }, 300);
-    }, 300);
-  });
-  
-  // Toggle back from grid to carousel view
-  backButton.addEventListener('click', function() {
-    productGridContainer.classList.add('fade-out');
-    
-    setTimeout(() => {
-      productGridContainer.style.display = 'none';
-      featuredSection.style.display = 'block';
-      featuredSection.classList.add('fade-in');
-      
-      // Apply the last selected category filter to the carousel view
-      // First find the button with the matching category
-      const buttonToActivate = Array.from(categoryButtons).find(
-        btn => btn.dataset.category.toLowerCase() === lastSelectedCategory
-      );
-      
-      if (buttonToActivate) {
-        // Update active state on buttons
-        categoryButtons.forEach(btn => btn.classList.remove('active'));
-        buttonToActivate.classList.add('active');
-        
-        // Apply the filter
-        filterItemsByCategory(lastSelectedCategory);
-      }
-      
-      setTimeout(() => {
-        featuredSection.classList.remove('fade-in', 'fade-out');
-        productGridContainer.classList.remove('fade-out');
-      }, 300);
-    }, 300);
-  });
-
-  // Helper function to create the grid view
-  function createGridView(products) {
-    const productGrid = document.getElementById('productGrid');
-    productGrid.innerHTML = '';
-    
-    products.forEach(product => {
-      const gridItem = document.createElement('div');
-      gridItem.className = 'grid-item';
-      gridItem.dataset.productId = product.id;
-      gridItem.dataset.category = product.category;
-      gridItem.dataset.name = product.name;
-      gridItem.dataset.description = product.description;
-      gridItem.dataset.price = product.price;
-      gridItem.dataset.previousPrice = product.previousPrice;
-      gridItem.dataset.image = product.image;
-      
-      const isOnSale = product.status === 'Sale';
-      
-      gridItem.innerHTML = `
-        <div class="grid-image-container">
-          ${isOnSale ? '<span class="discount-badge">Sale</span>' : ''}
-          <img src="${product.image}" alt="${product.name}" class="grid-image">
-        </div>
-        <div class="grid-details">
-          <h3>${product.name}</h3>
-          <div class="rating">
-            <i class="fas fa-star"></i>
-            <span>4.9</span>
-            <span class="review-count">(203)</span>
-          </div>
-          <div class="price-row">
-            <div class="price">
-              <span>$${product.price}</span>
-              ${product.previousPrice ? `<span class="previous-price" style="text-decoration: line-through; font-size: 12px; color: var(--text-secondary); margin-left: 4px;">$${product.previousPrice}</span>` : ''}
-            </div>
-            <button class="add-to-cart" data-product-id="${product.id}" data-name="${product.name}" data-price="${product.price}" data-image="${product.image}">
-              <i class="fas fa-plus"></i>
-            </button>
-          </div>
-        </div>
-      `;
-      
-      productGrid.appendChild(gridItem);
-
-      // Modal click handler
-      gridItem.addEventListener('click', function(e) {
-        if(e.target.closest('.add-to-cart')) return;
-        const productData = {
-          id: product.id,
-          name: product.name,
-          description: product.description,
-          price: `$${product.price}`,
-          previousPrice: product.previousPrice ? `$${product.previousPrice}` : '',
-          image: product.image
-        };
-        if (typeof showProductDetail === 'function') {
-          showProductDetail(productData);
-        }
-      });
-    });
-  }
-
-  // Search functionality
-  if (searchInput && searchDropdown && searchResultsContent) {
-    searchInput.addEventListener('input', (e) => {
-      const searchTerm = e.target.value.toLowerCase().trim();
-      if (searchTerm === '') {
-        searchDropdown.style.display = 'none';
-        // Apply the last category filter rather than showing all items
-        filterItemsByCategory(lastSelectedCategory);
-        return;
-      }
-
-      // Clear previous results
-      searchResultsContent.innerHTML = '';
-      let matches = 0;
-      const activeItems = getActiveItems();
-
-      activeItems.forEach(item => {
-        let nameElem;
-        if (item.classList.contains('grid-item')) {
-          nameElem = item.querySelector('.grid-details h3');
-        } else {
-          nameElem = item.querySelector('.food-details h3');
-        }
-        const name = nameElem ? nameElem.textContent.toLowerCase() : '';
-        const itemCategory = item.dataset.category.toLowerCase();
-
-        if (name.includes(searchTerm) || itemCategory.includes(searchTerm)) {
-          matches++;
-          searchResultsContent.appendChild(createSearchResultItem(item));
-        }
-      });
-
-      if (matches === 0) {
-        searchResultsContent.innerHTML = `<div class="no-results-message">No results found for "${searchTerm}"</div>`;
-      }
-      searchDropdown.style.display = 'block';
-    });
-
-    // Hide dropdown when clicking outside
-    document.addEventListener('click', (e) => {
-      if (!searchInput.contains(e.target) && !searchDropdown.contains(e.target)) {
-        searchDropdown.style.display = 'none';
-      }
-    });
-  }
-
-  // Helper function to create search result items
-  function createSearchResultItem(item) {
-    let nameElem;
-    if (item.classList.contains('grid-item')) {
-      nameElem = item.querySelector('.grid-details h3');
-    } else {
-      nameElem = item.querySelector('.food-details h3');
-    }
-    const name = nameElem ? nameElem.textContent : '';
-    const category = item.dataset.category;
-    
-    let imageElem;
-    if (item.classList.contains('grid-item')) {
-      imageElem = item.querySelector('.grid-image');
-    } else {
-      imageElem = item.querySelector('.food-image img');
-    }
-    const image = imageElem ? imageElem.src : '';
-
-    const div = document.createElement('div');
-    div.className = 'search-result-item';
-    div.innerHTML = `
-      <img src="${image}" alt="${name}" class="search-result-image">
-      <div class="search-result-info">
-        <div class="search-result-name">${name}</div>
-        <div class="search-result-category">${category}</div>
-      </div>
-    `;
-    
-    div.addEventListener('click', () => {
-      item.scrollIntoView({ behavior: 'smooth', block: 'center' });
-      item.style.transform = 'scale(1.02)';
-      setTimeout(() => { item.style.transform = ''; }, 300);
-      if (searchDropdown) searchDropdown.style.display = 'none';
-      if (searchInput) searchInput.value = '';
-    });
-    return div;
-  }
-
-  // Initialize page with correct filtering
-  if (isRestaurantId9) {
-    // For restaurant ID 9, find the active button and filter by its category immediately
-    const activeButton = document.querySelector('.category-btn.active');
-    if (activeButton) {
-      lastSelectedCategory = activeButton.dataset.category.toLowerCase();
-      filterItemsByCategory(lastSelectedCategory);
-    }
-  } else if (featuredButton) {
-    // For other restaurants, make sure the "featured" button is active
-    categoryButtons.forEach(btn => btn.classList.remove('active'));
-    featuredButton.classList.add('active');
-    lastSelectedCategory = 'featured';
-  }
-});
-</script>
 
 
 
@@ -4552,97 +4240,98 @@ document.addEventListener('DOMContentLoaded', function() {
 </script>
 
 <script>
-        document.addEventListener('DOMContentLoaded', function() {
-            const categoryScroll = document.querySelector('.category-scroll');
-            const categoryButtons = document.querySelectorAll('.category-btn');
-            
-            // Handle button click
-            categoryButtons.forEach(button => {
-                button.addEventListener('click', function() {
-                    // Remove active class from all buttons
-                    categoryButtons.forEach(btn => btn.classList.remove('active'));
-                    
-                    // Add active class to clicked button
-                    this.classList.add('active');
-                    
-                    // Scroll into view (centered)
-                    const scrollContainer = categoryScroll;
-                    const buttonLeft = this.offsetLeft;
-                    const buttonWidth = this.offsetWidth;
-                    const containerWidth = scrollContainer.clientWidth;
-                    
-                    const targetScrollLeft = buttonLeft - (containerWidth / 2) + (buttonWidth / 2);
-                    scrollContainer.scrollTo({ left: targetScrollLeft, behavior: 'smooth' });
-                    
-                    // Handle category change logic here
-                    const categoryName = this.dataset.category;
-                    // Your category change logic...
-                });
-            });
-            
-            // Mouse drag scrolling
-            let isDown = false;
-            let startX;
-            let scrollLeft;
-            
-            categoryScroll.addEventListener('mousedown', (e) => {
-                isDown = true;
-                categoryScroll.classList.add('dragging');
-                startX = e.pageX - categoryScroll.offsetLeft;
-                scrollLeft = categoryScroll.scrollLeft;
-            });
-            
-            categoryScroll.addEventListener('mouseleave', () => {
-                isDown = false;
-                categoryScroll.classList.remove('dragging');
-            });
-            
-            categoryScroll.addEventListener('mouseup', () => {
-                isDown = false;
-                categoryScroll.classList.remove('dragging');
-            });
-            
-            categoryScroll.addEventListener('mousemove', (e) => {
-                if (!isDown) return;
-                e.preventDefault();
-                const x = e.pageX - categoryScroll.offsetLeft;
-                const walk = (x - startX) * 1.5; // Scroll speed multiplier
-                categoryScroll.scrollLeft = scrollLeft - walk;
-            });
-            
-            // Touch drag scrolling (mobile)
-            let touchStartX;
-            let touchScrollLeft;
-            
-            categoryScroll.addEventListener('touchstart', (e) => {
-                touchStartX = e.touches[0].pageX - categoryScroll.offsetLeft;
-                touchScrollLeft = categoryScroll.scrollLeft;
-            }, { passive: true });
-            
-            categoryScroll.addEventListener('touchmove', (e) => {
-                const x = e.touches[0].pageX - categoryScroll.offsetLeft;
-                const walk = (x - touchStartX) * 1.5;
-                categoryScroll.scrollLeft = touchScrollLeft - walk;
-            }, { passive: true });
-            
-            // Auto-scroll to active button on page load
-            const activeButton = document.querySelector('.category-btn.active');
-            if (activeButton) {
+    document.addEventListener('DOMContentLoaded', function() {
+        const categoryScroll = document.querySelector('.category-scroll');
+        const categoryButtons = document.querySelectorAll('.category-btn');
+        
+        // Handle button click
+        categoryButtons.forEach(button => {
+            button.addEventListener('click', function() {
+                // Remove active class from all buttons
+                categoryButtons.forEach(btn => btn.classList.remove('active'));
+                
+                // Add active class to clicked button
+                this.classList.add('active');
+                
+                // Scroll into view (centered)
                 const scrollContainer = categoryScroll;
-                const buttonLeft = activeButton.offsetLeft;
-                const buttonWidth = activeButton.offsetWidth;
+                const buttonLeft = this.offsetLeft;
+                const buttonWidth = this.offsetWidth;
                 const containerWidth = scrollContainer.clientWidth;
                 
-                // Center the active button
                 const targetScrollLeft = buttonLeft - (containerWidth / 2) + (buttonWidth / 2);
-                scrollContainer.scrollLeft = targetScrollLeft;
-            }
+                scrollContainer.scrollTo({ left: targetScrollLeft, behavior: 'smooth' });
+                
+                // Handle category change logic here
+                const categoryName = this.dataset.category;
+                // Your category change logic...
+            });
         });
+        
+        // Mouse drag scrolling
+        let isDown = false;
+        let startX;
+        let scrollLeft;
+        
+        categoryScroll.addEventListener('mousedown', (e) => {
+            isDown = true;
+            categoryScroll.classList.add('dragging');
+            startX = e.pageX - categoryScroll.offsetLeft;
+            scrollLeft = categoryScroll.scrollLeft;
+        });
+        
+        categoryScroll.addEventListener('mouseleave', () => {
+            isDown = false;
+            categoryScroll.classList.remove('dragging');
+        });
+        
+        categoryScroll.addEventListener('mouseup', () => {
+            isDown = false;
+            categoryScroll.classList.remove('dragging');
+        });
+        
+        categoryScroll.addEventListener('mousemove', (e) => {
+            if (!isDown) return;
+            e.preventDefault();
+            const x = e.pageX - categoryScroll.offsetLeft;
+            const walk = (x - startX) * 1.5; // Scroll speed multiplier
+            categoryScroll.scrollLeft = scrollLeft - walk;
+        });
+        
+        // Touch drag scrolling (mobile)
+        let touchStartX;
+        let touchScrollLeft;
+        
+        categoryScroll.addEventListener('touchstart', (e) => {
+            touchStartX = e.touches[0].pageX - categoryScroll.offsetLeft;
+            touchScrollLeft = categoryScroll.scrollLeft;
+        }, { passive: true });
+        
+        categoryScroll.addEventListener('touchmove', (e) => {
+            const x = e.touches[0].pageX - categoryScroll.offsetLeft;
+            const walk = (x - touchStartX) * 1.5;
+            categoryScroll.scrollLeft = touchScrollLeft - walk;
+        }, { passive: true });
+        
+        // Auto-scroll to active button on page load
+        const activeButton = document.querySelector('.category-btn.active');
+        if (activeButton) {
+            const scrollContainer = categoryScroll;
+            const buttonLeft = activeButton.offsetLeft;
+            const buttonWidth = activeButton.offsetWidth;
+            const containerWidth = scrollContainer.clientWidth;
+            
+            // Center the active button
+            const targetScrollLeft = buttonLeft - (containerWidth / 2) + (buttonWidth / 2);
+            scrollContainer.scrollLeft = targetScrollLeft;
+        }
+    });
     </script>
 
+<!-- Search features -->
 <script>
 document.addEventListener('DOMContentLoaded', function() {
-  // ===== Add Keyframe Animations for Modal =====
+  // ===== 1. Add Keyframe Animations for Modal =====
   const modalStyle = document.createElement('style');
   modalStyle.textContent = `
     @keyframes modalImageZoom {
@@ -4662,7 +4351,7 @@ document.addEventListener('DOMContentLoaded', function() {
   `;
   document.head.appendChild(modalStyle);
 
-  // ===== Utility Function: Show Product Detail Modal =====
+  // ===== 2. Utility: Show Product Detail Modal =====
   function showProductDetail(productData) {
     const productDetailModalInstance = new bootstrap.Modal(document.getElementById('productDetailModal'));
     const detailImage = document.getElementById('detailProductImage');
@@ -4679,11 +4368,11 @@ document.addEventListener('DOMContentLoaded', function() {
     
     const oldPriceElement = document.getElementById('detailProductOldPrice');
     if(productData.previousPrice) {
-        oldPriceElement.textContent = productData.previousPrice;
-        oldPriceElement.style.textDecoration = 'line-through';
-        oldPriceElement.style.color = '#666';
+      oldPriceElement.textContent = productData.previousPrice;
+      oldPriceElement.style.textDecoration = 'line-through';
+      oldPriceElement.style.color = '#666';
     } else {
-        oldPriceElement.textContent = '';
+      oldPriceElement.textContent = '';
     }
     
     productDetailModalInstance.show();
@@ -4697,7 +4386,7 @@ document.addEventListener('DOMContentLoaded', function() {
     });
   }
 
-  // ===== Attach Product Detail Modal to Carousel Items =====
+  // ===== 3. Attach Product Detail Modal to Carousel Items =====
   document.querySelectorAll('.food-item').forEach(item => {
     item.addEventListener('click', function(e) {
       // Prevent modal from triggering when clicking the add-to-cart button
@@ -4716,14 +4405,14 @@ document.addEventListener('DOMContentLoaded', function() {
     });
   });
 
-  // ===== View Toggle Functionality =====
-  const viewAllButton = document.querySelector('.view-all');
+  // ===== 4. View Toggle Functionality =====
   const featuredSection = document.querySelector('.featured-section');
   const productGridContainer = document.getElementById('productGridContainer');
   const productGrid = document.getElementById('productGrid');
+  const viewAllButton = document.querySelector('.view-all');
   const backButton = document.querySelector('.back-to-carousel');
 
-  // Extract all products from the carousel (including description for modal)
+  // Helper: Extract products from carousel using dataset attributes
   function extractProductsFromCarousel() {
     const foodItems = document.querySelectorAll('.food-item');
     return Array.from(foodItems).map(item => {
@@ -4735,15 +4424,14 @@ document.addEventListener('DOMContentLoaded', function() {
         previousPrice: item.dataset.previousPrice,
         image: item.dataset.image,
         status: item.querySelector('.discount-badge') ? 'Sale' : 'Regular',
-        category: item.dataset.category  // include category for filtering
+        category: item.dataset.category  // used for filtering
       };
     });
   }
 
-  // Create the grid view and attach modal handlers to each grid item
+  // Helper: Create grid view items
   function createGridView(products) {
     productGrid.innerHTML = '';
-    
     products.forEach(product => {
       const gridItem = document.createElement('div');
       gridItem.className = 'grid-item';
@@ -4756,7 +4444,6 @@ document.addEventListener('DOMContentLoaded', function() {
       gridItem.dataset.image = product.image;
       
       const isOnSale = product.status === 'Sale';
-      
       gridItem.innerHTML = `
         <div class="grid-image-container">
           ${isOnSale ? '<span class="discount-badge">Sale</span>' : ''}
@@ -4783,7 +4470,7 @@ document.addEventListener('DOMContentLoaded', function() {
       
       productGrid.appendChild(gridItem);
 
-      // When clicking on a grid item (except the add-to-cart button), show product details in the modal
+      // Attach modal detail handler to grid item
       gridItem.addEventListener('click', function(e) {
         if(e.target.closest('.add-to-cart')) return;
         const productData = {
@@ -4799,123 +4486,136 @@ document.addEventListener('DOMContentLoaded', function() {
     });
   }
 
-  // Toggle from carousel to grid view
-  viewAllButton.addEventListener('click', function() {
-    const products = extractProductsFromCarousel();
-    createGridView(products);
-    
-    featuredSection.classList.add('fade-out');
-    
-    setTimeout(() => {
-      featuredSection.style.display = 'none';
-      productGridContainer.style.display = 'block';
-      productGridContainer.classList.add('fade-in');
-      
-      // Scroll to top
-      window.scrollTo(0, 0);
-      
-      setTimeout(() => {
-        productGridContainer.classList.remove('fade-in');
-      }, 300);
-    }, 300);
-  });
-  
-  // Toggle back from grid to carousel view
-  backButton.addEventListener('click', function() {
-    productGridContainer.classList.add('fade-out');
-    
-    setTimeout(() => {
-      productGridContainer.style.display = 'none';
-      featuredSection.style.display = 'block';
-      featuredSection.classList.add('fade-in');
-      
-      setTimeout(() => {
-        featuredSection.classList.remove('fade-in', 'fade-out');
-        productGridContainer.classList.remove('fade-out');
-      }, 300);
-    }, 300);
-  });
-  
-  // Handle add-to-cart for grid items (if applicable)
-  productGrid.addEventListener('click', function(e) {
-    if (e.target.closest('.add-to-cart')) {
-      const button = e.target.closest('.add-to-cart');
-      const productId = button.dataset.productId;
-      const productName = button.dataset.name;
-      const productPrice = button.dataset.price;
-      
-      if (typeof addToCart === 'function') {
-        addToCart(productId, productName, productPrice);
-      } else {
-        console.log('Adding to cart:', productName);
-        button.classList.add('added');
-        setTimeout(() => {
-          button.classList.remove('added');
-        }, 300);
-      }
+  // Helper: Determine which view is active by checking computed style
+  const getActiveItems = () => {
+    if (featuredSection && window.getComputedStyle(featuredSection).display !== 'none') {
+      // Carousel view: look for food items inside the featured section
+      return document.querySelectorAll('.featured-section .food-item');
+    } else {
+      // Grid view: use grid items
+      return document.querySelectorAll('.grid-item');
     }
-  });
-  
-  // ===== Search and Category Filter Functionality =====
+  };
+
+  // ===== 5. Category Filter and Search Functionality =====
   const categoryButtons = document.querySelectorAll('.category-btn');
   const searchInput = document.querySelector('.search-input');
   const searchDropdown = document.querySelector('.search-results-dropdown');
   const searchResultsContent = document.querySelector('.search-results-content');
 
-  // Helper: Return currently visible product items (grid or carousel)
-  function getActiveItems() {
-    if (productGridContainer.style.display !== 'none') {
-      return document.querySelectorAll('.grid-item');
-    } else {
-      return document.querySelectorAll('.food-item');
+  // Special handling: Check if we're on restaurant ID 9 (no featured button)
+  const featuredButton = document.querySelector('[data-category="featured"]');
+  const isRestaurantId9 = !featuredButton;
+  let lastSelectedCategory = 'featured';
+  if (isRestaurantId9) {
+    const activeButton = document.querySelector('.category-btn.active');
+    if (activeButton) {
+      lastSelectedCategory = activeButton.dataset.category.toLowerCase();
     }
   }
 
-  // Helper: Show all active items (reset filtering)
-  function showAllItems() {
+  // Filter items based on category selection
+  function filterItemsByCategory(categoryName) {
     const activeItems = getActiveItems();
-    activeItems.forEach(item => item.style.display = '');
-  }
-  
-  // Category button filtering
-  categoryButtons.forEach(button => {
-    button.addEventListener('click', function() {
-      // Update active state on category buttons
-      categoryButtons.forEach(btn => btn.classList.remove('active'));
-      button.classList.add('active');
-
-      const selectedCategory = button.dataset.category.toLowerCase();
-      const activeItems = getActiveItems();
-      
-      activeItems.forEach(item => {
-        const itemCategory = item.dataset.category.toLowerCase();
-        item.style.display = (selectedCategory === 'featured' || itemCategory === selectedCategory) ? '' : 'none';
-      });
-
-      if (searchDropdown) searchDropdown.style.display = 'none';
+    activeItems.forEach(item => {
+      const itemCategory = (item.dataset.category || '').toLowerCase();
+      if (isRestaurantId9) {
+        // For restaurant ID 9: only show exact matches
+        item.style.display = (itemCategory === categoryName.toLowerCase()) ? '' : 'none';
+      } else {
+        // For others: if 'featured', show all; otherwise match category
+        item.style.display = (categoryName === 'featured' || itemCategory === categoryName.toLowerCase()) ? '' : 'none';
+      }
     });
-  });
-  
-  // Create a search result item element
-  function createSearchResultItem(item) {
-    let nameElem;
-    // Different selectors for carousel vs. grid view
-    if (item.classList.contains('grid-item')) {
-      nameElem = item.querySelector('.grid-details h3');
-    } else {
-      nameElem = item.querySelector('.food-details h3');
-    }
-    const name = nameElem ? nameElem.textContent : '';
-    const category = item.dataset.category;
-    
-    let imageElem;
-    if (item.classList.contains('grid-item')) {
-      imageElem = item.querySelector('.grid-image');
-    } else {
-      imageElem = item.querySelector('.food-image img');
-    }
-    const image = imageElem ? imageElem.src : '';
+  }
 
+  // Category button click handler
+  function handleCategoryClick(button) {
+    categoryButtons.forEach(btn => btn.classList.remove('active'));
+    button.classList.add('active');
+    lastSelectedCategory = button.dataset.category.toLowerCase();
+    filterItemsByCategory(lastSelectedCategory);
+    if (searchDropdown) searchDropdown.style.display = 'none';
+  }
+  categoryButtons.forEach(button => {
+    button.addEventListener('click', () => handleCategoryClick(button));
+  });
+
+  // ===== 5.1. Filter Dropdown for Categories (Improved Styling) =====
+  const filterButton = document.querySelector('.filter-button');
+  // Create a dropdown container for filter options
+  const filterDropdown = document.createElement('div');
+  filterDropdown.className = 'filter-dropdown';
+  filterDropdown.style.cssText = `
+    display: none;
+    position: absolute;
+    top: 100%;
+    right: 0;
+    background-color: #ffffff;
+    border: 1px solid #ddd;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+    border-radius: 4px;
+    padding: 5px 0;
+    z-index: 1000;
+    width: 150px;
+  `;
+
+  // Create an unordered list to hold category options
+  const filterList = document.createElement('ul');
+  filterList.style.cssText = `
+    list-style: none;
+    margin: 0;
+    padding: 0;
+  `;
+
+  // Populate the list using your category buttons
+  categoryButtons.forEach(button => {
+    const li = document.createElement('li');
+    li.textContent = button.dataset.category;
+    li.style.cssText = `
+      padding: 10px 16px;
+      cursor: pointer;
+      transition: background-color 0.2s ease;
+    `;
+    
+    li.addEventListener('click', () => {
+      handleCategoryClick(button);
+      filterDropdown.style.display = 'none';
+    });
+    
+    li.addEventListener('mouseover', () => {
+      li.style.backgroundColor = '#f8f8f8';
+    });
+    li.addEventListener('mouseout', () => {
+      li.style.backgroundColor = '';
+    });
+    
+    filterList.appendChild(li);
+  });
+  filterDropdown.appendChild(filterList);
+  // Append the dropdown to the search container so it’s positioned relative to it
+  const searchContainer = document.querySelector('.search-container');
+  searchContainer.style.position = 'relative';
+  searchContainer.appendChild(filterDropdown);
+
+  // Toggle dropdown visibility when filter button is clicked
+  filterButton.addEventListener('click', (e) => {
+    e.stopPropagation();
+    filterDropdown.style.display = filterDropdown.style.display === 'none' ? 'block' : 'none';
+  });
+
+  // Hide the filter dropdown when clicking outside of it
+  document.addEventListener('click', (e) => {
+    if (!filterButton.contains(e.target) && !filterDropdown.contains(e.target)) {
+      filterDropdown.style.display = 'none';
+    }
+  });
+
+  // ===== 5.2. Helper: Create search result item element =====
+  function createSearchResultItem(item) {
+    const name = item.dataset.name || '';
+    const category = item.dataset.category || '';
+    const image = item.dataset.image || '';
     const div = document.createElement('div');
     div.className = 'search-result-item';
     div.innerHTML = `
@@ -4926,8 +4626,21 @@ document.addEventListener('DOMContentLoaded', function() {
       </div>
     `;
     
-    // Scroll to and highlight the item when clicked
-    div.addEventListener('click', function() {
+    // When clicked, check if the product category is different from the active category.
+    // If so, trigger a category switch before scrolling to and highlighting the item.
+    div.addEventListener('click', () => {
+      const searchCategory = category.toLowerCase();
+      if (searchCategory !== lastSelectedCategory) {
+        // Find the button that matches the search result's category
+        const targetButton = Array.from(categoryButtons).find(
+          btn => (btn.dataset.category || '').toLowerCase() === searchCategory
+        );
+        if (targetButton) {
+          // Switch to the new category
+          handleCategoryClick(targetButton);
+        }
+      }
+      // Scroll to the item and highlight it
       item.scrollIntoView({ behavior: 'smooth', block: 'center' });
       item.style.transform = 'scale(1.02)';
       setTimeout(() => { item.style.transform = ''; }, 300);
@@ -4937,14 +4650,14 @@ document.addEventListener('DOMContentLoaded', function() {
     
     return div;
   }
-  
-  // Search functionality
+
+  // ===== 5.3. Search Functionality =====
   if (searchInput && searchDropdown && searchResultsContent) {
     searchInput.addEventListener('input', function(e) {
       const searchTerm = e.target.value.toLowerCase().trim();
       if (searchTerm === '') {
         searchDropdown.style.display = 'none';
-        showAllItems();
+        filterItemsByCategory(lastSelectedCategory);
         return;
       }
       
@@ -4953,15 +4666,8 @@ document.addEventListener('DOMContentLoaded', function() {
       const activeItems = getActiveItems();
       
       activeItems.forEach(item => {
-        let nameElem;
-        if (item.classList.contains('grid-item')) {
-          nameElem = item.querySelector('.grid-details h3');
-        } else {
-          nameElem = item.querySelector('.food-details h3');
-        }
-        const name = nameElem ? nameElem.textContent.toLowerCase() : '';
-        const itemCategory = item.dataset.category.toLowerCase();
-        
+        const name = (item.dataset.name || '').toLowerCase();
+        const itemCategory = (item.dataset.category || '').toLowerCase();
         if (name.includes(searchTerm) || itemCategory.includes(searchTerm)) {
           matches++;
           searchResultsContent.appendChild(createSearchResultItem(item));
@@ -4982,8 +4688,96 @@ document.addEventListener('DOMContentLoaded', function() {
       }
     });
   }
+
+  // ===== 6. Toggle from Carousel to Grid View =====
+  if (viewAllButton) {
+    viewAllButton.addEventListener('click', function() {
+      const products = extractProductsFromCarousel();
+      createGridView(products);
+      
+      featuredSection.classList.add('fade-out');
+      
+      setTimeout(() => {
+        featuredSection.style.display = 'none';
+        productGridContainer.style.display = 'block';
+        productGridContainer.classList.add('fade-in');
+        
+        // Scroll to top and apply the last category filter in grid view
+        window.scrollTo(0, 0);
+        filterItemsByCategory(lastSelectedCategory);
+        
+        setTimeout(() => {
+          productGridContainer.classList.remove('fade-in');
+        }, 300);
+      }, 300);
+    });
+  }
+  
+  // ===== 7. Toggle Back from Grid to Carousel View =====
+  if (backButton) {
+    backButton.addEventListener('click', function() {
+      productGridContainer.classList.add('fade-out');
+      
+      setTimeout(() => {
+        productGridContainer.style.display = 'none';
+        featuredSection.style.display = 'block';
+        featuredSection.classList.add('fade-in');
+        
+        // Update the active category button in the carousel view
+        const buttonToActivate = Array.from(categoryButtons).find(
+          btn => btn.dataset.category.toLowerCase() === lastSelectedCategory
+        );
+        if (buttonToActivate) {
+          categoryButtons.forEach(btn => btn.classList.remove('active'));
+          buttonToActivate.classList.add('active');
+          filterItemsByCategory(lastSelectedCategory);
+        }
+        
+        setTimeout(() => {
+          featuredSection.classList.remove('fade-in', 'fade-out');
+          productGridContainer.classList.remove('fade-out');
+        }, 300);
+      }, 300);
+    });
+  }
+  
+  // ===== 8. Handle Add-to-Cart for Grid Items =====
+  productGrid.addEventListener('click', function(e) {
+    if (e.target.closest('.add-to-cart')) {
+      const button = e.target.closest('.add-to-cart');
+      const productId = button.dataset.productId;
+      const productName = button.dataset.name;
+      const productPrice = button.dataset.price;
+      
+      if (typeof addToCart === 'function') {
+        addToCart(productId, productName, productPrice);
+      } else {
+        console.log('Adding to cart:', productName);
+        button.classList.add('added');
+        setTimeout(() => {
+          button.classList.remove('added');
+        }, 300);
+      }
+    }
+  });
+
+  // ===== 9. Initialization: Set Default Category Filtering =====
+  if (!isRestaurantId9 && featuredButton) {
+    categoryButtons.forEach(btn => btn.classList.remove('active'));
+    featuredButton.classList.add('active');
+    lastSelectedCategory = 'featured';
+  } else if (isRestaurantId9) {
+    const activeButton = document.querySelector('.category-btn.active');
+    if (activeButton) {
+      lastSelectedCategory = activeButton.dataset.category.toLowerCase();
+      filterItemsByCategory(lastSelectedCategory);
+    }
+  }
 });
 </script>
+
+
+
 
 
 
