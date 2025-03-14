@@ -266,30 +266,30 @@ body {
   
   /* Define a consistent design system */
   --background: #ffffff;
-  --text-primary: #333333;
-  --text-secondary: #757575;
-  --light-bg: #f5f5f5;
+  --text-primary: #222222;
+  --text-secondary: #6e6e6e;
+  --light-bg: #f7f7f7;
   --border-color: rgba(0, 0, 0, 0.08);
   --success-color: #4CAF50;
   --warning-color: #FFC107;
   --danger-color: #F44336;
   
   /* Elevation/shadows */
-  --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.1);
-  --shadow-md: 0 4px 6px rgba(0, 0, 0, 0.1);
-  --shadow-lg: 0 10px 15px rgba(0, 0, 0, 0.1);
+  --shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.08);
+  --shadow-md: 0 6px 16px rgba(0, 0, 0, 0.12);
+  --shadow-lg: 0 12px 24px rgba(0, 0, 0, 0.15);
   
   /* Spacing scale */
   --space-xs: 4px;
-  --space-sm: 7px;
+  --space-sm: 8px;
   --space-md: 16px;
   --space-lg: 24px;
   --space-xl: 32px;
   
   /* Border radius */
-  --radius-sm: 4px;
-  --radius-md: 8px;
-  --radius-lg: 16px;
+  --radius-sm: 6px;
+  --radius-md: 12px;
+  --radius-lg: 20px;
   --radius-pill: 9999px;
 }
 
@@ -305,6 +305,7 @@ body {
   color: var(--text-primary);
   background-color: var(--light-bg);
   -webkit-tap-highlight-color: transparent;
+  overflow-x: hidden;
 }
 
 /* ======== Header Component ======== */
@@ -313,10 +314,11 @@ body {
   align-items: center;
   justify-content: space-between;
   background-color: {{ primary_brand_color }};
-  padding: var(--space-sm) var(--space-sm);
+  padding: var(--space-md) var(--space-md);
   box-shadow: var(--shadow-md);
   position: relative;
-  z-index: 20;
+  z-index: 19;
+  
 }
 
 /* Group the hamburger menu and brand info on the left */
@@ -330,25 +332,25 @@ body {
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 38px;
-  height: 38px;
-  border-radius: 12px;
+  width: 42px;
+  height: 42px;
+  border-radius: 14px;
   background: linear-gradient(135deg, rgba(255, 255, 255, 0.25), rgba(255, 255, 255, 0.1));
-  border: 1px solid rgba(255, 255, 255, 0.18);
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1), 
-              inset 0 1px 1px rgba(255, 255, 255, 0.2);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15), 
+              inset 0 1px 1px rgba(255, 255, 255, 0.3);
   backdrop-filter: blur(5px);
   -webkit-backdrop-filter: blur(5px);
   transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+  cursor: pointer;
   position: relative;
   overflow: hidden;
-  cursor: pointer;
 }
 
 /* Hover effect */
 .filter-button:hover {
   transform: translateY(-2px);
-  box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15), 
+  box-shadow: 0 6px 12px rgba(0, 0, 0, 0.2), 
               inset 0 1px 1px rgba(255, 255, 255, 0.3);
 }
 
@@ -361,61 +363,12 @@ body {
 
 /* Icon styling */
 .filter-button i {
-  font-size: 16px;
+  font-size: 18px;
   color: #fff;
   text-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
   transition: transform 0.2s ease;
 }
 
-/* Subtle icon animation on hover */
-.filter-button:hover i {
-  transform: rotate(15deg);
-}
-
-/* Add ripple effect on click */
-.filter-button::after {
-  content: '';
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  width: 5px;
-  height: 5px;
-  background: rgba(255, 255, 255, 0.7);
-  opacity: 0;
-  border-radius: 100%;
-  transform: scale(1, 1) translate(-50%, -50%);
-  transform-origin: 50% 50%;
-}
-
-/* Animation for the ripple effect */
-@keyframes ripple {
-  0% {
-    transform: scale(0, 0);
-    opacity: 0.5;
-  }
-  100% {
-    transform: scale(40, 40);
-    opacity: 0;
-  }
-}
-
-/* Apply animation on click using JavaScript */
-.filter-button.ripple::after {
-  animation: ripple 0.6s ease-out;
-}
-
-/* Focus state for accessibility */
-.filter-button:focus {
-  outline: none;
-  box-shadow: 0 0 0 2px rgba(255, 255, 255, 0.4), 
-              0 6px 12px rgba(0, 0, 0, 0.1);
-}
-
-/* State when filter is active */
-.filter-button.active {
-  background: linear-gradient(135deg, rgba(70, 130, 255, 0.5), rgba(70, 130, 255, 0.3));
-  border-color: rgba(100, 150, 255, 0.3);
-}
 /* Brand styling */
 .brand-info {
   display: flex;
@@ -423,11 +376,12 @@ body {
 }
 
 .logo {
-  font-size: 22px;
+  font-size: 24px;
   font-weight: bold;
   color: #fff;
   line-height: 1.1;
   letter-spacing: -0.5px;
+  text-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
 }
 
 .restaurant-name-container {
@@ -436,9 +390,10 @@ body {
   margin-top: var(--space-xs);
   background-color: rgba(255, 255, 255, 0.15);
   border-radius: var(--radius-pill);
-  padding: 4px 10px;
+  padding: 4px 12px;
   backdrop-filter: blur(4px);
   -webkit-backdrop-filter: blur(4px);
+  border: 1px solid rgba(255, 255, 255, 0.1);
 }
 
 .location-icon {
@@ -466,37 +421,38 @@ body {
   align-items: center;
   justify-content: center;
   background-color: rgba(255, 255, 255, 0.15);
-  border: none;
-  width: 36px;
-  height: 36px;
-  border-radius: 50%;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  width: 38px;
+  height: 38px;
+  border-radius: 12px;
   color: white;
   cursor: pointer;
   transition: all 0.2s ease;
   backdrop-filter: blur(4px);
   -webkit-backdrop-filter: blur(4px);
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
 }
 
 .action-button:active {
   transform: scale(0.95);
+  box-shadow: 0 2px 3px rgba(0, 0, 0, 0.1);
 }
 
 .restaurant-logo {
-  width: 40px;
-  height: 40px;
-  border-radius: 50%;
+  width: 46px;
+  height: 46px;
+  border-radius: 14px;
   object-fit: cover;
   border: 2px solid rgba(255, 255, 255, 0.8);
-  box-shadow: var(--shadow-sm);
+  box-shadow: var(--shadow-md);
 }
 
-/* ======== Search Section ======== */
 /* ======== Search Section ======== */
 .search-header {
   width: 100%;
   background-color: var(--background);
   padding: var(--space-md);
-  margin-top: 0;
+  margin-top: 0px;
   position: relative;
   z-index: 19;
   border-radius: var(--radius-lg) var(--radius-lg) 0 0;
@@ -509,10 +465,10 @@ body {
   border-radius: var(--radius-pill);
   display: flex;
   align-items: center;
-  /* Reduced vertical padding while keeping horizontal padding the same */
-  padding: 6px 24px;
+  padding: 12px 20px;
   position: relative;
   border: 1px solid rgba(0, 0, 0, 0.05);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
 }
 
 .search-icon {
@@ -527,8 +483,7 @@ body {
   background: transparent;
   outline: none;
   font-size: 16px;
-  /* Reduced vertical padding to make it less tall */
-  padding: 3px 0;
+  padding: 0;
   color: var(--text-primary);
 }
 
@@ -536,30 +491,16 @@ body {
   color: var(--text-secondary);
 }
 
-.filter-button {
-  background: none;
-  border: none;
-  /* Adjusted padding for a more compact look */
-  padding: 6px;
-  color: var(--text-secondary);
-  cursor: pointer;
-  border-radius: 50%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
 .search-results-dropdown {
   position: absolute;
-  top: 100%;
+  top: calc(100% + 6px);
   left: 0;
   right: 0;
   background: var(--background);
   border: 1px solid var(--border-color);
   border-radius: var(--radius-md);
   z-index: 999;
-  margin-top: var(--space-sm);
-  box-shadow: var(--shadow-md);
+  box-shadow: var(--shadow-lg);
   overflow: hidden;
 }
 
@@ -825,31 +766,26 @@ body {
 .category-nav {
   position: sticky;
   top: 0;
-  z-index: 1000;
-  padding: var(--space-sm) 0;
-  border-bottom: 1px solid var(--border-color);
+  z-index: 18;
+  padding: var(--space-md) 0 var(--space-sm);
   background: var(--background);
   backdrop-filter: blur(10px);
   -webkit-backdrop-filter: blur(10px);
   transition: all 0.3s ease;
   width: 100%;
-  box-shadow: none;
+  border-bottom: 1px solid var(--border-color);
 }
 
 .category-scroll {
   display: flex;
   overflow-x: auto;
-  gap: 12px;
+  gap: 14px;
   padding: 4px 16px;
   -webkit-overflow-scrolling: touch;
   scroll-behavior: smooth;
   scrollbar-width: none;
-  /* Smoother scroll mask at edges */
-  mask-image: linear-gradient(to right, transparent, black 2%, black 98%, transparent);
-  -webkit-mask-image: linear-gradient(to right, transparent, black 2%, black 98%, transparent);
-  position: relative;
-  max-width: 100%;
-  flex-wrap: nowrap;
+  mask-image: linear-gradient(to right, transparent, black 4%, black 96%, transparent);
+  -webkit-mask-image: linear-gradient(to right, transparent, black 4%, black 96%, transparent);
 }
 
 .category-scroll::-webkit-scrollbar {
@@ -861,17 +797,17 @@ body {
   background: transparent;
   border: none;
   color: var(--text-secondary);
-  font-size: clamp(11px, 3.2vw, 13px);
+  font-size: 13px;
   font-weight: 600;
   display: flex;
   flex-direction: column;
   align-items: center;
-  padding: clamp(8px, 2vw, 10px) clamp(14px, 3.5vw, 18px);
+  padding: 8px 12px;
   cursor: pointer;
-  transition: all 0.2s ease;
+  transition: all 0.3s ease;
   white-space: nowrap;
   position: relative;
-  min-width: clamp(70px, 20vw, 80px);
+  min-width: 80px;
   max-width: 100px;
   outline: none;
   flex: 0 0 auto;
@@ -883,22 +819,22 @@ body {
 }
 
 .category-btn:active {
-  transform: scale(0.97);
+  transform: scale(0.95);
 }
 
 /* Icon styling */
 .category-icon {
-  font-size: clamp(22px, 6vw, 26px);
-  margin-bottom: clamp(4px, 1.5vw, 6px);
-  transition: all 0.2s ease;
+  font-size: 24px;
+  margin-bottom: 6px;
+  transition: all 0.3s ease;
   display: flex;
   align-items: center;
   justify-content: center;
-  height: clamp(36px, 10vw, 44px);
-  width: clamp(36px, 10vw, 44px);
-  border-radius: clamp(12px, 4vw, 16px);
-  background-color: rgba(0, 0, 0, 0.03);
-  padding: clamp(5px, 1.5vw, 6px);
+  height: 50px;
+  width: 50px;
+  border-radius: 16px;
+  background-color: var(--light-bg);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.06);
 }
 
 /* Active state */
@@ -908,9 +844,9 @@ body {
 }
 
 .category-btn.active .category-icon {
-  background-color: var(--secondary-color);
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-  transform: translateY(-2px);
+  background: linear-gradient(135deg, var(--secondary-color), color-mix(in srgb, var(--secondary-color) 80%, white));
+  box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15);
+  transform: translateY(-4px);
 }
 
 /* Fixed active indicator */
@@ -918,18 +854,17 @@ body {
   content: "";
   display: block;
   width: 0;
-  height: clamp(3px, 1vw, 4px);
+  height: 4px;
   background: var(--secondary-color);
   border-radius: 4px;
-  margin-top: clamp(4px, 1.5vw, 6px);
+  margin-top: 6px;
   opacity: 0;
-  min-height: 4px;
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
   transition: width 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275), opacity 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
 }
 
 .category-btn.active::after {
-  width: 40%;
+  width: 50%;
   opacity: 1;
 }
 
@@ -937,17 +872,18 @@ body {
 .category-btn.new::before {
   content: "NEW";
   position: absolute;
-  top: 0;
-  right: 0;
+  top: -4px;
+  right: -4px;
   font-size: 8px;
   background-color: var(--danger-color);
   color: white;
-  padding: 2px 4px;
+  padding: 2px 6px;
   border-radius: 10px;
   border: 2px solid var(--background);
   animation: pulse 2s infinite;
   line-height: 1;
   letter-spacing: 0.5px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
 }
 
 @keyframes pulse {
@@ -958,20 +894,25 @@ body {
 
 /* ======== Featured Items Section ======== */
 .featured-section {
-  padding: var(--space-md);
+  padding: var(--space-md) var(--space-md) var(--space-lg);
   background-color: var(--background);
+  border-radius: var(--radius-lg) var(--radius-lg) 0 0;
+  margin-top: -8px;
 }
+
 .section-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
   margin-bottom: var(--space-md);
 }
+
 .section-header h2 {
-  font-size: 15px;
+  font-size: 18px;
   font-weight: 700;
   color: var(--text-primary);
 }
+
 .view-all {
   font-size: 14px;
   color: var(--secondary-color);
@@ -979,7 +920,15 @@ body {
   border: none;
   font-weight: 600;
   cursor: pointer;
+  padding: 6px 12px;
+  border-radius: var(--radius-pill);
+  transition: all 0.2s ease;
 }
+
+.view-all:hover {
+  background-color: rgba(var(--secondary-color-rgb), 0.1);
+}
+
 .items-carousel {
   display: flex;
   gap: var(--space-md);
@@ -988,83 +937,119 @@ body {
   scrollbar-width: none;
   -webkit-overflow-scrolling: touch;
   scroll-behavior: smooth;
+  padding-left: 4px;
+  padding-right: 4px;
+  margin-left: -4px;
+  margin-right: -4px;
 }
+
 .items-carousel::-webkit-scrollbar {
   display: none;
 }
+
 .food-item {
   flex: 0 0 auto;
-  width: 160px;
+  width: 180px;
   background-color: var(--background);
-  border-radius: var(--radius-md);
+  border-radius: var(--radius-lg);
   overflow: hidden;
-  box-shadow: var(--shadow-sm);
-  border: 1px solid var(--border-color);
+  
+  
   transition: all 0.3s ease;
+  transform: translateZ(0);
+  will-change: transform;
 }
+
+.food-item:hover {
+  transform: translateY(-4px);
+  box-shadow: var(--shadow-lg);
+}
+
 .food-item:active {
   transform: scale(0.98);
 }
+
 .food-image-container {
   position: relative;
-  height: 120px;
+  height: 140px;
   overflow: hidden;
 }
+
 .food-image {
   width: 100%;
   height: 100%;
   background-color: var(--light-bg);
-  background-image: linear-gradient(45deg, var(--light-bg), #e0e0e0);
+  transition: transform 0.3s ease;
 }
+
+.food-image img {
+  transition: transform 0.5s ease;
+}
+
+.food-item:hover .food-image img {
+  transform: scale(1.05);
+}
+
 .discount-badge {
   position: absolute;
-  top: var(--space-xs);
-  left: var(--space-xs);
+  top: var(--space-sm);
+  left: var(--space-sm);
   background-color: var(--danger-color);
   color: white;
-  font-size: 10px;
+  font-size: 11px;
   font-weight: bold;
-  padding: 2px 6px;
+  padding: 4px 8px;
   border-radius: var(--radius-pill);
   z-index: 2;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
 }
+
 .food-details {
-  padding: var(--space-sm);
+  padding: var(--space-md);
 }
+
 .food-details h3 {
-  font-size: 14px;
-  font-weight: 600;
-  margin-bottom: var(--space-xs);
+  font-size: 15px;
+  font-weight: 700;
+  margin-bottom: var(--space-sm);
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
+  color: var(--text-primary);
 }
+
 .rating {
   display: flex;
   align-items: center;
   gap: 4px;
-  margin-bottom: var(--space-xs);
-  font-size: 12px;
+  margin-bottom: var(--space-sm);
+  font-size: 13px;
 }
+
 .rating i {
   color: var(--warning-color);
 }
+
 .review-count {
   color: var(--text-secondary);
 }
+
 .price-row {
   display: flex;
   justify-content: space-between;
   align-items: center;
 }
+
 .price {
   font-weight: 700;
   color: var(--text-primary);
+  font-size: 16px;
 }
+
 .add-to-cart {
-  width: 26px;
-  height: 26px;
-  border-radius: 50%;
+  width: 32px;
+  height: 32px;
+  border-radius: 10px;
   background-color: {{ primary_brand_color }};
   color: white;
   border: none;
@@ -1073,28 +1058,25 @@ body {
   justify-content: center;
   cursor: pointer;
   box-shadow: var(--shadow-sm);
-  transition: all 0.2s ease;
+  transition: all 0.25s ease;
+}
+
+.add-to-cart:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
 }
 
 .add-to-cart:active {
   transform: scale(0.9);
 }
-/* Media queries for responsive design */
-@media (max-width: 480px) {
-  .food-item {
-    width: 140px;
-  }
-  
-  .food-image-container {
-    height: 100px;
-  }
-}
+
 
 /* ======== View All Grid Section ======== */
 .product-grid-container {
-  padding: var(--space-md);
+  padding: var(--space-md) var(--space-md) var(--space-lg);
   background-color: var(--background);
   display: none; /* Hidden by default, shown when View All is clicked */
+  animation: fadeIn 0.3s ease-in;
 }
 
 .product-grid {
@@ -1106,11 +1088,15 @@ body {
 
 .grid-item {
   background-color: var(--background);
-  border-radius: var(--radius-md);
+  border-radius: var(--radius-lg);
   overflow: hidden;
-  box-shadow: var(--shadow-sm);
-  border: 1px solid var(--border-color);
+  
   transition: all 0.3s ease;
+}
+
+.grid-item:hover {
+  transform: translateY(-4px);
+  box-shadow: var(--shadow-lg);
 }
 
 .grid-item:active {
@@ -1119,7 +1105,7 @@ body {
 
 .grid-image-container {
   position: relative;
-  height: 150px;
+  height: 160px;
   overflow: hidden;
 }
 
@@ -1127,8 +1113,11 @@ body {
   width: 100%;
   height: 100%;
   object-fit: cover;
-  background-color: var(--light-bg);
-  background-image: linear-gradient(45deg, var(--light-bg), #e0e0e0);
+  transition: transform 0.5s ease;
+}
+
+.grid-item:hover .grid-image {
+  transform: scale(1.05);
 }
 
 .grid-details {
@@ -1137,7 +1126,7 @@ body {
 
 .grid-details h3 {
   font-size: 16px;
-  font-weight: 600;
+  font-weight: 700;
   margin-bottom: var(--space-xs);
   overflow: hidden;
   text-overflow: ellipsis;
@@ -1145,10 +1134,11 @@ body {
   -webkit-line-clamp: 2;
   -webkit-box-orient: vertical;
   min-height: 42px;
+  line-height: 1.4;
 }
 
 .grid-details .description {
-  font-size: 12px;
+  font-size: 13px;
   color: var(--text-secondary);
   margin-bottom: var(--space-sm);
   overflow: hidden;
@@ -1157,25 +1147,33 @@ body {
   -webkit-line-clamp: 2;
   -webkit-box-orient: vertical;
   min-height: 36px;
+  line-height: 1.4;
 }
 
 .grid-footer {
   display: flex;
   justify-content: space-between;
   align-items: center;
+  margin-top: var(--space-sm);
 }
 
 .back-to-carousel {
-  display: inline-block;
+  display: inline-flex;
   font-size: 14px;
   color: var(--secondary-color);
   background: none;
   border: none;
   font-weight: 600;
   cursor: pointer;
-  display: flex;
   align-items: center;
-  gap: 4px;
+  gap: 6px;
+  padding: 8px 12px;
+  border-radius: var(--radius-pill);
+  transition: all 0.2s ease;
+}
+
+.back-to-carousel:hover {
+  background-color: rgba(var(--secondary-color-rgb), 0.1);
 }
 
 .back-to-carousel i {
@@ -1186,10 +1184,11 @@ body {
   display: inline-block;
   background-color: var(--light-bg);
   color: var(--text-secondary);
-  font-size: 10px;
-  padding: 3px 8px;
+  font-size: 11px;
+  padding: 4px 10px;
   border-radius: var(--radius-pill);
   margin-bottom: var(--space-xs);
+  font-weight: 500;
 }
 
 /* Animation for view transitions */
@@ -1197,54 +1196,59 @@ body {
   animation: fadeIn 0.3s ease-in;
 }
 
-/* Shared styles for both views */
-.shared-view {
-  padding: var(--space-md);
-  background-color: var(--background);
-}
-
-/* Existing styling for the featured section */
-.featured-section {
-  /* Other specific styles can remain here */
-}
-
-/* For grid view container, keep its unique properties if any */
-.product-grid-container {
-  display: none; /* Hidden by default */
-}
-
-
 .fade-out {
   animation: fadeOut 0.3s ease-out;
 }
 
 @keyframes fadeIn {
-  from { opacity: 0; }
-  to { opacity: 1; }
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
 }
 
 @keyframes fadeOut {
-  from { opacity: 1; }
-  to { opacity: 0; }
+  from { opacity: 1; transform: translateY(0); }
+  to { opacity: 0; transform: translateY(10px); }
 }
 
 /* Add to cart animation */
 .add-to-cart.added {
   background-color: var(--success-color);
+  animation: addedPulse 0.5s ease;
+}
+
+@keyframes addedPulse {
+  0% { transform: scale(1); }
+  50% { transform: scale(1.2); }
+  100% { transform: scale(1); }
+}
+
+/* Custom scrollbar for webkit browsers */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: rgba(0, 0, 0, 0.2);
+  border-radius: 10px;
 }
 
 /* Dark mode support */
 @media (prefers-color-scheme: dark) {
   :root {
     --background: #121212;
-    --text-primary: #e0e0e0;
+    --text-primary: #f0f0f0;
     --text-secondary: #a0a0a0;
-    --light-bg: #1e1e1e;
+    --light-bg: #202020;
     --border-color: rgba(255, 255, 255, 0.1);
   }
   
   .category-icon {
-    background-color: rgba(255, 255, 255, 0.06);
+    background-color: rgba(255, 255, 255, 0.08);
   }
   
   .food-image {
@@ -1262,16 +1266,25 @@ body {
   .category-badge {
     background-color: rgba(255, 255, 255, 0.08);
   }
+  
+  .food-item, .grid-item {
+    border: 1px solid rgba(255, 255, 255, 0.08);
+  }
 }
 
-/* Responsive adjustments for smaller screens */
+/* Add CSS variables for RGB values of secondary color */
+:root {
+  --secondary-color-rgb: 0, 120, 212; /* Default fallback - replace with actual color in JS */
+}
+
+/* Responsive adjustments */
 @media (max-width: 480px) {
   .product-grid {
     gap: var(--space-md);
   }
   
   .grid-image-container {
-    height: 120px;
+    height: 130px;
   }
   
   .grid-details {
@@ -1279,9 +1292,175 @@ body {
   }
   
   .grid-details h3 {
-    font-size: 14px;
-    min-height: 15px;
+    font-size: 15px;
+    min-height: 36px;
   }
+  
+  .food-item {
+    width: 160px;
+  }
+  
+  .food-image-container {
+    height: 120px;
+  }
+  
+  .category-icon {
+    height: 46px;
+    width: 46px;
+  }
+  .aliexpress-header {
+    padding: var(--space-sm) var(--space-md);
+  }
+  
+  .restaurant-logo {
+    width: 44px;
+    height: 44px;
+  }
+  
+  .logo {
+    font-size: 22px;
+  }
+  
+  .search-container {
+    padding: 10px 16px;
+  }
+  
+  .section-header h2 {
+    font-size: 16px;
+  }
+}
+
+/* Add floating cart button */
+.floating-cart-button {
+  position: fixed;
+  bottom: 20px;
+  right: 20px;
+  width: 60px;
+  height: 60px;
+  border-radius: 50%;
+  background-color: {{ primary_brand_color }};
+  color: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+  border: none;
+  cursor: pointer;
+  z-index: 1000;
+  transition: all 0.3s ease;
+}
+
+.floating-cart-button:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 8px 16px rgba(0, 0, 0, 0.3);
+}
+
+.floating-cart-button:active {
+  transform: scale(0.95);
+}
+
+.floating-cart-button i {
+  font-size: 24px;
+}
+
+.cart-count {
+  position: absolute;
+  top: -5px;
+  right: -5px;
+  background-color: var(--danger-color);
+  color: white;
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 12px;
+  font-weight: bold;
+  border: 2px solid white;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+}
+
+/* Add some additional animations */
+@keyframes slideInUp {
+  from {
+    transform: translateY(40px);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+.food-item, .grid-item {
+  animation: slideInUp 0.5s ease-out;
+  animation-fill-mode: both;
+}
+
+/* Stagger animation for items */
+.food-item:nth-child(1), .grid-item:nth-child(1) { animation-delay: 0.1s; }
+.food-item:nth-child(2), .grid-item:nth-child(2) { animation-delay: 0.15s; }
+.food-item:nth-child(3), .grid-item:nth-child(3) { animation-delay: 0.2s; }
+.food-item:nth-child(4), .grid-item:nth-child(4) { animation-delay: 0.25s; }
+.food-item:nth-child(5), .grid-item:nth-child(5) { animation-delay: 0.3s; }
+.food-item:nth-child(6), .grid-item:nth-child(6) { animation-delay: 0.35s; }
+.food-item:nth-child(7), .grid-item:nth-child(7) { animation-delay: 0.4s; }
+.food-item:nth-child(8), .grid-item:nth-child(8) { animation-delay: 0.45s; }
+
+/* Loading shimmer effect for images */
+@keyframes shimmer {
+  0% {
+    background-position: -200% 0;
+  }
+  100% {
+    background-position: 200% 0;
+  }
+}
+
+.food-image.loading, .grid-image.loading {
+  background: linear-gradient(90deg, var(--light-bg) 25%, var(--border-color) 50%, var(--light-bg) 75%);
+  background-size: 200% 100%;
+  animation: shimmer 1.5s infinite;
+}
+
+/* Add some depth to the overall design */
+.main-content {
+  position: relative;
+  z-index: 1;
+}
+
+.shared-view {
+  position: relative;
+}
+
+.shared-view::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 100px;
+  background: linear-gradient(to bottom, var(--background), transparent);
+  pointer-events: none;
+  z-index: -1;
+}
+
+.shared-view::after {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 100px;
+  background: linear-gradient(to top, var(--background), transparent);
+  pointer-events: none;
+  z-index: -1;
+}
+
+/* Add a subtle shadow to create depth between sections */
+.category-nav {
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.03);
 }
 
 
@@ -3130,9 +3309,7 @@ input:checked + .slider:before {
   </div>
   <!-- Right side: restaurant logo and actions -->
   <div class="header-icons">
-    <button class="action-button">
-      <i class="fas fa-heart"></i>
-    </button>
+    
     <img
       src="{{ restaurant.logo_pic.url }}"
       alt="Restaurant Logo"
@@ -3157,7 +3334,6 @@ input:checked + .slider:before {
 </div>
 
 <!-- Category Navigation (Sticky) -->
- <!-- Category Navigation (Sticky) -->
 <div class="category-nav">
   <div class="category-scroll">
     <!-- Default category button for "All" food -->
@@ -3200,7 +3376,7 @@ input:checked + .slider:before {
 <!-- Main Content -->
 <div class="main-content" id="menuContent">
   <!-- Featured Section with Carousel View -->
-  <div class="featured-section  shared-view">
+  <div class="featured-section shared-view">
     <div class="section-header">
       <h2>Most Popular Items</h2>
       <button class="view-all">See all</button>
@@ -3253,10 +3429,14 @@ input:checked + .slider:before {
         {% endfor %}
       {% endfor %}
     </div>
+        <button class="floating-cart-button">
+      <i class="fas fa-shopping-cart"></i>
+      <span class="cart-count">0</span>
+    </button>
   </div>
-
+  
   <!-- Grid View for "View All" -->
-  <div class="product-grid-container  shared-view" id="productGridContainer">
+  <div class="product-grid-container shared-view" id="productGridContainer">
     <div class="section-header">
       <h2>All Menu Items</h2>
       <button class="back-to-carousel"><i class="fas fa-chevron-left"></i> Back</button>
