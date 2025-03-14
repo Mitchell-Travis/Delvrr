@@ -17,12 +17,16 @@
     <meta name="robots" content="index, follow">
     
     <!-- Open Graph / Facebook -->
+    <!-- Open Graph / Facebook -->
     <meta property="og:type" content="website">
     <meta property="og:site_name" content="Delvrr">
     <meta property="og:title" content="Delvrr - QR Code Digital Menu">
     <meta property="og:description" content="Scan and browse the restaurant's digital menu instantly. A seamless way to order your favorite dishes.">
     <meta property="og:image" content="https://delvrr.com/media/preview.jpg">
     <meta property="og:image:alt" content="Delvrr Digital Menu">
+
+<!-- Dynamically set the correct URL -->
+<meta property="og:url" content="{{ request.build_absolute_uri }}">
     
     <meta property="og:locale" content="en_US">
     
@@ -1053,7 +1057,7 @@ body {
   background-color: {{ primary_brand_color }};
   color: white;
   border: none;
-  display: none;
+  display: flex;
   align-items: center;
   justify-content: center;
   cursor: pointer;
