@@ -795,6 +795,7 @@ body {
   display: none;
 }
 /* Category buttons */
+/* Category buttons */
 .category-btn {
   background: transparent;
   border: none;
@@ -815,12 +816,15 @@ body {
   flex: 0 0 auto;
   touch-action: manipulation;
 }
+
 .category-btn:hover {
   color: var(--secondary-color);
 }
+
 .category-btn:active {
   transform: scale(0.95);
 }
+
 /* Icon styling */
 .category-icon {
   font-size: 20px; /* Smaller icons */
@@ -835,16 +839,19 @@ body {
   background-color: var(--light-bg);
   box-shadow: 0 2px 6px rgba(0, 0, 0, 0.05);
 }
+
 /* Active state */
 .category-btn.active {
-  color: var(--secondary-color);
+  color: var(--secondary-color) !important; /* Added !important to ensure it applies on all screen sizes */
   font-weight: 700;
 }
+
 .category-btn.active .category-icon {
   background: linear-gradient(135deg, var(--secondary-color), color-mix(in srgb, var(--secondary-color) 80%, white));
   box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15);
   transform: translateY(-4px);
 }
+
 /* Fixed active indicator */
 .category-btn::after {
   content: "";
@@ -858,27 +865,82 @@ body {
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
   transition: width 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275), opacity 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
 }
+
 .category-btn.active::after {
   width: 50%;
   opacity: 1;
 }
-/* Badge for new categories */
-.category-btn.new::before {
-  content: "NEW";
-  position: absolute;
-  top: -4px;
-  right: -4px;
-  font-size: 8px;
-  background-color: var(--danger-color);
-  color: white;
-  padding: 2px 6px;
-  border-radius: 10px;
-  border: 2px solid var(--background);
-  animation: pulse 2s infinite;
-  line-height: 1;
-  letter-spacing: 0.5px;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+
+/* Media query fix for mobile/smaller screens */
+@media (max-width: 768px) {
+  .category-btn.active {
+    color: var(--secondary-color);
+  }
+  
+  .category-btn.active::after {
+    background: var(--secondary-color);
+  }
 }
+
+/* Additional responsive fixes */
+@media (max-width: 480px) {
+  .category-btn.active {
+    color: var(--secondary-color);
+  }
+  
+  .category-nav {
+    padding: 4px 0;
+  }
+  
+  .category-scroll {
+    gap: 8px;
+  }
+}
+
+/* Force icon background to use the secondary color on all devices */
+.category-btn.active .category-icon {
+  background: linear-gradient(135deg, var(--secondary-color), color-mix(in srgb, var(--secondary-color) 80%, white)) !important;
+  box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15) !important;
+  transform: translateY(-4px) !important;
+}
+
+/* Mobile-specific overrides with higher specificity */
+@media screen and (max-width: 767px) {
+  .category-nav .category-scroll .category-btn.active .category-icon {
+    background: linear-gradient(135deg, var(--secondary-color), color-mix(in srgb, var(--secondary-color) 80%, white)) !important;
+    background-color: var(--secondary-color) !important; /* Fallback */
+  }
+  
+  /* Increased specificity for the icons */
+  body .category-nav .category-scroll .category-btn.active .category-icon {
+    background: linear-gradient(135deg, var(--secondary-color), color-mix(in srgb, var(--secondary-color) 80%, white)) !important;
+    background-color: var(--secondary-color) !important; /* Fallback */
+  }
+  
+  /* Alternative background for browsers that don't support color-mix */
+  @supports not (background: color-mix(in srgb, var(--secondary-color) 80%, white)) {
+    .category-nav .category-scroll .category-btn.active .category-icon {
+      background: var(--secondary-color) !important;
+    }
+  }
+}
+
+/* Additional fixes for different devices/platforms */
+@media screen and (max-width: 480px) {
+  /* iOS-specific styles */
+  @supports (-webkit-touch-callout: none) {
+    .category-btn.active .category-icon {
+      background-color: var(--secondary-color) !important;
+      background-image: none !important;
+    }
+  }
+  
+  /* Fallback for older browsers */
+  .category-btn.active .category-icon {
+    background-color: var(--secondary-color) !important;
+  }
+}
+
 @keyframes pulse {
   0% { transform: scale(1); }
   50% { transform: scale(1.1); }
@@ -1864,7 +1926,7 @@ body {
 
 .restaurant-name {
     font-size: 14px;
-    color: #ffffff
+    color: var(--text-primary);
 }
 
 /* Cart Button */
@@ -4735,7 +4797,7 @@ document.addEventListener('DOMContentLoaded', function() {
     }
   };
 
-  // ===== 5. Category Filter and Search Functionality =====
+  // ===== 5. Category Filter and Search Functionality - IMPROVED =====
   const categoryButtons = document.querySelectorAll('.category-btn');
   const searchInput = document.querySelector('.search-input');
   const searchDropdown = document.querySelector('.search-results-dropdown');
@@ -4773,13 +4835,74 @@ document.addEventListener('DOMContentLoaded', function() {
     button.classList.add('active');
     lastSelectedCategory = button.dataset.category.toLowerCase();
     filterItemsByCategory(lastSelectedCategory);
+    
+    // Scroll the category button into view when selected
+    button.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' });
+    
     if (searchDropdown) searchDropdown.style.display = 'none';
+    
+    // Update the indicator in the filter dropdown
+    updateFilterDropdownIndicator(lastSelectedCategory);
   }
+  
   categoryButtons.forEach(button => {
     button.addEventListener('click', () => handleCategoryClick(button));
   });
 
-  // ===== 5.1. Filter Button Styling - FIXED =====
+  // Function to update the indicator in the filter dropdown
+  function updateFilterDropdownIndicator(selectedCategory) {
+    const dropdownItems = document.querySelectorAll('.filter-dropdown li');
+    dropdownItems.forEach(li => {
+      const categoryNameElement = li.querySelector('.category-name');
+      const categoryName = categoryNameElement ? categoryNameElement.textContent.toLowerCase() : '';
+      
+      // Remove existing active indicator
+      const existingIndicator = li.querySelector('.active-indicator');
+      if (existingIndicator) {
+        existingIndicator.remove();
+      }
+      
+      // Reset styles
+      li.style.backgroundColor = '';
+      li.style.fontWeight = '';
+      li.style.color = '';
+      
+      // If this is the selected category, add the indicator and styles
+      if (categoryName === selectedCategory) {
+        // Add active indicator
+        const activeIndicator = document.createElement('span');
+        activeIndicator.className = 'active-indicator';
+        activeIndicator.innerHTML = '<i class="fas fa-check"></i>';
+        activeIndicator.style.cssText = `
+          margin-left: auto;
+          color: #4682B4;
+          font-size: 12px;
+        `;
+        li.appendChild(activeIndicator);
+        
+        // Update styles
+        li.style.backgroundColor = 'rgba(70, 130, 255, 0.08)';
+        li.style.fontWeight = '500';
+        li.style.color = '#4682B4';
+        
+        // Scroll this item into view in the dropdown
+        li.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+      }
+      
+      // Update hover effects
+      li.addEventListener('mouseover', () => {
+        li.style.backgroundColor = categoryName === selectedCategory ? 
+          'rgba(70, 130, 255, 0.12)' : 'rgba(0, 0, 0, 0.03)';
+      });
+      
+      li.addEventListener('mouseout', () => {
+        li.style.backgroundColor = categoryName === selectedCategory ? 
+          'rgba(70, 130, 255, 0.08)' : '';
+      });
+    });
+  }
+
+  // ===== 5.1. Filter Button Styling =====
   const filterButton = document.querySelector('.filter-button');
   // Apply enhanced filter button styling
   if (filterButton) {
@@ -4817,236 +4940,244 @@ document.addEventListener('DOMContentLoaded', function() {
     }
   }
 
-  // ===== 5.2. Filter Dropdown for Categories - FIXED =====
+  // ===== 5.2. Filter Dropdown for Categories - IMPROVED =====
   // First, remove any existing dropdown to prevent duplicates
-    // ===== 5.2. Filter Dropdown for Categories - IMPROVED FIX =====
-// First, remove any existing dropdown to prevent duplicates
-const existingDropdown = document.querySelector('.filter-dropdown');
-if (existingDropdown) {
-  existingDropdown.remove();
-}
+  const existingDropdown = document.querySelector('.filter-dropdown');
+  if (existingDropdown) {
+    existingDropdown.remove();
+  }
 
-// Create a dropdown container for filter options
-const filterDropdown = document.createElement('div');
-filterDropdown.className = 'filter-dropdown';
-filterDropdown.style.cssText = `
-  display: none;
-  position: fixed;
-  background-color: rgba(255, 255, 255, 0.95);
-  border: 1px solid rgba(255, 255, 255, 0.18);
-  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.12);
-  border-radius: 16px;
-  padding: 8px 0;
-  z-index: 9999;
-  width: 200px;
-  max-height: 70vh;
-  overflow-y: auto;
-  backdrop-filter: blur(10px);
-  -webkit-backdrop-filter: blur(10px);
-  transform-origin: top center;
-`;
-
-// Create an unordered list to hold category options
-const filterList = document.createElement('ul');
-filterList.style.cssText = `
-  list-style: none;
-  margin: 0;
-  padding: 0;
-`;
-
-// Add heading to the dropdown
-const filterHeading = document.createElement('div');
-filterHeading.textContent = 'Filter by Category';
-filterHeading.style.cssText = `
-  padding: 12px 16px;
-  font-weight: 600;
-  font-size: 15px;
-  border-bottom: 1px solid rgba(0, 0, 0, 0.05);
-  margin-bottom: 6px;
-  color: #333;
-  display: flex;
-  align-items: center;
-`;
-
-// Add filter icon to heading
-const filterIcon = document.createElement('span');
-filterIcon.innerHTML = '<i class="fas fa-sliders-h"></i>';
-filterIcon.style.cssText = `
-  margin-right: 8px;
-  color: #4682B4;
-  font-size: 14px;
-`;
-filterHeading.prepend(filterIcon);
-
-filterDropdown.appendChild(filterHeading);
-
-// Populate the list using your category buttons
-categoryButtons.forEach(button => {
-  const li = document.createElement('li');
-  const categoryName = button.dataset.category;
-  const categoryEmoji = button.querySelector('.category-icon')?.textContent.trim() || '';
-  const isActive = categoryName.toLowerCase() === lastSelectedCategory;
-  
-  li.innerHTML = `
-    <span class="category-emoji">${categoryEmoji}</span>
-    <span class="category-name">${categoryName}</span>
-    ${isActive ? '<span class="active-indicator"><i class="fas fa-check"></i></span>' : ''}
+  // Create a dropdown container for filter options
+  const filterDropdown = document.createElement('div');
+  filterDropdown.className = 'filter-dropdown';
+  filterDropdown.style.cssText = `
+    display: none;
+    position: fixed;
+    background-color: rgba(255, 255, 255, 0.95);
+    border: 1px solid rgba(255, 255, 255, 0.18);
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.12);
+    border-radius: 16px;
+    padding: 8px 0;
+    z-index: 9999;
+    width: 200px;
+    max-height: 70vh;
+    overflow-y: auto;
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    transform-origin: top center;
   `;
-  
-  li.style.cssText = `
+
+  // Create an unordered list to hold category options
+  const filterList = document.createElement('ul');
+  filterList.style.cssText = `
+    list-style: none;
+    margin: 0;
+    padding: 0;
+  `;
+
+  // Add heading to the dropdown
+  const filterHeading = document.createElement('div');
+  filterHeading.textContent = 'Filter by Category';
+  filterHeading.style.cssText = `
     padding: 12px 16px;
-    cursor: pointer;
-    transition: all 0.2s ease;
+    font-weight: 600;
+    font-size: 15px;
+    border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+    margin-bottom: 6px;
+    color: #333;
     display: flex;
     align-items: center;
-    gap: 10px;
-    position: relative;
-    margin: 2px 6px;
-    border-radius: 8px;
-    ${isActive ? 'background-color: rgba(70, 130, 255, 0.08);' : ''}
-    ${isActive ? 'font-weight: 500;' : ''}
-    ${isActive ? 'color: #4682B4;' : ''}
   `;
-  
-  // Add active indicator styling if this is the selected category
-  if (isActive) {
-    const activeIndicator = li.querySelector('.active-indicator');
-    if (activeIndicator) {
-      activeIndicator.style.cssText = `
-        margin-left: auto;
-        color: #4682B4;
-        font-size: 12px;
-      `;
-    }
-  }
-  
-  li.addEventListener('click', () => {
-    handleCategoryClick(button);
-    filterDropdown.style.display = 'none';
+
+  // Add filter icon to heading
+  const filterIcon = document.createElement('span');
+  filterIcon.innerHTML = '<i class="fas fa-sliders-h"></i>';
+  filterIcon.style.cssText = `
+    margin-right: 8px;
+    color: #4682B4;
+    font-size: 14px;
+  `;
+  filterHeading.prepend(filterIcon);
+
+  filterDropdown.appendChild(filterHeading);
+
+  // Populate the list using your category buttons
+  categoryButtons.forEach(button => {
+    const li = document.createElement('li');
+    const categoryName = button.dataset.category;
+    const categoryEmoji = button.querySelector('.category-icon')?.textContent.trim() || '';
+    const isActive = categoryName.toLowerCase() === lastSelectedCategory;
     
-    // Add ripple effect to the clicked item
-    const ripple = document.createElement('span');
-    ripple.style.cssText = `
-      position: absolute;
-      top: 50%;
-      left: 50%;
-      width: 5px;
-      height: 5px;
-      background: rgba(70, 130, 255, 0.3);
-      opacity: 0;
-      border-radius: 100%;
-      transform: scale(1, 1) translate(-50%, -50%);
-      transform-origin: 50% 50%;
-      animation: ripple 0.6s ease-out;
+    li.innerHTML = `
+      <span class="category-emoji">${categoryEmoji}</span>
+      <span class="category-name">${categoryName}</span>
+      ${isActive ? '<span class="active-indicator"><i class="fas fa-check"></i></span>' : ''}
     `;
-    li.appendChild(ripple);
-    setTimeout(() => ripple.remove(), 600);
-  });
-  
-  li.addEventListener('mouseover', () => {
-    li.style.backgroundColor = isActive ? 'rgba(70, 130, 255, 0.12)' : 'rgba(0, 0, 0, 0.03)';
-  });
-  
-  li.addEventListener('mouseout', () => {
-    li.style.backgroundColor = isActive ? 'rgba(70, 130, 255, 0.08)' : '';
-  });
-  
-  filterList.appendChild(li);
-});
-filterDropdown.appendChild(filterList);
-
-// Add a ripple animation keyframe if it doesn't exist
-if (!document.querySelector('style#ripple-animation')) {
-  const rippleStyle = document.createElement('style');
-  rippleStyle.id = 'ripple-animation';
-  rippleStyle.textContent = `
-    @keyframes ripple {
-      0% {
-        transform: scale(0, 0);
-        opacity: 0.5;
-      }
-      100% {
-        transform: scale(40, 40);
-        opacity: 0;
+    
+    li.style.cssText = `
+      padding: 12px 16px;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      position: relative;
+      margin: 2px 6px;
+      border-radius: 8px;
+      ${isActive ? 'background-color: rgba(70, 130, 255, 0.08);' : ''}
+      ${isActive ? 'font-weight: 500;' : ''}
+      ${isActive ? 'color: #4682B4;' : ''}
+    `;
+    
+    // Add active indicator styling if this is the selected category
+    if (isActive) {
+      const activeIndicator = li.querySelector('.active-indicator');
+      if (activeIndicator) {
+        activeIndicator.style.cssText = `
+          margin-left: auto;
+          color: #4682B4;
+          font-size: 12px;
+        `;
       }
     }
-  `;
-  document.head.appendChild(rippleStyle);
-}
+    
+    li.addEventListener('click', () => {
+      const targetButton = Array.from(categoryButtons).find(
+        btn => btn.dataset.category === categoryName
+      );
+      
+      if (targetButton) {
+        handleCategoryClick(targetButton);
+      }
+      
+      filterDropdown.style.display = 'none';
+      filterButton.classList.remove('active');
+      
+      // Add ripple effect to the clicked item
+      const ripple = document.createElement('span');
+      ripple.style.cssText = `
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        width: 5px;
+        height: 5px;
+        background: rgba(70, 130, 255, 0.3);
+        opacity: 0;
+        border-radius: 100%;
+        transform: scale(1, 1) translate(-50%, -50%);
+        transform-origin: 50% 50%;
+        animation: ripple 0.6s ease-out;
+      `;
+      li.appendChild(ripple);
+      setTimeout(() => ripple.remove(), 600);
+    });
+    
+    li.addEventListener('mouseover', () => {
+      li.style.backgroundColor = isActive ? 'rgba(70, 130, 255, 0.12)' : 'rgba(0, 0, 0, 0.03)';
+    });
+    
+    li.addEventListener('mouseout', () => {
+      li.style.backgroundColor = isActive ? 'rgba(70, 130, 255, 0.08)' : '';
+    });
+    
+    filterList.appendChild(li);
+  });
+  filterDropdown.appendChild(filterList);
 
-// Append the dropdown to the body for better positioning
-document.body.appendChild(filterDropdown);
-
-// Function to position the dropdown based on filter button location
-function positionDropdown() {
-  if (!filterButton) return;
-  
-  const buttonRect = filterButton.getBoundingClientRect();
-  
-  // Position dropdown below the button
-  filterDropdown.style.top = `${buttonRect.bottom + window.scrollY + 10}px`;
-  filterDropdown.style.left = `${buttonRect.left + window.scrollX - 5}px`;
-  
-  // Adjust if overflowing right edge of viewport
-  const dropdownWidth = 200; // Width of the dropdown
-  if (buttonRect.left + dropdownWidth > window.innerWidth) {
-    filterDropdown.style.left = `${buttonRect.right + window.scrollX - dropdownWidth + 5}px`;
+  // Add a ripple animation keyframe if it doesn't exist
+  if (!document.querySelector('style#ripple-animation')) {
+    const rippleStyle = document.createElement('style');
+    rippleStyle.id = 'ripple-animation';
+    rippleStyle.textContent = `
+      @keyframes ripple {
+        0% {
+          transform: scale(0, 0);
+          opacity: 0.5;
+        }
+        100% {
+          transform: scale(40, 40);
+          opacity: 0;
+        }
+      }
+    `;
+    document.head.appendChild(rippleStyle);
   }
-}
 
-// Toggle dropdown visibility with improved animation and positioning
-filterButton.addEventListener('click', (e) => {
-  e.stopPropagation();
-  
-  if (filterDropdown.style.display === 'none') {
-    // Position the dropdown before showing
-    positionDropdown();
+  // Append the dropdown to the body for better positioning
+  document.body.appendChild(filterDropdown);
+
+  // Function to position the dropdown based on filter button location
+  function positionDropdown() {
+    if (!filterButton) return;
     
-    // Show with animation
-    filterDropdown.style.display = 'block';
-    filterDropdown.style.opacity = '0';
-    filterDropdown.style.transform = 'translateY(-10px) scale(0.98)';
+    const buttonRect = filterButton.getBoundingClientRect();
     
-    setTimeout(() => {
-      filterDropdown.style.transition = 'opacity 0.25s cubic-bezier(0.4, 0, 0.2, 1), transform 0.25s cubic-bezier(0.4, 0, 0.2, 1)';
-      filterDropdown.style.opacity = '1';
-      filterDropdown.style.transform = 'translateY(0) scale(1)';
-    }, 10);
+    // Position dropdown below the button
+    filterDropdown.style.top = `${buttonRect.bottom + window.scrollY + 10}px`;
+    filterDropdown.style.left = `${buttonRect.left + window.scrollX - 5}px`;
     
-    // Add active class to filter button (if you use the CSS from the previous example)
-    filterButton.classList.add('active');
-  } else {
-    // Hide with animation
-    filterDropdown.style.opacity = '0';
-    filterDropdown.style.transform = 'translateY(-10px) scale(0.98)';
-    
-    setTimeout(() => {
+    // Adjust if overflowing right edge of viewport
+    const dropdownWidth = 200; // Width of the dropdown
+    if (buttonRect.left + dropdownWidth > window.innerWidth) {
+      filterDropdown.style.left = `${buttonRect.right + window.scrollX - dropdownWidth + 5}px`;
+    }
+  }
+
+  // Toggle dropdown visibility with improved animation and positioning
+  if (filterButton) {
+    filterButton.addEventListener('click', (e) => {
+      e.stopPropagation();
+      
+      if (filterDropdown.style.display === 'none') {
+        // Position the dropdown before showing
+        positionDropdown();
+        
+        // Show with animation
+        filterDropdown.style.display = 'block';
+        filterDropdown.style.opacity = '0';
+        filterDropdown.style.transform = 'translateY(-10px) scale(0.98)';
+        
+        setTimeout(() => {
+          filterDropdown.style.transition = 'opacity 0.25s cubic-bezier(0.4, 0, 0.2, 1), transform 0.25s cubic-bezier(0.4, 0, 0.2, 1)';
+          filterDropdown.style.opacity = '1';
+          filterDropdown.style.transform = 'translateY(0) scale(1)';
+        }, 10);
+        
+        // Add active class to filter button
+        filterButton.classList.add('active');
+      } else {
+        // Hide with animation
+        filterDropdown.style.opacity = '0';
+        filterDropdown.style.transform = 'translateY(-10px) scale(0.98)';
+        
+        setTimeout(() => {
+          filterDropdown.style.display = 'none';
+          filterDropdown.style.transition = '';
+        }, 250);
+        
+        // Remove active class from filter button
+        filterButton.classList.remove('active');
+      }
+    });
+  }
+
+  // Update dropdown position on window resize
+  window.addEventListener('resize', () => {
+    if (filterDropdown.style.display !== 'none') {
+      positionDropdown();
+    }
+  });
+
+  // Hide the filter dropdown when clicking outside of it
+  document.addEventListener('click', (e) => {
+    if (filterButton && !filterButton.contains(e.target) && !filterDropdown.contains(e.target)) {
       filterDropdown.style.display = 'none';
       filterDropdown.style.transition = '';
-    }, 250);
-    
-    // Remove active class from filter button
-    filterButton.classList.remove('active');
-  }
-});
+      filterButton.classList.remove('active');
+    }
+  });
 
-// Update dropdown position on window resize
-window.addEventListener('resize', () => {
-  if (filterDropdown.style.display !== 'none') {
-    positionDropdown();
-  }
-});
-
-// Hide the filter dropdown when clicking outside of it
-document.addEventListener('click', (e) => {
-  if (!filterButton.contains(e.target) && !filterDropdown.contains(e.target)) {
-    filterDropdown.style.display = 'none';
-    filterDropdown.style.transition = '';
-    filterButton.classList.remove('active');
-  }
-});
-
-  // ===== 5.3. Helper: Create search result item element =====
+  // ===== 5.3. Helper: Create search result item element - IMPROVED =====
   function createSearchResultItem(item) {
     const name = item.dataset.name || '';
     const category = item.dataset.category || '';
@@ -5071,14 +5202,20 @@ document.addEventListener('click', (e) => {
           btn => (btn.dataset.category || '').toLowerCase() === searchCategory
         );
         if (targetButton) {
-          // Switch to the new category
+          // Switch to the new category and make sure it's visible
           handleCategoryClick(targetButton);
         }
       }
+      
       // Scroll to the item and highlight it
-      item.scrollIntoView({ behavior: 'smooth', block: 'center' });
-      item.style.transform = 'scale(1.02)';
-      setTimeout(() => { item.style.transform = ''; }, 300);
+      setTimeout(() => {
+        item.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        // Add highlighting effect
+        item.style.transition = 'transform 0.3s ease';
+        item.style.transform = 'scale(1.02)';
+        setTimeout(() => { item.style.transform = ''; }, 300);
+      }, 100);
+      
       if (searchDropdown) searchDropdown.style.display = 'none';
       if (searchInput) searchInput.value = '';
     });
@@ -5086,7 +5223,7 @@ document.addEventListener('click', (e) => {
     return div;
   }
 
-  // ===== 5.4. Search Functionality =====
+  // ===== 5.4. Search Functionality - IMPROVED =====
   if (searchInput && searchDropdown && searchResultsContent) {
     searchInput.addEventListener('input', function(e) {
       const searchTerm = e.target.value.toLowerCase().trim();
@@ -5165,7 +5302,12 @@ document.addEventListener('click', (e) => {
         if (buttonToActivate) {
           categoryButtons.forEach(btn => btn.classList.remove('active'));
           buttonToActivate.classList.add('active');
-          filterItemsByCategory(lastSelectedCategory);
+          
+          // Make sure the active button is visible
+          setTimeout(() => {
+            buttonToActivate.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' });
+            filterItemsByCategory(lastSelectedCategory);
+          }, 100);
         }
         
         setTimeout(() => {
@@ -5196,7 +5338,7 @@ document.addEventListener('click', (e) => {
     }
   });
 
-  // ===== 9. Initialization: Set Default Category Filtering =====
+  // ===== 9. Initialization: Set Default Category Filtering - IMPROVED =====
   if (!isRestaurantId9 && featuredButton) {
     categoryButtons.forEach(btn => btn.classList.remove('active'));
     featuredButton.classList.add('active');
@@ -5206,13 +5348,20 @@ document.addEventListener('click', (e) => {
     if (activeButton) {
       lastSelectedCategory = activeButton.dataset.category.toLowerCase();
       filterItemsByCategory(lastSelectedCategory);
+      
+      // Make sure active button is visible initially
+      setTimeout(() => {
+        activeButton.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' });
+      }, 100);
     }
   }
+  
+  // Initialize the filter dropdown indicator
+  setTimeout(() => {
+    updateFilterDropdownIndicator(lastSelectedCategory);
+  }, 200);
 });
 </script>
-
-
-
 
 
 
