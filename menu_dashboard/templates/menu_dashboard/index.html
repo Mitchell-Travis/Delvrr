@@ -408,7 +408,7 @@ body {
 
 .restaurant-name {
   font-size: 12px;
-  color: #fff;
+  color: white;
   margin: 0;
   font-weight: 500;
 }
@@ -772,7 +772,7 @@ body {
   position: sticky;
   top: 0;
   z-index: 18;
-  padding: 1px 0; /* Reduced padding from 6px to 2px */
+  padding: 6px 0; /* Significantly reduced padding top and bottom */
   background: var(--background);
   backdrop-filter: blur(10px);
   -webkit-backdrop-filter: blur(10px);
@@ -780,99 +780,88 @@ body {
   width: 100%;
   border-bottom: 1px solid var(--border-color);
 }
-
 .category-scroll {
   display: flex;
   overflow-x: auto;
-  gap: 10px;
-  padding: 0px 16px; /* Reduced vertical padding from 2px to 0px */
+  gap: 10px; /* Reduced gap */
+  padding: 2px 16px; /* Reduced vertical padding */
   -webkit-overflow-scrolling: touch;
   scroll-behavior: smooth;
   scrollbar-width: none;
   mask-image: linear-gradient(to right, transparent, black 4%, black 96%, transparent);
   -webkit-mask-image: linear-gradient(to right, transparent, black 4%, black 96%, transparent);
 }
-
 .category-scroll::-webkit-scrollbar {
   display: none;
 }
-
 /* Category buttons */
 .category-btn {
   background: transparent;
   border: none;
   color: var(--text-secondary);
-  font-size: 12px;
+  font-size: 12px; /* Slightly smaller font */
   font-weight: 600;
   display: flex;
   flex-direction: column;
   align-items: center;
-  padding: 1px 7px; /* Reduced vertical padding from 4px to 2px */
+  padding: 4px 10px; /* Reduced padding */
   cursor: pointer;
   transition: all 0.3s ease;
   white-space: nowrap;
   position: relative;
-  min-width: 70px;
-  max-width: 90px;
+  min-width: 70px; /* Smaller min-width */
+  max-width: 90px; /* Smaller max-width */
   outline: none;
   flex: 0 0 auto;
   touch-action: manipulation;
 }
-
 .category-btn:hover {
   color: var(--secondary-color);
 }
-
 .category-btn:active {
   transform: scale(0.95);
 }
-
 /* Icon styling */
 .category-icon {
-  font-size: 20px;
-  margin-bottom: 0px; /* Reduced from 3px to 2px */
+  font-size: 20px; /* Smaller icons */
+  margin-bottom: 3px; /* Minimal margin */
   transition: all 0.3s ease;
   display: flex;
   align-items: center;
   justify-content: center;
-  height: 20px; /* Reduced from 40px to 36px */
-  width: 20px; /* Reduced from 40px to 36px */
+  height: 40px; /* Significantly smaller height */
+  width: 40px; /* Significantly smaller width */
   border-radius: 12px;
   background-color: var(--light-bg);
   box-shadow: 0 2px 6px rgba(0, 0, 0, 0.05);
 }
-
 /* Active state */
 .category-btn.active {
   color: var(--secondary-color);
   font-weight: 700;
 }
-
 .category-btn.active .category-icon {
   background: linear-gradient(135deg, var(--secondary-color), color-mix(in srgb, var(--secondary-color) 80%, white));
   box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15);
-  transform: translateY(-3px); /* Reduced the transform from -4px to -3px */
+  transform: translateY(-4px);
 }
-
 /* Fixed active indicator */
 .category-btn::after {
   content: "";
   display: block;
   width: 0;
-  height: 1px; /* Thinner indicator, reduced from 3px to 2px */
+  height: 3px; /* Thinner indicator */
   background: var(--secondary-color);
   border-radius: 4px;
-  margin-top: 1px; /* Reduced from 3px to 2px */
+  margin-top: 3px; /* Less margin */
   opacity: 0;
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
   transition: width 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275), opacity 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
 }
-
 .category-btn.active::after {
   width: 50%;
   opacity: 1;
 }
-
 /* Badge for new categories */
 .category-btn.new::before {
   content: "NEW";
@@ -890,7 +879,6 @@ body {
   letter-spacing: 0.5px;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
 }
-
 @keyframes pulse {
   0% { transform: scale(1); }
   50% { transform: scale(1.1); }
@@ -1876,7 +1864,7 @@ body {
 
 .restaurant-name {
     font-size: 14px;
-    color: var(--text-secondary);
+    color: #ffffff
 }
 
 /* Cart Button */
@@ -3434,7 +3422,7 @@ input:checked + .slider:before {
         {% endfor %}
       {% endfor %}
     </div>
-        <!-- <button class="floating-cart-button">
+      <!--   <button class="floating-cart-button">
       <i class="fas fa-shopping-cart"></i>
       <span class="cart-count">0</span>
     </button> -->
