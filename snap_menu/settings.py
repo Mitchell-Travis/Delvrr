@@ -106,7 +106,7 @@ TEMPLATES = [
                 'django.template.context_processors.request',
                 'django.contrib.auth.context_processors.auth',
                 'django.contrib.messages.context_processors.messages',
-                'menu_dashboard.context_processors.get_active_notification'
+                'menu_dashboard.context_processors.get_active_notification',
             ],
             'libraries': {
                 'custom_filters': 'menu_dashboard.templatetags.custom_filters',

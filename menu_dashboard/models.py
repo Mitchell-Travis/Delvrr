@@ -406,16 +406,32 @@ class MenuVisit(models.Model):
             return f"{self.restaurant.name} - {self.timestamp}"
         return f"Unknown Restaurant - {self.timestamp}"
 
+
 class Notification(models.Model):
+    title = models.CharField(max_length=100)
     message = models.CharField(max_length=255)
     button_text = models.CharField(max_length=50, blank=True, null=True)
     button_url = models.URLField(blank=True, null=True)
     is_active = models.BooleanField(default=True)
     start_date = models.DateTimeField()
     end_date = models.DateTimeField()
-     
+    
+    # New field to store notification type
+    NOTIFICATION_TYPES = [
+        ('success', 'Success'),
+        ('info', 'Information'),
+        ('warning', 'Warning'),
+        ('error', 'Error'),
+    ]
+    notification_type = models.CharField(
+        max_length=10,
+        choices=NOTIFICATION_TYPES,
+        default='info'
+    )
+    
     def __str__(self):
-        return self.message
+        return self.title
+
 
 
 

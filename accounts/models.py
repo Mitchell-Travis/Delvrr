@@ -98,13 +98,15 @@ class VerifyConfirmation(models.Model):
     def __str__(self):
         return self.verified_code
 
+def get_default_uuid():
+    return str(uuid.uuid4())
 
 # Create your models here.
 class Profile(models.Model):
     user=models.OneToOneField(User,   on_delete=models.CASCADE,related_name="profile")
     phone_number=models.CharField(max_length=15)
     otp=models.CharField(max_length=100,null=True,blank=True)
-    uid=models.CharField(default=f'{uuid.uuid4}',max_length=200)
+    uid = models.CharField(default=get_default_uuid, max_length=200)
 
 
 

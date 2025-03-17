@@ -47,9 +47,10 @@ class CustomerAdmin(admin.ModelAdmin):
     pass
 admin.site.register(Customer, CustomerAdmin)
 
+# Register your models here.
 class NotificationAdmin(admin.ModelAdmin):
-     pass
-admin.site.register(Notification, NotificationAdmin)
+    pass
+admin.site.register(Notification , NotificationAdmin)
 
 
 class RestaurantAdmin(admin.ModelAdmin):

@@ -3101,43 +3101,55 @@ input:checked + .slider:before {
   }
 </style>
  
-<style type="text/css">
-    .notification-banner {
-   display: flex;
-   justify-content: center;
-   align-items: center;
-   background-color: #4285f4;
-   color: white;
-   padding: 10px 20px;
-   width: 100%;
-   position: relative;
- }
- 
- .notification-message {
-   flex: 1;
-   text-align: center;
-   font-weight: 500;
- }
- 
- .notification-button {
-   display: inline-block;
-   background-color: #222;
-   color: white;
-   padding: 6px 16px;
-   border-radius: 4px;
-   margin-left: 16px;
-   text-decoration: none;
-   font-weight: bold;
- }
- 
- .notification-close {
-   background: none;
-   border: none;
-   color: white;
-   cursor: pointer;
-   font-size: 18px;
-   padding: 0 10px;
- }
+<style>
+.notification-banner {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+   background-color: #f0f8f0;  /* Light green background */
+  color: #333;  /* Dark text for better readability */
+  padding: 10px 20px;
+  width: 100%;
+  position: relative;
+}
+
+.notification-icon {
+  background-color: #4CD964;  /* Green circle */
+  border-radius: 50%;
+  width: 30px;
+  height: 30px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-right: 10px;
+  flex-shrink: 0;
+}
+
+.notification-message {
+  flex: 1;
+  text-align: center;
+  font-weight: 500;
+}
+
+.notification-button {
+  display: inline-block;
+  background-color: #222;
+  color: white;
+  padding: 6px 16px;
+  border-radius: 4px;
+  margin-left: 16px;
+  text-decoration: none;
+  font-weight: bold;
+}
+
+.notification-close {
+  background: none;
+  border: none;
+  color: white;
+  cursor: pointer;
+  font-size: 18px;
+  padding: 0 10px;
+}
 </style>
  
 
@@ -3382,9 +3394,29 @@ input:checked + .slider:before {
        MENU SECTION
        (Default visible on page load)
   ================================ -->
+
+
+
   <section id="menuSection" class="menu-app-container">
        
   <!-- App Header -->
+
+{% if notification %}
+<div class="notification-banner" id="notification-banner">
+  <div class="notification-icon">
+    <i class="fas fa-check"></i>
+  </div>
+  <div class="notification-message">
+    
+    <div class="notification-description">{{ notification.message }}</div>
+  </div>
+  <button class="notification-close" onclick="closeNotification()">
+    <i class="fas fa-times"></i>
+  </button>
+</div>
+{% endif %}
+
+
 <!-- Header -->
 <div class="aliexpress-header">
   <!-- Left side: hamburger menu + brand info -->
@@ -5404,12 +5436,12 @@ document.addEventListener('DOMContentLoaded', function() {
 
 <script>
 function closeNotification() {
-   document.getElementById('notification-banner').style.display = 'none';
-   
-   // Set a cookie to remember the user closed this notification
-   document.cookie = "notification_{{ notification.id }}_closed=true; path=/; max-age=86400";
- } 
- </script>
+  document.getElementById('notification-banner').style.display = 'none';
+  
+  // Set a cookie to remember the user closed this notification
+  document.cookie = "notification_{{ notification.id }}_closed=true; path=/; max-age=86400";
+}
+</script>
 
 
 
