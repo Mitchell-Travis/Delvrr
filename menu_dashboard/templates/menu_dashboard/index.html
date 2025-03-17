@@ -3102,7 +3102,7 @@ input:checked + .slider:before {
 </style>
  
 <style type="text/css">
-     .notification-banner {
+    .notification-banner {
    display: flex;
    justify-content: center;
    align-items: center;
@@ -3138,7 +3138,7 @@ input:checked + .slider:before {
    font-size: 18px;
    padding: 0 10px;
  }
- </style>
+</style>
  
 
 
@@ -5403,13 +5403,12 @@ document.addEventListener('DOMContentLoaded', function() {
 
 
 <script>
-     function closeNotification() {
+function closeNotification() {
    document.getElementById('notification-banner').style.display = 'none';
    
    // Set a cookie to remember the user closed this notification
    document.cookie = "notification_{{ notification.id }}_closed=true; path=/; max-age=86400";
- }
-     
+ } 
  </script>
 
 

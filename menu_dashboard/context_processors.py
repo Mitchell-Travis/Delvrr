@@ -2,6 +2,7 @@ from .models import Notification
 from django.utils import timezone
  
 def get_active_notification(request):
+    
 
      # Check if user has dismissed the notification via cookie
     active_notifications = Notification.objects.filter(
@@ -16,7 +17,7 @@ def get_active_notification(request):
          
         # If user hasn't closed this notification, show it
         if cookie_name not in request.COOKIES:
-            
+
             return {'notification': notification}
      
     return {'notification': None}
