@@ -1,5 +1,5 @@
 from .models import Notification
- from django.utils import timezone
+from django.utils import timezone
  
  def get_active_notification(request):
      # Check if user has dismissed the notification via cookie
