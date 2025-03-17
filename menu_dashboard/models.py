@@ -406,5 +406,16 @@ class MenuVisit(models.Model):
             return f"{self.restaurant.name} - {self.timestamp}"
         return f"Unknown Restaurant - {self.timestamp}"
 
+class Notification(models.Model):
+     message = models.CharField(max_length=255)
+     button_text = models.CharField(max_length=50, blank=True, null=True)
+     button_url = models.URLField(blank=True, null=True)
+     is_active = models.BooleanField(default=True)
+     start_date = models.DateTimeField()
+     end_date = models.DateTimeField()
+     
+     def __str__(self):
+         return self.message
+
 
 

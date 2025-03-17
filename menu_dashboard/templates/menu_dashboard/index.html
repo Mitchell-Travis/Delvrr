@@ -3101,7 +3101,45 @@ input:checked + .slider:before {
   }
 </style>
  
-
+<style type="text/css">
+     .notification-banner {
+   display: flex;
+   justify-content: center;
+   align-items: center;
+   background-color: #4285f4;
+   color: white;
+   padding: 10px 20px;
+   width: 100%;
+   position: relative;
+ }
+ 
+ .notification-message {
+   flex: 1;
+   text-align: center;
+   font-weight: 500;
+ }
+ 
+ .notification-button {
+   display: inline-block;
+   background-color: #222;
+   color: white;
+   padding: 6px 16px;
+   border-radius: 4px;
+   margin-left: 16px;
+   text-decoration: none;
+   font-weight: bold;
+ }
+ 
+ .notification-close {
+   background: none;
+   border: none;
+   color: white;
+   cursor: pointer;
+   font-size: 18px;
+   padding: 0 10px;
+ }
+ </style>
+ 
 
 
 
@@ -5362,6 +5400,17 @@ document.addEventListener('DOMContentLoaded', function() {
   }, 200);
 });
 </script>
+
+
+<script>
+     function closeNotification() {
+   document.getElementById('notification-banner').style.display = 'none';
+   
+   // Set a cookie to remember the user closed this notification
+   document.cookie = "notification_{{ notification.id }}_closed=true; path=/; max-age=86400";
+ }
+     
+ </script>
 
 
 

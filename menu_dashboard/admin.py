@@ -24,7 +24,8 @@ from .models import (
     BrandColor,
     Category,
     ProductVariation,
-    MenuVisit 
+    MenuVisit,
+    Notification 
     )
 from django.utils.html import format_html
 from django.core.files.base import ContentFile
@@ -45,6 +46,10 @@ class MenuVisitAdmin(admin.ModelAdmin):
 class CustomerAdmin(admin.ModelAdmin):
     pass
 admin.site.register(Customer, CustomerAdmin)
+
+class NotificationAdmin(admin.ModelAdmin):
+     pass
+ admin.site.register(Notification, NotificationAdmin)
 
 
 class RestaurantAdmin(admin.ModelAdmin):
