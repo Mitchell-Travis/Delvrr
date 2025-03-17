@@ -49,7 +49,7 @@ admin.site.register(Customer, CustomerAdmin)
 
 class NotificationAdmin(admin.ModelAdmin):
      pass
- admin.site.register(Notification, NotificationAdmin)
+admin.site.register(Notification, NotificationAdmin)
 
 
 class RestaurantAdmin(admin.ModelAdmin):
