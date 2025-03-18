@@ -2,11 +2,14 @@
 # Exit on error
 set -o errexit
 
-# Modify this line as needed for your package manager (pip, poetry, etc.)
+# Install dependencies
 pip3 install -r requirements.txt
 
-# Convert static asset files
+# Collect static files (if needed)
 python3 manage.py collectstatic --no-input
 
 # Apply any outstanding database migrations
-python3 manage.py migrate
+python3 manage.py migrate --noinput
+
+# Start the application (this command is specific to your environment)
+gunicorn snap_menu.wsgi:application --bind 0.0.0.0:$PORT
