@@ -31,7 +31,9 @@ ALLOWED_HOSTS = [
     "delvrr.onrender.com",
     "www.delvrr.com",
     "delvrr.com",
+    "172.20.10.3",  # Add this line
 ]
+
 
 # Authentication
 AUTH_USER_MODEL = "accounts.User"
