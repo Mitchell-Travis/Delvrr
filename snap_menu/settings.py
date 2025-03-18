@@ -24,7 +24,7 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 SECRET_KEY = 'django-insecure--imqw09akhzp4l9k(-qvmxs2wi&#9@w@s)%kafewhcut)bsf*j'
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True  # Set to False to use PostgreSQL
+DEBUG = False  # Set to False to use PostgreSQL
 
 ALLOWED_HOSTS = [
     'localhost', 
