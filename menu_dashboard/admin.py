@@ -59,9 +59,34 @@ class RestaurantAdmin(admin.ModelAdmin):
 
 admin.site.register(Restaurant, RestaurantAdmin)
 
+
+class ProductVariationInline(admin.TabularInline):
+    model = ProductVariation
+    extra = 1
+
+@admin.register(Product)
 class ProductAdmin(admin.ModelAdmin):
-    list_display = ('restaurant', 'name', 'category')
-admin.site.register(Product, ProductAdmin)
+    list_display = ('name', 'restaurant', 'category', 'price')
+    list_filter = ('restaurant', 'category')
+    search_fields = ('name', 'description', 'restaurant__restaurant_name')
+    ordering = ('restaurant', 'category', 'name')
+    
+    fieldsets = (
+        (None, {
+            'fields': ('restaurant', 'category', 'name', 'description', 'price')
+        }),
+        ('Options', {
+            'fields': ('has_variations', 'image') if hasattr(Product, 'image') else ('has_variations',)
+        }),
+    )
+    
+    inlines = [ProductVariationInline]
+    
+    def get_form(self, request, obj=None, **kwargs):
+        form = super().get_form(request, obj, **kwargs)
+        form.base_fields['restaurant'].widget.attrs['style'] = 'width: 300px'
+        form.base_fields['category'].widget.attrs['style'] = 'width: 300px'
+        return form
 
 
 class ProductVariationAdmin(admin.ModelAdmin):
