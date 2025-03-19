@@ -1,0 +1,20 @@
+services:
+  - type: web
+    name: delvrr
+    env: python
+    buildCommand: ./build.sh
+    startCommand: python manage.py migrate --noinput && gunicorn snap_menu.wsgi:application
+    envVars:
+      - key: DJANGO_ENV
+        value: production
+      - key: DATABASE_URL
+        value: ${DATABASE_URL}  # Reference environment variable for PostgreSQL
+      - key: SECRET_KEY
+        value: ${SECRET_KEY}  # Reference your secret key here
+      - key: ALLOWED_HOSTS
+        value: ${ALLOWED_HOSTS}
+    branches:
+      production:
+        autoDeploy: true
+    region: Virginia (US East)  # Optional: set your Render region if needed
+
