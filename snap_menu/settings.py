@@ -20,7 +20,7 @@ if os.path.exists(FIREBASE_CREDENTIALS):
 SECRET_KEY = config("SECRET_KEY", default="your-default-secret-key")
 
 # Debug Mode - Set to False in Production
-DEBUG = ENVIRONMENT == "development"
+DEBUG = ENVIRONMENT == "production"
 
 # Allowed Hosts
 ALLOWED_HOSTS = [
