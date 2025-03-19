@@ -9,6 +9,7 @@ import qrcode
 from io import BytesIO
 from django.core.files import File
 from django.contrib import admin
+from django.utils.html import format_html
 from .models import (
     Customer,
     Product,
@@ -60,13 +61,15 @@ class RestaurantAdmin(admin.ModelAdmin):
 admin.site.register(Restaurant, RestaurantAdmin)
 
 
+# First, define the inline class
 class ProductVariationInline(admin.TabularInline):
     model = ProductVariation
     extra = 1
 
+# Then use it in your ProductAdmin class
 @admin.register(Product)
 class ProductAdmin(admin.ModelAdmin):
-    list_display = ('name', 'restaurant', 'category', 'price')
+    list_display = ('name', 'restaurant', 'category', 'price', 'display_image')
     list_filter = ('restaurant', 'category')
     search_fields = ('name', 'description', 'restaurant__restaurant_name')
     ordering = ('restaurant', 'category', 'name')
@@ -76,7 +79,7 @@ class ProductAdmin(admin.ModelAdmin):
             'fields': ('restaurant', 'category', 'name', 'description', 'price')
         }),
         ('Options', {
-            'fields': ('has_variations', 'image') if hasattr(Product, 'image') else ('has_variations',)
+            'fields': ('has_variations', 'product_image') if hasattr(Product, 'product_image') else ('has_variations',)
         }),
     )
     
@@ -87,6 +90,13 @@ class ProductAdmin(admin.ModelAdmin):
         form.base_fields['restaurant'].widget.attrs['style'] = 'width: 300px'
         form.base_fields['category'].widget.attrs['style'] = 'width: 300px'
         return form
+    
+    def display_image(self, obj):
+        if hasattr(obj, 'image') and obj.product_image:
+            return format_html('<img src="{}" width="50" height="50" />', obj.product_image.url)
+        return "No Image"
+    display_image.short_description = 'Image'
+    
 
 
 class ProductVariationAdmin(admin.ModelAdmin):
