@@ -20,7 +20,7 @@ if os.path.exists(FIREBASE_CREDENTIALS):
 SECRET_KEY = config("SECRET_KEY", default="your-default-secret-key")
 
 # Debug Mode - Set to False in Production
-DEBUG = True
+DEBUG = ENVIRONMENT == "development"
 
 # Allowed Hosts
 ALLOWED_HOSTS = [
@@ -100,11 +100,20 @@ TEMPLATES = [
 ROOT_URLCONF = "snap_menu.urls"
 
 # Database Configuration
-DATABASES = {
-    "default": dj_database_url.config(
-        default=config("DATABASE_URL", default="postgresql://postgres:postgres@localhost:5432/snapmenu"),
-    )
-}
+# Database Configuration
+if ENVIRONMENT == "development":
+    DATABASES = {
+        "default": {
+            "ENGINE": "django.db.backends.sqlite3",
+            "NAME": BASE_DIR / "db.sqlite3",
+        }
+    }
+else:
+    DATABASES = {
+        "default": dj_database_url.config(
+            default=config("DATABASE_URL", default="postgresql://postgres:postgres@localhost:5432/snapmenu"),
+        )
+    }
 
 # Static Files
 STATIC_URL = "/static/"

@@ -60,7 +60,7 @@ class RestaurantAdmin(admin.ModelAdmin):
 admin.site.register(Restaurant, RestaurantAdmin)
 
 class ProductAdmin(admin.ModelAdmin):
-    list_display = ('restaurant', 'name')
+    list_display = ('restaurant', 'name', 'category')
 admin.site.register(Product, ProductAdmin)
 
 
