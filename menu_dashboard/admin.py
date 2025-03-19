@@ -69,7 +69,7 @@ class ProductVariationInline(admin.TabularInline):
 # Then use it in your ProductAdmin class
 @admin.register(Product)
 class ProductAdmin(admin.ModelAdmin):
-    list_display = ('name', 'restaurant', 'category', 'price', 'display_image')
+    list_display = ('name', 'restaurant', 'category', 'price')
     list_filter = ('restaurant', 'category')
     search_fields = ('name', 'description', 'restaurant__restaurant_name')
     ordering = ('restaurant', 'category', 'name')
@@ -96,7 +96,7 @@ class ProductAdmin(admin.ModelAdmin):
             return format_html('<img src="{}" width="50" height="50" />', obj.product_image.url)
         return "No Image"
     display_image.short_description = 'Image'
-    
+
 
 
 class ProductVariationAdmin(admin.ModelAdmin):
