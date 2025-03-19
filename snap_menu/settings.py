@@ -20,7 +20,7 @@ if os.path.exists(FIREBASE_CREDENTIALS):
 SECRET_KEY = config("SECRET_KEY", default="your-default-secret-key")
 
 # Debug Mode - Set to False in Production
-DEBUG = ENVIRONMENT == "development"
+DEBUG = True
 
 # Allowed Hosts
 ALLOWED_HOSTS = [
@@ -111,9 +111,10 @@ if ENVIRONMENT == "development":
 else:
     DATABASES = {
         "default": dj_database_url.config(
-            default=config("DATABASE_URL", default="postgresql://postgres:postgres@localhost:5432/snapmenu"),
+            default=config("DATABASE_URL", default="postgresql://postgres:postgres@localhost:5432/snapmenu")
         )
     }
+
 
 # Static Files
 STATIC_URL = "/static/"
