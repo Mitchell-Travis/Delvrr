@@ -149,7 +149,11 @@ class Table(models.Model):
 class Category(models.Model):
     name = models.CharField(max_length=50, unique=True)
     emoji = models.CharField(max_length=5, null=True, blank=True)  # For storing category emoji
+    order = models.PositiveIntegerField(default=0)  # Add this field for ordering
     
+    class Meta:
+        ordering = ['order']  # Order categories by this field
+        
     def __str__(self):
         return self.name
 

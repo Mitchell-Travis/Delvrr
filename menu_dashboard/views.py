@@ -150,8 +150,8 @@ def restaurant_menu(request, restaurant_name_slug, hashed_slug):
         device=device  # This assumes you've added this field to MenuVisit
     )
     
-    # Existing logic
-    categories = Category.objects.filter(products__restaurant=restaurant).distinct()
+    # Get categories in order
+    categories = Category.objects.filter(products__restaurant=restaurant).distinct().order_by('order')
     categorized_products = []
     
     for category in categories:
