@@ -420,17 +420,7 @@ class Notification(models.Model):
     start_date = models.DateTimeField()
     end_date = models.DateTimeField()
     
-    # Restaurant relationship
-    restaurants = models.ManyToManyField(
-        'menu_dashboard.Restaurant',  # Adjust this to your actual Restaurant model path
-        blank=True,
-        related_name='notifications'
-    )
-    
-    # Field to determine if notification is for all restaurants
-    is_global = models.BooleanField(default=False, help_text="If checked, notification will be shown to all restaurants")
-    
-    # Notification type field
+    # New field to store notification type
     NOTIFICATION_TYPES = [
         ('success', 'Success'),
         ('info', 'Information'),

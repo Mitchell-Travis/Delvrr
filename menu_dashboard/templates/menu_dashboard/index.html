@@ -3402,14 +3402,12 @@ input:checked + .slider:before {
   <!-- App Header -->
 
 {% if notification %}
-<div class="notification-banner notification-{{ notification.notification_type }}" id="notification-banner">
+<div class="notification-banner" id="notification-banner">
   <div class="notification-message">
+    
     <div class="notification-description">{{ notification.message }}</div>
-    {% if notification.button_text and notification.button_url %}
-    <a href="{{ notification.button_url }}" class="notification-button">{{ notification.button_text }}</a>
-    {% endif %}
   </div>
-  <button class="notification-close" onclick="closeNotification('{{ notification.id }}')">
+  <button class="notification-close" onclick="closeNotification()">
     <i class="fas fa-times"></i>
   </button>
 </div>
@@ -5434,13 +5432,11 @@ document.addEventListener('DOMContentLoaded', function() {
 
 
 <script>
-function closeNotification(notificationId) {
+function closeNotification() {
   document.getElementById('notification-banner').style.display = 'none';
   
-  // Set a cookie to remember this notification was closed
-  let date = new Date();
-  date.setTime(date.getTime() + (7 * 24 * 60 * 60 * 1000)); // 7 days
-  document.cookie = `notification_${notificationId}_closed=true; expires=${date.toUTCString()}; path=/`;
+  // Set a cookie to remember the user closed this notification
+  document.cookie = "notification_{{ notification.id }}_closed=true; path=/; max-age=86400";
 }
 </script>
 
