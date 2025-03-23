@@ -12,6 +12,7 @@ from django.core.cache import cache
 from django.utils.text import slugify
 import hashlib
 from django.utils.timezone import now
+from django.conf import settings
 
 from datetime import datetime
 
@@ -431,6 +432,20 @@ class Notification(models.Model):
         max_length=10,
         choices=NOTIFICATION_TYPES,
         default='info'
+    )
+    
+    # New field to link notifications to specific restaurants
+    restaurants = models.ManyToManyField(
+        'Restaurant', 
+        related_name='notifications',
+        blank=True,
+        help_text="Select specific restaurants to receive this notification. Leave empty to send to all restaurants."
+    )
+    
+    # Flag to indicate if notification should be sent to all restaurants
+    send_to_all = models.BooleanField(
+        default=False,
+        help_text="If checked, this notification will be sent to all restaurants regardless of selection."
     )
     
     def __str__(self):

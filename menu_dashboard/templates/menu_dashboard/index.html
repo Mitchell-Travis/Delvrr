@@ -1105,24 +1105,27 @@ body {
   width: 32px;
   height: 32px;
   border-radius: 10px;
-  background-color: {{ primary_brand_color }};
-  color: white;
+  background-color: transparent;
+  color: #000000;
   border: none;
   display: none;
   align-items: center;
   justify-content: center;
   cursor: pointer;
-  box-shadow: var(--shadow-sm);
   transition: all 0.25s ease;
 }
 
 .add-to-cart:hover {
   transform: translateY(-2px);
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+  color: #555555;
 }
 
 .add-to-cart:active {
   transform: scale(0.9);
+}
+
+.add-to-cart i {
+  font-size: 18px;
 }
 
 
@@ -1149,10 +1152,6 @@ body {
   transition: all 0.3s ease;
 }
 
-.grid-item:hover {
-  transform: translateY(-4px);
-  box-shadow: var(--shadow-lg);
-}
 
 .grid-item:active {
   transform: scale(0.98);
@@ -1386,55 +1385,101 @@ body {
 }
 
 /* Add floating cart button */
+/* Persistent floating cart button styling */
 .floating-cart-button {
   position: fixed;
-  bottom: 20px;
-  right: 20px;
-  width: 60px;
-  height: 60px;
-  border-radius: 50%;
-  background-color: {{ primary_brand_color }};
+  bottom: 80px; /* Default position if not yet dragged */
+  right: 16px; /* Default position if not yet dragged */
+  height: 40px; /* Smaller button height */
+  padding: 0 14px; /* Reduced padding */
+  border-radius: 20px; /* Adjusted for smaller size */
+  background-color: {{ primary_brand_color }}; /* Use backend color */
   color: white;
   display: flex;
   align-items: center;
   justify-content: center;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.25);
   border: none;
-  cursor: pointer;
-  z-index: 1000;
+  cursor: grab;
+  z-index: 9999;
   transition: all 0.3s ease;
+  gap: 6px;
+  user-select: none;
+  touch-action: none;
+  pointer-events: auto;
 }
 
-.floating-cart-button:hover {
-  transform: translateY(-4px);
-  box-shadow: 0 8px 16px rgba(0, 0, 0, 0.3);
+/* Tooltip to inform users they can drag */
+.floating-cart-button::after {
+  content: "Drag me";
+  position: absolute;
+  top: -30px; /* Position above the button */
+  left: 50%;
+  transform: translateX(-50%);
+  background-color: rgba(0, 0, 0, 0.7);
+  color: white;
+  padding: 4px 10px;
+  border-radius: 12px;
+  font-size: 12px;
+  opacity: 0; /* Initially hidden */
+  transition: opacity 0.3s ease;
+  pointer-events: none;
+  white-space: nowrap;
 }
 
-.floating-cart-button:active {
-  transform: scale(0.95);
+/* Show tooltip when .show-tooltip is added */
+.floating-cart-button.show-tooltip::after {
+  opacity: 1;
+}
+
+/* Optional: also show tooltip on hover if desired */
+.floating-cart-button:hover::after {
+  opacity: 1;
 }
 
 .floating-cart-button i {
-  font-size: 24px;
+  font-size: 10px;
 }
 
 .cart-count {
-  position: absolute;
-  top: -5px;
-  right: -5px;
-  background-color: var(--danger-color);
-  color: white;
-  width: 22px;
-  height: 22px;
-  border-radius: 50%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
   font-size: 12px;
-  font-weight: bold;
-  border: 2px solid white;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+  font-weight: 500;
 }
+
+/* Explicitly set cursor when dragging */
+.floating-cart-button.dragging {
+  cursor: grabbing;
+  z-index: 10000;
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.3);
+}
+
+/* Bounce animation when adding items */
+@keyframes bounce {
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(1.05); }
+}
+
+.cart-bounce {
+  animation: bounce 0.3s ease;
+}
+
+
+
+/* Animation when the icon stops */
+@keyframes cartStop {
+  0% { transform: rotate(0deg); }
+  20% { transform: rotate(15deg); }
+  40% { transform: rotate(-8deg); }
+  60% { transform: rotate(4deg); }
+  80% { transform: rotate(-2deg); }
+  100% { transform: rotate(0deg); }
+}
+
+.cart-stop {
+  animation: cartStop 0.6s ease;
+}
+
+
 
 /* Add some additional animations */
 @keyframes slideInUp {
@@ -3500,7 +3545,7 @@ input:checked + .slider:before {
   <!-- Featured Section with Carousel View -->
   <div class="featured-section shared-view">
     <div class="section-header">
-      <h2>Most Popular Items</h2>
+      <h2>Popular</h2>
       <button class="view-all">See all</button>
     </div>
     <div class="items-carousel">
@@ -3538,12 +3583,12 @@ input:checked + .slider:before {
                 </div>
                 {% if product.status != 'Unavailable' %}
                   <button class="add-to-cart"
-                         data-product-id="{{ product.id }}"
-                         data-name="{{ product.name }}"
-                         data-price="{{ product.price }}"
-                         data-image="{{ product.product_image.url }}">
-                    <i class="fas fa-plus"></i>
-                  </button>
+                        data-product-id="{{ product.id }}"
+                        data-name="{{ product.name }}"
+                        data-price="{{ product.price }}"
+                        data-image="{{ product.product_image.url }}">
+                    <i class="fas fa-shopping-cart"></i>
+                </button>
                 {% endif %}
               </div>
             </div>
@@ -3551,25 +3596,29 @@ input:checked + .slider:before {
         {% endfor %}
       {% endfor %}
     </div>
-        <button class="floating-cart-button">
-      <i class="fas fa-shopping-cart"></i>
-      <span class="cart-count">0</span>
-    </button>
+
   </div>
   
   <!-- Grid View for "View All" -->
   <div class="product-grid-container shared-view" id="productGridContainer">
     <div class="section-header">
-      <h2>All Menu Items</h2>
+      <h2>All Menu</h2>
       <button class="back-to-carousel"><i class="fas fa-chevron-left"></i> Back</button>
     </div>
     <div class="product-grid" id="productGrid">
       <!-- Grid items will be dynamically populated here -->
+
     </div>
   </div>
 </div>
 
-
+ <button class="floating-cart-button" 
+      data-bs-toggle="offcanvas" 
+      data-bs-target="#offcanvasRight" 
+      aria-controls="offcanvasRight">
+  <i class="fas fa-shopping-bag"></i>
+  <span class="cart-count" id="cartIconCount">0 Items</span>
+</button>
 
 
 
@@ -3721,69 +3770,69 @@ input:checked + .slider:before {
   </section>
 
     <!-- Product Detail Modal -->
-    <div class="modal fade" id="productDetailModal" tabindex="-1" aria-labelledby="productDetailModalLabel" aria-hidden="true">
+    <!-- Product Detail Modal -->
+<div class="modal fade" id="productDetailModal" tabindex="-1" aria-labelledby="productDetailModalLabel" aria-hidden="true">
   <div class="modal-dialog modal-dialog-centered">
-    <div class="modal-content" style="max-width: 320px; margin: auto; border-radius: 16px; overflow: hidden; box-shadow: 0 10px 30px rgba(0,0,0,0.15); border: none;">
+    <div class="modal-content" style="max-width: 400px; margin: auto; border-radius: 32px; overflow: hidden; box-shadow: 0 10px 30px rgba(0,0,0,0.15); border: none; background-color: #FFF8F0;">
       <!-- Main Content Wrapper -->
       <div class="position-relative">
-        <!-- Close Button -->
-        <button type="button" class="btn-close-custom position-absolute top-2 end-2 z-3" 
-                data-bs-dismiss="modal" aria-label="Close"
-                style="background: rgba(255, 255, 255, 0.9); border: none; width: 32px; height: 32px; border-radius: 50%; display: flex; align-items: center; justify-content: center; cursor: pointer; transition: all 0.2s ease;">
-          <i class="fas fa-times" style="color: #FF0000;"></i>
+        <!-- Back Button (Left Arrow) -->
+        <button type="button" class="btn-back position-absolute top-4 start-4 z-3" 
+                data-bs-dismiss="modal" aria-label="Back"
+                style="background: white; border: none; width: 40px; height: 40px; border-radius: 50%; display: flex; align-items: center; justify-content: center; cursor: pointer; box-shadow: 0 2px 8px rgba(0,0,0,0.1);">
+          <i class="fas fa-chevron-left" style="color: #000;"></i>
+        </button>
+        
+        <!-- Favorite Button (Heart) -->
+        <button type="button" class="btn-favorite position-absolute top-4 end-4 z-3" 
+                aria-label="Favorite"
+                style="background: white; border: none; width: 40px; height: 40px; border-radius: 50%; display: flex; align-items: center; justify-content: center; cursor: pointer; box-shadow: 0 2px 8px rgba(0,0,0,0.1);">
+          <i class="fas fa-heart" style="color: #FF6B6B;"></i>
         </button>
                 
         <!-- Image Section -->
-        <div class="position-relative" style="height: 200px; background-color: #f0f0f0;">
-          <img id="detailProductImage" src="" 
-               class="w-100 h-100 object-fit-contain" alt="Product Image"
-               style="transition: transform 0.3s ease; object-position: center;">
-          <div class="position-absolute top-0 start-0 w-100 h-100" 
-               style="background: linear-gradient(to bottom, rgba(0,0,0,0.05), rgba(0,0,0,0.3));"></div>
-          <div class="position-absolute bottom-0 start-0 w-100 p-2">
-            <h3 class="h6 mb-1 text-white fw-bold" style="text-shadow: 0 1px 2px rgba(0,0,0,0.4);"></h3>
-            <div class="d-flex align-items-center gap-1">
-              <span class="h6 mb-0 text-white" style="text-shadow: 0 1px 2px rgba(0,0,0,0.4);"></span>
-            </div>
+        <div class="position-relative" style="height: 300px; background-color: white; display: flex; align-items: center; justify-content: center; padding: 20px;">
+          <img id="detailProductImage" src="/api/placeholder/400/400" 
+               class="w-75 h-auto object-fit-contain" alt="Product Image"
+               style="transition: transform 0.3s ease; filter: drop-shadow(0 10px 15px rgba(0,0,0,0.1)); transform: scale(1.1);">
+        </div>
+
+        <!-- Size Selection -->
+        <div class="d-flex justify-content-center" style="margin-top: -30px; position: relative; z-index: 10;">
+          <div class="d-flex gap-4">
+            <button class="size-btn" style="width: 45px; height: 45px; border-radius: 50%; background: white; border: none; box-shadow: 0 4px 12px rgba(0,0,0,0.1); display: flex; align-items: center; justify-content: center; font-weight: 500; transition: all 0.2s ease;">S</button>
+            <button class="size-btn active" style="width: 45px; height: 45px; border-radius: 50%; background: white; border: none; box-shadow: 0 4px 12px rgba(0,0,0,0.1); display: flex; align-items: center; justify-content: center; font-weight: 500; transition: all 0.2s ease;">M</button>
+            <button class="size-btn" style="width: 45px; height: 45px; border-radius: 50%; background: white; border: none; box-shadow: 0 4px 12px rgba(0,0,0,0.1); display: flex; align-items: center; justify-content: center; font-weight: 500; transition: all 0.2s ease;">L</button>
           </div>
         </div>
 
-        <!-- Content Card -->
-        <div class="card border-0 mx-2" style="margin-top: -30px; border-radius: 16px; background: white; box-shadow: 0 8px 20px rgba(0,0,0,0.08); position: relative; z-index: 10;">
-          <div class="card-body p-3">
-            <!-- Product Name and Price Section -->
-            <div class="mb-3">
-              <h2 id="detailProductName" class="h5 mb-1 text-dark fw-bold"></h2>
-              <div class="d-flex align-items-center gap-1">
-                <span id="detailProductPrice" class="h5 mb-0 text-dark fw-bold"></span>
-                <span id="detailProductOldPrice" class="small text-muted text-decoration-line-through"></span>
-              </div>
+        <!-- Product Info -->
+        <div class="px-5 py-4">
+          <div class="d-flex justify-content-between align-items-start mb-1">
+            <h2 id="detailProductName" class="h3 mb-0 fw-bold">5 Pepper</h2>
+            <div class="d-flex align-items-center px-3 py-1" style="background: #FFF3D0; border-radius: 12px;">
+              <i class="fas fa-star me-1" style="color: #FFB800; font-size: 0.9rem;"></i>
+              <span style="font-weight: 600; color: #333;">4.5</span>
             </div>
-
-            <!-- Description -->
-            <div class="mb-3">
-              <p id="detailProductDescription" class="text-secondary small mb-0" style="line-height: 1.4;"></p>
+          </div>
+          
+          
+          <!-- Pricing and Quantity -->
+          <div class="d-flex justify-content-between align-items-center mb-5">
+            <div>
+              <h3 id="detailProductPrice" class="h2 mb-0 fw-bold">$129</h3>
+              <span id="detailProductOldPrice" class="text-muted text-decoration-line-through">$169</span>
             </div>
-                        
-            <!-- Stats -->
-            <div class="d-flex justify-content-between mb-3">
-              <div class="text-center px-2 py-1" style="background: rgba(255,0,0,0.1); border-radius: 8px; transition: transform 0.2s ease;">
-                <i class="fas fa-clock mb-1" style="color: {{ primary_brand_color }}; font-size: 0.9rem;"></i>
-                <div class="small text-secondary">15-20 min</div>
-              </div>
-              <div class="text-center px-2 py-1" style="background: rgba(255,0,0,0.1); border-radius: 8px; transition: transform 0.2s ease;">
-                <i class="fas fa-utensils mb-1" style="color: {{ primary_brand_color }}; font-size: 0.9rem;"></i>
-                <div class="small text-secondary">Portion: 1</div>
-              </div>
-              <div class="text-center px-2 py-1" style="background: rgba(255,0,0,0.1); border-radius: 8px; transition: transform 0.2s ease;">
-                <i class="fas fa-star mb-1" style="color: {{ primary_brand_color }}; font-size: 0.9rem;"></i>
-                <div class="small text-secondary">4.8/5</div>
-              </div>
+            
+            <div class="d-flex align-items-center" style="background: white; border-radius: 16px; box-shadow: 0 4px 15px rgba(0,0,0,0.08);">
+              <button class="quantity-btn btn px-3 py-2" style="font-size: 1.2rem; font-weight: bold; transition: all 0.2s ease;">−</button>
+              <span class="px-3 py-2" style="font-weight: 600; font-size: 1.1rem;">2</span>
+              <button class="quantity-btn btn px-3 py-2" style="font-size: 1.2rem; font-weight: bold; transition: all 0.2s ease;">+</button>
             </div>
-                        
-            <!-- Add to Cart button removed -->
           </div>
         </div>
+        
+        
       </div>
     </div>
   </div>
@@ -3871,380 +3920,384 @@ input:checked + .slider:before {
  <!-- JavaScript for handling cart and shake animation with sound -->
 <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 <script>
-    document.body.dataset.userEmail = "{{ request.user.email|default:'' }}";
+  document.body.dataset.userEmail = "{{ request.user.email|default:'' }}";
+</script>
+<script>
+  document.body.dataset.userEmail = "{{ request.user.email|default:'' }}";
 </script>
 <script type="text/javascript">
   $(document).ready(function () {
-  // Initialize the cart object
-  let cart = {};
-  
-  // Get current user info from the page
-  const currentUser = document.body.dataset.userEmail || null;
-  
-  // Create toast container if it doesn't exist (bottom left)
-  if (!$('#toastContainer').length) {
-    $('body').append('<div id="toastContainer" style="position: fixed; bottom: 24px; left: 24px; z-index: 1000;"></div>');
-  }
+    // Initialize the cart object
+    let cart = {};
 
-  // Function to get cart with user validation
-  function getStoredCart() {
-    const storedCart = localStorage.getItem('cart');
-    const storedCartUser = localStorage.getItem('cartUser');
-    
-    if (storedCart && storedCartUser === currentUser) {
-      return JSON.parse(storedCart);
+    // Get current user info from the page
+    const currentUser = document.body.dataset.userEmail || null;
+
+    // Create toast container if it doesn't exist (bottom left)
+    if (!$('#toastContainer').length) {
+      $('body').append('<div id="toastContainer" style="position: fixed; bottom: 24px; left: 24px; z-index: 1000;"></div>');
     }
-    return {};
-  }
 
-  // Function to save cart with user association
-  function saveCart(cartData) {
-    localStorage.setItem('cart', JSON.stringify(cartData));
-    localStorage.setItem('cartUser', currentUser);
-  }
-
-  // Function to clear cart
-  function clearCart() {
-    localStorage.removeItem('cart');
-    localStorage.removeItem('cartUser');
-    cart = {};
-    updateCart(cart);
-  }
-
-  // Check for logout signal
-  if (document.cookie.includes('clear_cart=true')) {
-    clearCart();
-    // Clear the cookie
-    document.cookie = 'clear_cart=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;';
-  }
-
-  // Initialize cart from storage with user validation
-  cart = getStoredCart();
-  updateCart(cart);
-
-  // Function to show product toast
-  function showProductToast(product, type = 'success') {
-    const toastId = 'toast-' + Date.now();
-    const config = {
-      success: {
-        message: 'Added',
-        icon: 'fa-check',
-        color: '#f7c028',
-        borderColor: '#e9ecef',
-        bgColor: '#FFFFFF'
-      },
-      error: {
-        message: 'Removed',
-        icon: 'fa-times',
-        color: '#f44336',
-        borderColor: '#e9ecef',
-        bgColor: '#FFFFFF'
-      },
-      warning: {
-        message: 'Updated',
-        icon: 'fa-exclamation',
-        color: '#ff9800',
-        borderColor: '#e9ecef',
-        bgColor: '#FFFFFF'
+    // Function to get cart with user validation
+    function getStoredCart() {
+      const storedCart = localStorage.getItem('cart');
+      const storedCartUser = localStorage.getItem('cartUser');
+      
+      if (storedCart && storedCartUser === currentUser) {
+        return JSON.parse(storedCart);
       }
-    };
-
-    const toastConfig = config[type];
-
-    // Insert keyframes if not already added
-    if (!document.querySelector('#toastKeyframes')) {
-      const keyframes = `
-        @keyframes slideInLeft {
-          0% { transform: translateX(-100%); opacity: 0; }
-          100% { transform: translateX(0); opacity: 1; }
-        }
-        @keyframes fadeOutLeft {
-          0% { transform: translateX(0); opacity: 1; }
-          100% { transform: translateX(-100%); opacity: 0; }
-        }
-        @keyframes popIn {
-          0% { transform: scale(0.8); opacity: 0; }
-          40% { transform: scale(1.1); opacity: 1; }
-          100% { transform: scale(1); opacity: 1; }
-        }
-      `;
-      const style = document.createElement('style');
-      style.id = 'toastKeyframes';
-      style.innerHTML = keyframes;
-      document.head.appendChild(style);
+      return {};
     }
 
-    const toast = $(`
-      <div id="${toastId}" style="
-        width: 180px;
-        margin-top: 6px;
-        background-color: ${toastConfig.bgColor};
-        color: #1F2937;
-        padding: 8px;
-        border-radius: 6px;
-        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-        opacity: 0;
-        transform: translateX(-100%);
-        animation: slideInLeft 0.2s cubic-bezier(0.68, -0.55, 0.265, 1.55) forwards;
-        border: 1px solid ${toastConfig.borderColor};
-        overflow: hidden;
-        font-size: 0.8rem;
-        display: flex;
-        align-items: center;
-        gap: 8px;
-      ">
-        <div style="
-          width: 36px;
-          height: 36px;
-          border-radius: 4px;
-          overflow: hidden;
-          flex-shrink: 0;
-        ">
-          ${product.image ? 
-            `<img src="${product.image}" style="width: 100%; height: 100%; object-fit: cover;" alt="${product.name}">` : 
-            `<div style="width: 100%; height: 100%; background-color: #f8f9fa; display: flex; align-items: center; justify-content: center;">
-              <i class="fas fa-utensils" style="color: #6c757d;"></i>
-            </div>`
+    // Function to save cart with user association
+    function saveCart(cartData) {
+      localStorage.setItem('cart', JSON.stringify(cartData));
+      localStorage.setItem('cartUser', currentUser);
+    }
+
+    // Function to clear cart
+    function clearCart() {
+      localStorage.removeItem('cart');
+      localStorage.removeItem('cartUser');
+      cart = {};
+      updateCart(cart);
+    }
+
+    // Check for logout signal
+    if (document.cookie.includes('clear_cart=true')) {
+      clearCart();
+      // Clear the cookie
+      document.cookie = 'clear_cart=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;';
+    }
+
+    // Initialize cart from storage with user validation
+    cart = getStoredCart();
+    updateCart(cart);
+
+    // Function to show product toast
+    function showProductToast(product, type = 'success') {
+      const toastId = 'toast-' + Date.now();
+      const config = {
+        success: {
+          message: 'Added',
+          icon: 'fa-check',
+          color: '#f7c028',
+          borderColor: '#e9ecef',
+          bgColor: '#FFFFFF'
+        },
+        error: {
+          message: 'Removed',
+          icon: 'fa-times',
+          color: '#f44336',
+          borderColor: '#e9ecef',
+          bgColor: '#FFFFFF'
+        },
+        warning: {
+          message: 'Updated',
+          icon: 'fa-exclamation',
+          color: '#ff9800',
+          borderColor: '#e9ecef',
+          bgColor: '#FFFFFF'
+        }
+      };
+
+      const toastConfig = config[type];
+
+      // Insert keyframes if not already added
+      if (!document.querySelector('#toastKeyframes')) {
+        const keyframes = `
+          @keyframes slideInLeft {
+            0% { transform: translateX(-100%); opacity: 0; }
+            100% { transform: translateX(0); opacity: 1; }
           }
-        </div>
-        
-        <div style="flex-grow: 1; display: flex; flex-direction: column;">
-          <div style="font-weight: 600; font-size: 0.8rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">${product.name}</div>
-          <div style="display: flex; align-items: center; gap: 4px;">
-            <span style="color: ${toastConfig.color}; font-weight: 600; font-size: 0.75rem; display: flex; align-items: center; gap: 2px;">
-              <i class="fas ${toastConfig.icon}" style="font-size: 0.7rem;"></i>
-              ${toastConfig.message}
-            </span>
+          @keyframes fadeOutLeft {
+            0% { transform: translateX(0); opacity: 1; }
+            100% { transform: translateX(-100%); opacity: 0; }
+          }
+          @keyframes popIn {
+            0% { transform: scale(0.8); opacity: 0; }
+            40% { transform: scale(1.1); opacity: 1; }
+            100% { transform: scale(1); opacity: 1; }
+          }
+        `;
+        const style = document.createElement('style');
+        style.id = 'toastKeyframes';
+        style.innerHTML = keyframes;
+        document.head.appendChild(style);
+      }
+
+      const toast = $(`
+        <div id="${toastId}" style="
+          width: 180px;
+          margin-top: 6px;
+          background-color: ${toastConfig.bgColor};
+          color: #1F2937;
+          padding: 8px;
+          border-radius: 6px;
+          box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+          opacity: 0;
+          transform: translateX(-100%);
+          animation: slideInLeft 0.2s cubic-bezier(0.68, -0.55, 0.265, 1.55) forwards;
+          border: 1px solid ${toastConfig.borderColor};
+          overflow: hidden;
+          font-size: 0.8rem;
+          display: flex;
+          align-items: center;
+          gap: 8px;
+        ">
+          <div style="
+            width: 36px;
+            height: 36px;
+            border-radius: 4px;
+            overflow: hidden;
+            flex-shrink: 0;
+          ">
+            ${product.image ? 
+              `<img src="${product.image}" style="width: 100%; height: 100%; object-fit: cover;" alt="${product.name}">` : 
+              `<div style="width: 100%; height: 100%; background-color: #f8f9fa; display: flex; align-items: center; justify-content: center;">
+                <i class="fas fa-utensils" style="color: #6c757d;"></i>
+              </div>`
+            }
           </div>
-        </div>
-      </div>
-    `);
-
-    $('#toastContainer').append(toast);
-
-    // Automatically dismiss after 1.5 seconds
-    setTimeout(() => {
-      dismissProductToast(toastId);
-    }, 1500);
-  }
-
-  function dismissProductToast(toastId) {
-    const toast = $(`#${toastId}`);
-    toast.css({
-      'animation': 'fadeOutLeft 0.2s cubic-bezier(0.68, -0.55, 0.265, 1.55) forwards'
-    });
-    setTimeout(() => {
-      toast.remove();
-    }, 200);
-  }
-
-  // Function to update the cart content
-  function updateCart(cart) {
-    let totalItems = 0;
-    let subtotal = 0.0;
-    let cartItemsHtml = '';
-
-    if (Object.keys(cart).length === 0) {
-      $('#cartItems').html(`
-        <div class="empty-state">
-          <i class="fas fa-shopping-cart fa-2x" style="color: white !important; margin-bottom: 0.75rem;"></i>
-          <p style="color: #4B5563; font-size: 0.875rem;">Your cart is empty</p>
-        </div>
-      `);
-      $('#cartCount').text(totalItems).addClass('d-none');
-      $('#cartIconCount').addClass('d-none');
-      $('#cartTotal').text('$0.00');
-      $('#checkoutButton').addClass('d-none');
-      saveCart(cart);
-      return;
-    }
-
-    for (let itemId in cart) {
-      let [quantity, productName, productPrice, productImage] = cart[itemId];
-      totalItems += quantity;
-      subtotal += quantity * productPrice;
-
-      cartItemsHtml += `
-        <div class="cart-item" data-item-id="${itemId}">
-          <img src="${productImage}" alt="${productName}" class="cart-item-image">
-          <div class="cart-item-details">
-            <div class="cart-item-name">${productName}</div>
-            <div class="cart-item-price">$${productPrice.toFixed(2)}</div>
-            <div class="quantity-controls">
-              <button class="quantity-btn decrement" data-product-id="${itemId}" type="button">
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                  <line x1="5" y1="12" x2="19" y2="12"></line>
-                </svg>
-              </button>
-              <span class="quantity-value">${quantity}</span>
-              <button class="quantity-btn increment" data-product-id="${itemId}" type="button">
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                  <line x1="12" y1="5" x2="12" y2="19"></line>
-                  <line x1="5" y1="12" x2="19" y2="12"></line>
-                </svg>
-              </button>
+          
+          <div style="flex-grow: 1; display: flex; flex-direction: column;">
+            <div style="font-weight: 600; font-size: 0.8rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">${product.name}</div>
+            <div style="display: flex; align-items: center; gap: 4px;">
+              <span style="color: ${toastConfig.color}; font-weight: 600; font-size: 0.75rem; display: flex; align-items: center; gap: 2px;">
+                <i class="fas ${toastConfig.icon}" style="font-size: 0.7rem;"></i>
+                ${toastConfig.message}
+              </span>
             </div>
           </div>
-          <button class="remove-item" data-product-id="${itemId}" aria-label="Remove item" type="button">
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-              <path d="M3 6h18"></path>
-              <path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"></path>
-              <path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"></path>
-            </svg>
-          </button>
-        </div>`;
+        </div>
+      `);
+
+      $('#toastContainer').append(toast);
+
+      // Automatically dismiss after 1.5 seconds
+      setTimeout(() => {
+        dismissProductToast(toastId);
+      }, 1500);
     }
 
-    $('#cartItems').html(cartItemsHtml);
-    $('#cartCount').text(totalItems).removeClass('d-none');
-    $('#cartIconCount').text(totalItems).removeClass('d-none');
-    $('#cartTotal').text(`$${subtotal.toFixed(2)}`);
-    $('#checkoutButton').removeClass('d-none');
-    saveCart(cart);
-    
-    // Re-bind event handlers after updating the DOM
-    bindCartEvents();
-  }
-  
-  // Function to bind cart event handlers
-  function bindCartEvents() {
-    // Handle increment button clicks
-    $('.increment').off('click').on('click', function() {
-      const productId = $(this).data('product-id');
-      if (!cart[productId]) return;
-      
-      const productName = cart[productId][1];
-      const productPrice = cart[productId][2];
-      const productImage = cart[productId][3];
-      
-      cart[productId][0]++;
-      
-      showProductToast({
-        name: productName,
-        image: productImage,
-        price: '$' + productPrice.toFixed(2)
-      }, 'success');
-      
-      updateCart(cart);
-    });
-    
-    // Handle decrement button clicks
-    $('.decrement').off('click').on('click', function() {
-      const productId = $(this).data('product-id');
-      if (!cart[productId]) return;
-      
-      const productName = cart[productId][1];
-      const productPrice = cart[productId][2];
-      const productImage = cart[productId][3];
-      
-      const productObject = {
-        name: productName,
-        image: productImage,
-        price: '$' + productPrice.toFixed(2)
-      };
-      
-      if (cart[productId][0] > 1) {
-        cart[productId][0]--;
-        showProductToast(productObject, 'warning');
-      } else {
-        delete cart[productId];
-        showProductToast(productObject, 'error');
+    function dismissProductToast(toastId) {
+      const toast = $(`#${toastId}`);
+      toast.css({
+        'animation': 'fadeOutLeft 0.2s cubic-bezier(0.68, -0.55, 0.265, 1.55) forwards'
+      });
+      setTimeout(() => {
+        toast.remove();
+      }, 200);
+    }
+
+    // Function to update the cart content
+    function updateCart(cart) {
+      let totalItems = 0;
+      let subtotal = 0.0;
+      let cartItemsHtml = '';
+
+      if (Object.keys(cart).length === 0) {
+        $('#cartItems').html(`
+          <div class="empty-state">
+            <i class="fas fa-shopping-cart fa-2x" style="color: white !important; margin-bottom: 0.75rem;"></i>
+            <p style="color: #4B5563; font-size: 0.875rem;">Your cart is empty</p>
+          </div>
+        `);
+        // Update both elements with the number only
+        $('[id="cartIconCount"]').text('0').addClass('d-none');
+        $('#cartTotal').text('$0.00');
+        $('#checkoutButton').addClass('d-none');
+        saveCart(cart);
+        return;
       }
-      
-      updateCart(cart);
-    });
-    
-    // Handle remove item button clicks
-    $('.remove-item').off('click').on('click', function() {
-      const productId = $(this).data('product-id');
-      if (!cart[productId]) return;
-      
-      const productName = cart[productId][1];
-      const productPrice = cart[productId][2];
-      const productImage = cart[productId][3];
-      
-      showProductToast({
-        name: productName,
-        image: productImage,
-        price: '$' + productPrice.toFixed(2)
-      }, 'error');
-      
-      delete cart[productId];
-      updateCart(cart);
-    });
-  }
 
-  // Handle add-to-cart button clicks
-  $(document).on('click', '.add-to-cart-btn', function (e) {
-    e.preventDefault();
-    
-    // Find the closest dish-card parent
-    const productCard = $(this).closest('.dish-card');
-    const productId = productCard.data('product-id');
-    const productName = productCard.data('name');
-    const productPrice = parseFloat(productCard.data('price'));
-    const productImage = productCard.data('image');
+      for (let itemId in cart) {
+        let [quantity, productName, productPrice, productImage] = cart[itemId];
+        totalItems += quantity;
+        subtotal += quantity * productPrice;
 
-    // Check if we got all the required data
-    if (!productId || !productName || isNaN(productPrice) || !productImage) {
-      console.error('Missing product data:', { productId, productName, productPrice, productImage });
-      return;
-    }
+        cartItemsHtml += `
+          <div class="cart-item" data-item-id="${itemId}">
+            <img src="${productImage}" alt="${productName}" class="cart-item-image">
+            <div class="cart-item-details">
+              <div class="cart-item-name">${productName}</div>
+              <div class="cart-item-price">$${productPrice.toFixed(2)}</div>
+              <div class="quantity-controls">
+                <button class="quantity-btn decrement" data-product-id="${itemId}" type="button">
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <line x1="5" y1="12" x2="19" y2="12"></line>
+                  </svg>
+                </button>
+                <span class="quantity-value">${quantity}</span>
+                <button class="quantity-btn increment" data-product-id="${itemId}" type="button">
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <line x1="12" y1="5" x2="12" y2="19"></line>
+                    <line x1="5" y1="12" x2="19" y2="12"></line>
+                  </svg>
+                </button>
+              </div>
+            </div>
+            <button class="remove-item" data-product-id="${itemId}" aria-label="Remove item" type="button">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M3 6h18"></path>
+                <path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"></path>
+                <path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"></path>
+              </svg>
+            </button>
+          </div>`;
+      }
 
-    const productObject = {
-      id: productId,
-      name: productName,
-      price: '$' + productPrice.toFixed(2),
-      image: productImage
-    };
-
-    showProductToast(productObject, 'success');
-
-    if (!cart[productId]) {
-      cart[productId] = [1, productName, productPrice, productImage];
-    } else {
-      cart[productId][0]++;
-    }
-
-    updateCart(cart);
-  });
-
-  // Handle checkout button click
-  $('#checkoutButton').off('click').on('click', function () {
-    if (!currentUser) {
-      window.location.href = '/customer-signin/';
-      return;
-    }
-
-    if (Object.keys(cart).length === 0) {
-      showProductToast({
-        name: 'Your cart is empty!',
-        image: null
-      }, 'error');
-      return;
-    }
-
-    // Get restaurant name slug and hashed slug from the current URL
-    const pathParts = window.location.pathname.split('/').filter(Boolean);
-    if (pathParts.length >= 2) {
-      const restaurantNameSlug = pathParts[pathParts.length - 2];
-      const hashedSlug = pathParts[pathParts.length - 1];
-      
+      $('#cartItems').html(cartItemsHtml);
+      // Update both cart display elements with the number only
+      $('[id="cartIconCount"]').text(totalItems).removeClass('d-none');
+      $('#cartTotal').text(`$${subtotal.toFixed(2)}`);
+      $('#checkoutButton').removeClass('d-none');
       saveCart(cart);
-      window.location.href = `/${restaurantNameSlug}/${hashedSlug}/checkout/`;
-    } else {
-      console.error('Unable to determine restaurant slugs from URL');
-      showProductToast({
-        name: 'Error: Unable to checkout',
-        image: null
-      }, 'error');
+      
+      // Re-bind event handlers after updating the DOM
+      bindCartEvents();
     }
+    
+    // Function to bind cart event handlers
+    function bindCartEvents() {
+      // Handle increment button clicks
+      $('.increment').off('click').on('click', function() {
+        const productId = $(this).data('product-id');
+        if (!cart[productId]) return;
+        
+        const productName = cart[productId][1];
+        const productPrice = cart[productId][2];
+        const productImage = cart[productId][3];
+        
+        cart[productId][0]++;
+        
+        showProductToast({
+          name: productName,
+          image: productImage,
+          price: '$' + productPrice.toFixed(2)
+        }, 'success');
+        
+        updateCart(cart);
+      });
+      
+      // Handle decrement button clicks
+      $('.decrement').off('click').on('click', function() {
+        const productId = $(this).data('product-id');
+        if (!cart[productId]) return;
+        
+        const productName = cart[productId][1];
+        const productPrice = cart[productId][2];
+        const productImage = cart[productId][3];
+        
+        const productObject = {
+          name: productName,
+          image: productImage,
+          price: '$' + productPrice.toFixed(2)
+        };
+        
+        if (cart[productId][0] > 1) {
+          cart[productId][0]--;
+          showProductToast(productObject, 'warning');
+        } else {
+          delete cart[productId];
+          showProductToast(productObject, 'error');
+        }
+        
+        updateCart(cart);
+      });
+      
+      // Handle remove item button clicks
+      $('.remove-item').off('click').on('click', function() {
+        const productId = $(this).data('product-id');
+        if (!cart[productId]) return;
+        
+        const productName = cart[productId][1];
+        const productPrice = cart[productId][2];
+        const productImage = cart[productId][3];
+        
+        showProductToast({
+          name: productName,
+          image: productImage,
+          price: '$' + productPrice.toFixed(2)
+        }, 'error');
+        
+        delete cart[productId];
+        updateCart(cart);
+      });
+    }
+
+    // Handle add-to-cart button clicks from product cards
+    $(document).on('click', '.add-to-cart-btn, .add-to-cart', function (e) {
+      e.preventDefault();
+      
+      // Find the closest product container (dish-card or food-item)
+      const productCard = $(this).closest('.dish-card, .food-item');
+      const productId = productCard.data('product-id');
+      const productName = productCard.data('name');
+      const productPrice = parseFloat(productCard.data('price'));
+      const productImage = productCard.data('image');
+
+      // Check if we got all the required data
+      if (!productId || !productName || isNaN(productPrice) || !productImage) {
+        console.error('Missing product data:', { productId, productName, productPrice, productImage });
+        return;
+      }
+
+      const productObject = {
+        id: productId,
+        name: productName,
+        price: '$' + productPrice.toFixed(2),
+        image: productImage
+      };
+
+      showProductToast(productObject, 'success');
+
+      if (!cart[productId]) {
+        cart[productId] = [1, productName, productPrice, productImage];
+      } else {
+        cart[productId][0]++;
+      }
+
+      updateCart(cart);
+    });
+
+    // Handle checkout button click
+    $('#checkoutButton').off('click').on('click', function () {
+      if (!currentUser) {
+        window.location.href = '/customer-signin/';
+        return;
+      }
+
+      if (Object.keys(cart).length === 0) {
+        showProductToast({
+          name: 'Your cart is empty!',
+          image: null
+        }, 'error');
+        return;
+      }
+
+      // Get restaurant name slug and hashed slug from the current URL
+      const pathParts = window.location.pathname.split('/').filter(Boolean);
+      if (pathParts.length >= 2) {
+        const restaurantNameSlug = pathParts[pathParts.length - 2];
+        const hashedSlug = pathParts[pathParts.length - 1];
+        
+        saveCart(cart);
+        window.location.href = `/${restaurantNameSlug}/${hashedSlug}/checkout/`;
+      } else {
+        console.error('Unable to determine restaurant slugs from URL');
+        showProductToast({
+          name: 'Error: Unable to checkout',
+          image: null
+        }, 'error');
+      }
+    });
+    
+    // Initial binding of event handlers
+    bindCartEvents();
   });
-  
-  // Initial binding of event handlers
-  bindCartEvents();
-});
 </script>
+
 
 
 
@@ -4426,25 +4479,71 @@ document.addEventListener('DOMContentLoaded', function() {
     const productCards = document.querySelectorAll('.food-item');
     const productDetailModal = new bootstrap.Modal(document.getElementById('productDetailModal'));
     
-    // Add keyframe animations
+    // Add keyframe animations and styles
     const style = document.createElement('style');
     style.textContent = `
         @keyframes modalImageZoom {
-            from { transform: scale(0.95); opacity: 0; }
-            to { transform: scale(1); opacity: 1; }
+            from { transform: scale(0.9); opacity: 0; }
+            to { transform: scale(1.1); opacity: 1; }
         }
         @keyframes modalContentSlide {
-            from { transform: translateY(20px); opacity: 0; }
+            from { transform: translateY(30px); opacity: 0; }
             to { transform: translateY(0); opacity: 1; }
         }
         .modal-image-animate {
-            animation: modalImageZoom 0.3s ease-out forwards;
+            animation: modalImageZoom 0.4s ease-out forwards;
         }
         .modal-content-animate {
-            animation: modalContentSlide 0.3s ease-out forwards;
+            animation: modalContentSlide 0.4s ease-out forwards;
+        }
+        
+        /* Size button active state */
+        .size-btn.active {
+            background: #FFD384 !important;
+            color: #000;
+            font-weight: 600;
+            transform: scale(1.05);
+        }
+        
+        .size-btn:hover, .quantity-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 15px rgba(0,0,0,0.15);
+        }
+        
+        .size-btn:active, .quantity-btn:active {
+            transform: translateY(1px);
         }
     `;
     document.head.appendChild(style);
+
+    // Size button selection
+    const sizeButtons = document.querySelectorAll('.size-btn');
+    sizeButtons.forEach(button => {
+        button.addEventListener('click', function() {
+            sizeButtons.forEach(btn => btn.classList.remove('active'));
+            this.classList.add('active');
+        });
+    });
+
+    // Quantity control
+    const minusBtn = document.querySelector('.quantity-btn:first-child');
+    const plusBtn = document.querySelector('.quantity-btn:last-child');
+    const quantityDisplay = document.querySelector('.quantity-btn + span');
+    let quantity = 2;
+    
+    if (minusBtn && plusBtn && quantityDisplay) {
+        minusBtn.addEventListener('click', function() {
+            if (quantity > 1) {
+                quantity--;
+                quantityDisplay.textContent = quantity;
+            }
+        });
+        
+        plusBtn.addEventListener('click', function() {
+            quantity++;
+            quantityDisplay.textContent = quantity;
+        });
+    }
 
     productCards.forEach(card => {
         const imageTrigger = card.querySelector('.product-image-trigger');
@@ -4452,70 +4551,44 @@ document.addEventListener('DOMContentLoaded', function() {
             imageTrigger.addEventListener('click', function() {
                 const productData = {
                     id: card.dataset.productId,
-                    name: card.dataset.name,
-                    description: card.dataset.description,
-                    price: `$${card.dataset.price}`,
-                    previousPrice: card.dataset.previousPrice ? `$${card.dataset.previousPrice}` : '',
-                    image: card.dataset.image
+                    name: card.dataset.name || "5 Pepper",
+                    description: card.dataset.description || "Mixed Pizza",
+                    price: card.dataset.price ? `$${card.dataset.price}` : "$129",
+                    previousPrice: card.dataset.previousPrice ? `$${card.dataset.previousPrice}` : "$169",
+                    image: card.dataset.image || "/api/placeholder/400/400"
                 };
 
                 // Populate modal with animations
                 const detailImage = document.getElementById('detailProductImage');
-                const detailContent = document.querySelector('.card-body');
+                const modalContent = document.querySelector('.modal-content');
                 
                 detailImage.src = productData.image;
                 detailImage.classList.add('modal-image-animate');
-                detailContent.classList.add('modal-content-animate');
+                modalContent.classList.add('modal-content-animate');
                 
                 document.getElementById('detailProductName').textContent = productData.name;
-                document.getElementById('detailProductDescription').textContent = productData.description;
                 document.getElementById('detailProductPrice').textContent = productData.price;
+                document.getElementById('detailProductOldPrice').textContent = productData.previousPrice;
                 
-                const oldPriceElement = document.getElementById('detailProductOldPrice');
-                if (productData.previousPrice) {
-                    oldPriceElement.textContent = productData.previousPrice;
-                    oldPriceElement.style.textDecoration = 'line-through';
-                    oldPriceElement.style.color = '#666';
-                } else {
-                    oldPriceElement.textContent = '';
+                // Reset quantity
+                quantity = 2;
+                if (quantityDisplay) {
+                    quantityDisplay.textContent = quantity;
                 }
-
+                
                 // Show modal
                 productDetailModal.show();
-
-                // Reset animations for next time
-                detailImage.addEventListener('animationend', () => {
-                    detailImage.classList.remove('modal-image-animate');
-                });
-                detailContent.addEventListener('animationend', () => {
-                    detailContent.classList.remove('modal-content-animate');
-                });
             });
         }
     });
-
-    // Clean up animations when modal is hidden
+    
     // Clean up animations when modal is hidden
     document.getElementById('productDetailModal').addEventListener('hidden.bs.modal', function () {
-        // Remove animation classes
         document.getElementById('detailProductImage').classList.remove('modal-image-animate');
-        document.querySelector('.card-body').classList.remove('modal-content-animate');
-        
-        // Reset any shadow effects or other styles
-        const addToCartBtn = document.getElementById('detailAddToCart');
-        if (addToCartBtn) {
-            addToCartBtn.style.boxShadow = '0 4px 12px rgba(255,0,0,0.2)'; // Reset to original shadow
-            addToCartBtn.style.transform = 'translateY(0)'; // Reset any transform
-        }
-        
-        // Reset any other elements that might have visual changes
-        const modalContent = document.querySelector('.modal-content');
-        if (modalContent) {
-            modalContent.style.boxShadow = '0 15px 40px rgba(0,0,0,0.15)'; // Reset to original shadow
-        }
+        document.querySelector('.modal-content').classList.remove('modal-content-animate');
     });
+});
 </script>
-
  
 
 <!-- ===============================
@@ -4829,7 +4902,7 @@ document.addEventListener('DOMContentLoaded', function() {
               ${product.previousPrice ? `<span class="previous-price" style="text-decoration: line-through; font-size: 12px; color: var(--text-secondary); margin-left: 4px;">$${product.previousPrice}</span>` : ''}
             </div>
             <button class="add-to-cart" data-product-id="${product.id}" data-name="${product.name}" data-price="${product.price}" data-image="${product.image}">
-              <i class="fas fa-plus"></i>
+              <i class="fas fa-shopping-cart"></i>
             </button>
           </div>
         </div>
@@ -5438,6 +5511,197 @@ function closeNotification() {
   // Set a cookie to remember the user closed this notification
   document.cookie = "notification_{{ notification.id }}_closed=true; path=/; max-age=86400";
 }
+</script>
+
+<script>
+ document.addEventListener('DOMContentLoaded', function() {
+  const cartButton = document.querySelector('.floating-cart-button');
+  const cartIcon = cartButton.querySelector('i');
+  let isDragging = false;
+  let isClick = false;
+  let offsetX, offsetY;
+  let startTime;
+  
+  // Show the "Drag me" tooltip on page load
+  cartButton.classList.add('show-tooltip');
+  // Remove the tooltip after 3 seconds (adjust as needed)
+  setTimeout(() => {
+    cartButton.classList.remove('show-tooltip');
+  }, 3000);
+  
+  // Check for saved position in localStorage
+  const savedPosition = localStorage.getItem('cartButtonPosition');
+  if (savedPosition) {
+    const position = JSON.parse(savedPosition);
+    cartButton.style.left = position.left;
+    cartButton.style.top = position.top;
+    cartButton.style.bottom = 'auto';
+    cartButton.style.right = 'auto';
+  }
+  
+  // Make button draggable
+  cartButton.addEventListener('mousedown', startDrag);
+  cartButton.addEventListener('touchstart', startDrag, { passive: false });
+  
+  document.addEventListener('mousemove', drag);
+  document.addEventListener('touchmove', drag, { passive: false });
+  
+  document.addEventListener('mouseup', endDrag);
+  document.addEventListener('touchend', endDrag);
+  
+  // Start dragging
+  function startDrag(e) {
+    startTime = new Date().getTime();
+    isClick = true;
+    isDragging = true;
+    
+    if (e.type === 'mousedown') {
+      offsetX = e.clientX - cartButton.getBoundingClientRect().left;
+      offsetY = e.clientY - cartButton.getBoundingClientRect().top;
+      e.preventDefault();
+    } else if (e.type === 'touchstart') {
+      offsetX = e.touches[0].clientX - cartButton.getBoundingClientRect().left;
+      offsetY = e.touches[0].clientY - cartButton.getBoundingClientRect().top;
+      e.preventDefault();
+    }
+    
+    cartButton.style.transition = 'none';
+    cartButton.classList.add('dragging');
+    
+    // Start spinning the cart icon during drag
+    cartIcon.classList.add('cart-spinning');
+  }
+  
+  // Drag the button
+  function drag(e) {
+    if (!isDragging) return;
+    
+    // If we've moved, it's not a click
+    isClick = false;
+    
+    let newX, newY;
+    
+    if (e.type === 'mousemove') {
+      newX = e.clientX - offsetX;
+      newY = e.clientY - offsetY;
+      e.preventDefault();
+    } else if (e.type === 'touchmove') {
+      newX = e.touches[0].clientX - offsetX;
+      newY = e.touches[0].clientY - offsetY;
+      e.preventDefault();
+    }
+    
+    // Keep button within viewport bounds
+    const buttonWidth = cartButton.offsetWidth;
+    const buttonHeight = cartButton.offsetHeight;
+    const windowWidth = window.innerWidth;
+    const windowHeight = window.innerHeight;
+    
+    // Restrict horizontal movement
+    if (newX < 10) {
+      newX = 10;
+    } else if (newX + buttonWidth > windowWidth - 10) {
+      newX = windowWidth - buttonWidth - 10;
+    }
+    
+    // Restrict vertical movement
+    if (newY < 10) {
+      newY = 10;
+    } else if (newY + buttonHeight > windowHeight - 10) {
+      newY = windowHeight - buttonHeight - 10;
+    }
+    
+    // Position the button with absolute coordinates
+    cartButton.style.left = newX + 'px';
+    cartButton.style.top = newY + 'px';
+    cartButton.style.bottom = 'auto';
+    cartButton.style.right = 'auto';
+  }
+  
+  // End dragging
+  function endDrag() {
+    if (!isDragging) return;
+    
+    // Check if this was a short tap/click (less than 200ms) with no movement
+    const endTime = new Date().getTime();
+    const timeDiff = endTime - startTime;
+    
+    isDragging = false;
+    cartButton.style.transition = 'all 0.3s ease';
+    cartButton.classList.remove('dragging');
+    
+    // Stop the cart icon spinning and add the stop animation
+    cartIcon.classList.remove('cart-spinning');
+    cartIcon.classList.add('cart-stop');
+    
+    // Remove the stop animation after it completes
+    setTimeout(() => {
+      cartIcon.classList.remove('cart-stop');
+    }, 600);
+    
+    // Save position to localStorage for persistence across page navigation
+    const position = {
+      left: cartButton.style.left,
+      top: cartButton.style.top
+    };
+    localStorage.setItem('cartButtonPosition', JSON.stringify(position));
+    
+    // If this was a quick tap with no movement, treat it as a click
+    if (isClick && timeDiff < 200) {
+      console.log('Opening cart...');
+      // Navigate to cart or show cart modal
+    }
+  }
+  
+  // Make button position responsive to window resizing
+  window.addEventListener('resize', function() {
+    const buttonRect = cartButton.getBoundingClientRect();
+    const windowWidth = window.innerWidth;
+    const windowHeight = window.innerHeight;
+    
+    let newX = buttonRect.left;
+    let newY = buttonRect.top;
+    const buttonWidth = buttonRect.width;
+    const buttonHeight = buttonRect.height;
+    
+    // Keep button within viewport after resize
+    if (newX < 10) {
+      newX = 10;
+    } else if (newX + buttonWidth > windowWidth - 10) {
+      newX = windowWidth - buttonWidth - 10;
+    }
+    
+    if (newY < 10) {
+      newY = 10;
+    } else if (newY + buttonHeight > windowHeight - 10) {
+      newY = windowHeight - buttonHeight - 10;
+    }
+    
+    cartButton.style.left = newX + 'px';
+    cartButton.style.top = newY + 'px';
+    
+    // Save adjusted position
+    const position = {
+      left: cartButton.style.left,
+      top: cartButton.style.top
+    };
+    localStorage.setItem('cartButtonPosition', JSON.stringify(position));
+  });
+  
+  // For demo purposes: function to update cart count
+  window.updateCartCount = function(count) {
+    const cartCountElement = document.querySelector('.cart-count');
+    cartCountElement.textContent = count + (count === 1 ? ' Item' : ' Items');
+    
+    // Add bounce animation
+    cartButton.classList.add('cart-bounce');
+    setTimeout(() => {
+      cartButton.classList.remove('cart-bounce');
+    }, 300);
+  };
+});
+
+
 </script>
 
 

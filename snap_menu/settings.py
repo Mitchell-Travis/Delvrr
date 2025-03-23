@@ -31,7 +31,8 @@ ALLOWED_HOSTS = [
     "delvrr.onrender.com",
     "www.delvrr.com",
     "delvrr.com",
-    "172.20.10.3",  # Add this line
+    "172.20.10.3",
+    "172.20.10.2",  # Add this line
 ]
 
 

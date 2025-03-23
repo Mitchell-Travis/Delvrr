@@ -50,8 +50,32 @@ admin.site.register(Customer, CustomerAdmin)
 
 # Register your models here.
 class NotificationAdmin(admin.ModelAdmin):
-    pass
-admin.site.register(Notification , NotificationAdmin)
+    list_display = ('title', 'notification_type', 'is_active', 'start_date', 'end_date', 'send_to_all')
+    list_filter = ('notification_type', 'is_active', 'send_to_all')
+    search_fields = ('title', 'message')
+    filter_horizontal = ('restaurants',)
+    fieldsets = (
+        (None, {
+            'fields': ('title', 'message', 'notification_type')
+        }),
+        ('Action', {
+            'fields': ('button_text', 'button_url')
+        }),
+        ('Timing', {
+            'fields': ('is_active', 'start_date', 'end_date')
+        }),
+        ('Recipients', {
+            'fields': ('send_to_all', 'restaurants'),
+            'description': 'Select specific restaurants or send to all'
+        })
+    )
+    
+    def formfield_for_manytomany(self, db_field, request, **kwargs):
+        if db_field.name == "restaurants":
+            kwargs["queryset"] = Restaurant.objects.all()
+        return super().formfield_for_manytomany(db_field, request, **kwargs)
+
+admin.site.register(Notification, NotificationAdmin)
 
 
 class RestaurantAdmin(admin.ModelAdmin):
