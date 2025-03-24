@@ -948,6 +948,7 @@ body {
 }
 
 /* ======== Featured Items Section ======== */
+/* ======== Featured Items Section ======== */
 .featured-section {
   padding: var(--space-md) var(--space-md) var(--space-lg);
   background-color: var(--background);
@@ -1006,10 +1007,8 @@ body {
   flex: 0 0 auto;
   width: 180px;
   background-color: var(--background);
-  border-radius: var(--radius-lg);
+  border-radius: var(--radius-sm);
   overflow: hidden;
-  
-  
   transition: all 0.3s ease;
   transform: translateZ(0);
   will-change: transform;
@@ -1037,8 +1036,22 @@ body {
   transition: transform 0.3s ease;
 }
 
+/* New inner container for white background without rounded corners */
+.food-image-inner {
+  width: 100%;
+  height: 100%;
+  background-color: white;  /* Change if needed */
+  border-radius: 0;
+  overflow: hidden;
+}
+
 .food-image img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
   transition: transform 0.5s ease;
+  border: none;
+  outline: none;
 }
 
 .food-item:hover .food-image img {
@@ -1128,7 +1141,6 @@ body {
   font-size: 18px;
 }
 
-
 /* ======== View All Grid Section ======== */
 .product-grid-container {
   padding: var(--space-md) var(--space-md) var(--space-lg);
@@ -1148,10 +1160,8 @@ body {
   background-color: var(--background);
   border-radius: var(--radius-lg);
   overflow: hidden;
-  
   transition: all 0.3s ease;
 }
-
 
 .grid-item:active {
   transform: scale(0.98);
@@ -1384,6 +1394,7 @@ body {
   }
 }
 
+
 /* Add floating cart button */
 /* Persistent floating cart button styling */
 .floating-cart-button {
@@ -1579,228 +1590,7 @@ body {
     color: #1a1a1a;
 }
 
-/* Main Content & Grid Layout */
-.main-content {
-    max-width: 800px;
-    margin: 0 auto;
-    padding: 16px;
-    background-color: transparent;
-}
 
-.dish-grid {
-    display: grid;
-    grid-template-columns: repeat(2, 1fr);
-    gap: 20px;
-    padding: 8px;
-    background-color: transparent;
-}
-
-/* Card Styles */
-
-.dish-card:active {
-    transform: scale(0.97);
-}
-
-/* Image Container */
-.dish-image {
-    position: relative;
-    width: 100%;
-    height: 120px;
-    background: #f8f9fa;
-    overflow: hidden;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-}
-
-.dish-image img {
-    width: 100px;
-    height: 100px;
-    object-fit: contain;
-    border-radius: 50%;
-    border: 3px solid {{ third_brand_color  }};
-    transition: transform 0.3s ease, border-color 0.3s ease;
-    background-color: #fff;
-    padding: 5px;
-}
-
-.dish-image img:hover {
-    transform: scale(1.05);
-    border-color: {{ third_brand_color  }};
-}
-
-/* Favorite Button */
-.favorite-btn {
-    position: absolute;
-    top: 8px;
-    right: 8px;
-    background: rgba(255, 255, 255, 0.9);
-    width: 32px;
-    height: 32px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    cursor: pointer;
-    border-radius: 50%;
-    border: none;
-    backdrop-filter: blur(4px);
-    transition: all 0.2s ease;
-}
-
-.heart-icon {
-    width: 16px;
-    height: 16px;
-    color: #666;
-}
-
-/* Product Information */
-.dish-info {
-    padding: 12px;
-    flex-grow: 1;
-    display: flex;
-    flex-direction: column;
-}
-
-.dish-name {
-    font-size: 20px;
-    font-weight: 600;
-    color: #1a1a1a;
-    margin-bottom: 4px;
-    display: -webkit-box;
-    -webkit-line-clamp: 1;
-    -webkit-box-orient: vertical;
-    overflow: hidden;
-    line-height: 1.3;
-}
-
-.dish-weight {
-    color: #666;
-    font-size: 12px;
-    margin-bottom: 6px;
-}
-
-/* Rating System */
-.rating {
-    display: flex;
-    align-items: center;
-    gap: 4px;
-    margin-bottom: 6px;
-}
-
-.star {
-    color: #FFB800;
-    font-size: 14px;
-}
-
-.rating-number {
-    font-weight: 600;
-    color: #1a1a1a;
-    font-size: 13px;
-}
-
-/* Price Controls */
-/* Price Controls - Updated */
-.dish-price-action {
-    margin-top: auto;
-    padding-top: 8px;
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-}
-
-.price-container {
-    display: flex;
-    align-items: center;
-}
-
-.current-price {
-    font-weight: 600;
-    font-size: 400px; /* increse the price */
-}
-
-.previous-price {
-    text-decoration: line-through;
-    color: #999;
-    font-size: 12px;
-    margin-left: 4px;
-}
-
-/* Add to Cart Button - Updated */
-.add-to-cart-btn {
-    
-    background: {{ primary_brand_color }};
-    color: white;
-    border-radius: 12px;
-    padding: 6px 10px;
-    font-weight: 600;
-    font-size: 13px;
-    cursor: pointer;
-    transition: all 0.2s ease;
-    border: none;
-    white-space: nowrap;
-
-    display: flex !important; /* Use flex to ensure visibility */
-   
-    
-}
-
-/* Removing unnecessary price controls that were used before */
-.price-controls {
-    display: none; /* Hide the old price controls */
-}
-
-/* Media query adjustments */
-@media (max-width: 360px) {
-    .dish-price-action {
-        flex-direction: column;
-        align-items: flex-start;
-        gap: 10px;
-    }
-    
-    .add-to-cart-btn {
-        width: 100%;
-    }
-}
-
-@media (max-width: 480px) {
-    .dish-grid {
-        gap: 10px;
-        padding: 6px;
-    }
-}
-
-@media (max-width: 360px) {
-    .dish-card {
-        height: 240px;
-    }
-
-    .dish-image {
-        height: 110px;
-    }
-
-    .dish-image img {
-        width: 90px;
-        height: 90px;
-        padding: 4px;
-    }
-
-    .dish-name {
-        font-size: 20px;
-    }
-
-    .dish-weight {
-        font-size: 11px;
-    }
-
-    .current-price {
-        font-size: 35px;
-    }
-
-    .add-to-cart-btn {
-        padding: 7px;
-        font-size: 12px;
-    }
-}
 
 /* Loading Skeleton */
 .skeleton {
@@ -3541,6 +3331,7 @@ input:checked + .slider:before {
 <!-- Featured Items Section (Sample) -->
 <!-- Main Content -->
 <!-- Main Content -->
+<!-- Main Content -->
 <div class="main-content" id="menuContent">
   <!-- Featured Section with Carousel View -->
   <div class="featured-section shared-view">
@@ -3564,7 +3355,10 @@ input:checked + .slider:before {
                 <span class="discount-badge">Sale</span>
               {% endif %}
               <div class="food-image">
-                <img src="{{ product.product_image.url }}" alt="{{ product.name }}" class="product-image-trigger" style="width: 100%; height: 100%; object-fit: cover;">
+                <!-- Inner container with white background and no border radius -->
+                <div class="food-image-inner">
+                  <img src="{{ product.product_image.url }}" alt="{{ product.name }}" class="product-image-trigger" style="width: 100%; height: 100%; object-fit: cover;">
+                </div>
               </div>
             </div>
             <div class="food-details">
@@ -3583,12 +3377,12 @@ input:checked + .slider:before {
                 </div>
                 {% if product.status != 'Unavailable' %}
                   <button class="add-to-cart"
-                        data-product-id="{{ product.id }}"
-                        data-name="{{ product.name }}"
-                        data-price="{{ product.price }}"
-                        data-image="{{ product.product_image.url }}">
+                          data-product-id="{{ product.id }}"
+                          data-name="{{ product.name }}"
+                          data-price="{{ product.price }}"
+                          data-image="{{ product.product_image.url }}">
                     <i class="fas fa-shopping-cart"></i>
-                </button>
+                  </button>
                 {% endif %}
               </div>
             </div>
@@ -3596,8 +3390,9 @@ input:checked + .slider:before {
         {% endfor %}
       {% endfor %}
     </div>
-
   </div>
+</div>
+
   
   <!-- Grid View for "View All" -->
   <div class="product-grid-container shared-view" id="productGridContainer">
