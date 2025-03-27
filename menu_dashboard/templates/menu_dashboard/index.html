@@ -3580,6 +3580,8 @@ input:checked + .slider:before {
   </div>
 </div>
 
+
+
   
   <!-- Grid View for "View All" -->
   <div class="product-grid-container shared-view" id="productGridContainer">
@@ -5053,59 +5055,58 @@ document.addEventListener('DOMContentLoaded', function() {
   // Grid view creation function
   const productGrid = document.getElementById('productGrid');
   function createGridView(productsList) {
-    productGrid.innerHTML = '';
-    productsList.forEach(product => {
-      const gridItem = document.createElement('div');
-      gridItem.className = 'grid-item';
-      gridItem.dataset.productId = product.id;
-      gridItem.dataset.category = product.category;
-      gridItem.dataset.name = product.name;
-      gridItem.dataset.description = product.description;
-      gridItem.dataset.price = product.price;
-      gridItem.dataset.previousPrice = product.previousPrice;
-      gridItem.dataset.image = product.image;
-      // Pass along variations flag and prices
-      gridItem.dataset.hasVariations = product.hasVariations ? "true" : "false";
-        gridItem.dataset.priceS = product.priceS;
-        gridItem.dataset.priceM = product.priceM;
-        gridItem.dataset.priceL = product.priceL;
-        gridItem.dataset.priceF = product.priceF;
-      
-      const isOnSale = product.status === 'Sale';
-      gridItem.innerHTML = `
-        <div class="grid-image-container">
-          ${isOnSale ? '<span class="discount-badge">Sale</span>' : ''}
-          <img src="${product.image}" alt="${product.name}" class="grid-image">
+  productGrid.innerHTML = '';
+  productsList.forEach(product => {
+    const gridItem = document.createElement('div');
+    gridItem.className = 'grid-item';
+    gridItem.dataset.productId = product.id;
+    gridItem.dataset.category = product.category;
+    gridItem.dataset.name = product.name;
+    gridItem.dataset.description = product.description;
+    // Keep the original price (with the "$" sign) for both grid and detail view.
+    gridItem.dataset.price = product.price;
+    gridItem.dataset.previousPrice = product.previousPrice;
+    gridItem.dataset.image = product.image;
+    gridItem.dataset.hasVariations = product.hasVariations ? "true" : "false";
+    gridItem.dataset.priceS = product.priceS;
+    gridItem.dataset.priceM = product.priceM;
+    gridItem.dataset.priceL = product.priceL;
+    gridItem.dataset.priceF = product.priceF;
+    
+    const isOnSale = product.status === 'Sale';
+    gridItem.innerHTML = `
+      <div class="grid-image-container">
+        ${isOnSale ? '<span class="discount-badge">Sale</span>' : ''}
+        <img src="${product.image}" alt="${product.name}" class="grid-image">
+      </div>
+      <div class="grid-details">
+        <h3>${product.name}</h3>
+        <div class="rating">
+          <i class="fas fa-star"></i>
+          <span>4.9</span>
+          <span class="review-count">(203)</span>
         </div>
-        <div class="grid-details">
-          <h3>${product.name}</h3>
-          <div class="rating">
-            <i class="fas fa-star"></i>
-            <span>4.9</span>
-            <span class="review-count">(203)</span>
+        <div class="price-row">
+          <div class="price">
+            <span>${product.price}</span>
           </div>
-          <div class="price-row">
-            <div class="price">
-              <span>${product.price}</span>
-              ${product.previousPrice ? `<span class="previous-price" style="text-decoration: line-through; font-size: 12px; color: var(--text-secondary); margin-left: 4px;">${product.previousPrice}</span>` : ''}
-            </div>
-            <button class="add-to-cart" data-product-id="${product.id}" data-name="${product.name}" data-price="${product.price}" data-image="${product.image}">
-              <i class="fas fa-shopping-cart"></i>
-            </button>
-          </div>
+          <button class="add-to-cart" data-product-id="${product.id}" data-name="${product.name}" data-price="${product.price}" data-image="${product.image}">
+            <i class="fas fa-shopping-cart"></i>
+          </button>
         </div>
-      `;
-      
-      productGrid.appendChild(gridItem);
-      
-      // Attach grid item click event to open modal detail.
-      gridItem.addEventListener('click', function(e) {
-        // Prevent modal triggering when clicking the add-to-cart button
-        if (e.target.closest('.add-to-cart')) return;
-        openProductModal(product.id);
-      });
+      </div>
+    `;
+    
+    productGrid.appendChild(gridItem);
+    
+    // Attach grid item click event to open modal detail.
+    gridItem.addEventListener('click', function(e) {
+      if (e.target.closest('.add-to-cart')) return;
+      openProductModal(product.id);
     });
-  }
+  });
+}
+
   
   // ===== 3. View Toggle: Carousel to Grid and Back =====
   const viewAllButton = document.querySelector('.view-all');
@@ -5114,23 +5115,23 @@ document.addEventListener('DOMContentLoaded', function() {
   
   // Helper: Extract products from carousel items for grid view.
   function extractProductsFromCarousel() {
-    const foodItems = document.querySelectorAll('.food-item');
-    return Array.from(foodItems).map(item => ({
-      id: item.dataset.productId,
-      name: item.dataset.name,
-      description: item.dataset.description || '',
-      price: item.dataset.price,
-      previousPrice: item.dataset.previousPrice,
-      image: item.dataset.image,
-      status: item.querySelector('.discount-badge') ? 'Sale' : 'Regular',
-      category: item.dataset.category || 'featured',
-      hasVariations: item.dataset.hasVariations === "true",
-      priceS: item.dataset.priceS ? item.dataset.priceS : item.dataset.price,
-      priceM: item.dataset.priceM ? item.dataset.priceM : item.dataset.price,
-      priceL: item.dataset.priceL ? item.dataset.priceL : item.dataset.price,
-      priceF: item.dataset.priceF ? item.dataset.priceF : item.dataset.price
-    }));
-  }
+  const foodItems = document.querySelectorAll('.food-item');
+  return Array.from(foodItems).map(item => ({
+    id: item.dataset.productId,
+    name: item.dataset.name,
+    description: item.dataset.description || '',
+    price: item.dataset.price ? `$${item.dataset.price}` : '$129',
+    previousPrice: item.dataset.previousPrice ? `$${item.dataset.previousPrice}` : '$169',
+    image: item.dataset.image,
+    status: item.querySelector('.discount-badge') ? 'Sale' : 'Regular',
+    category: item.dataset.category || 'featured',
+    hasVariations: item.dataset.hasVariations === "true",
+    priceS: item.dataset.priceS ? item.dataset.priceS : item.dataset.price,
+    priceM: item.dataset.priceM ? item.dataset.priceM : item.dataset.price,
+    priceL: item.dataset.priceL ? item.dataset.priceL : item.dataset.price,
+    priceF: item.dataset.priceF ? item.dataset.priceF : item.dataset.price
+  }));
+}
   
   if (viewAllButton) {
     viewAllButton.addEventListener('click', function() {
