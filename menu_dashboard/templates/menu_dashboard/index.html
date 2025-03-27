@@ -2986,6 +2986,155 @@ input:checked + .slider:before {
   padding: 0 10px;
 }
 </style>
+
+<style>
+        :root {
+            --primary-bg: #f8f9fa;
+            --accent-color: #ff6b6b;
+            --text-color: #2c3e50;
+            --transition-speed: 0.4s;
+        }
+
+        .product-modal {
+            max-width: 420px;
+            border-radius: 15px;
+            overflow: hidden;
+            box-shadow: 0 15px 30px rgba(0,0,0,0.08);
+            background: linear-gradient(to bottom right, #ffffff, var(--primary-bg));
+        }
+
+        .product-image-wrapper {
+            position: relative;
+            height: 300px;
+            background-color: #f1f3f5;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            overflow: hidden;
+        }
+
+        .product-image {
+            max-width: 90%;
+            max-height: 90%;
+            transition: transform 0.3s ease;
+        }
+
+        .product-details {
+            padding: 15px;
+        }
+
+        .product-name {
+            font-size: 1.3rem;
+            margin-bottom: 0.3rem;
+        }
+
+        .nav-btn {
+            position: absolute;
+            top: 50%;
+            transform: translateY(-50%);
+            background: rgba(255,255,255,0.8);
+            border: none;
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            transition: all 0.3s ease;
+            z-index: 10;
+            font-size: 1.5rem;
+        }
+
+        .nav-btn:hover {
+            background: var(--accent-color);
+            color: white;
+            transform: translateY(-50%) scale(1.1);
+        }
+
+        .nav-prev {
+            left: 5px;
+        }
+
+        .nav-next {
+            right: 5px;
+        }
+
+        .rating {
+            font-size: 0.85rem;
+            margin-bottom: 8px;
+        }
+
+        .pricing {
+            margin-bottom: 12px;
+        }
+
+        .current-price {
+            font-size: 1.2rem;
+        }
+
+        .old-price {
+            font-size: 0.9rem;
+        }
+
+        .size-selection {
+            margin-bottom: 12px;
+        }
+
+        .size-btn {
+            width: 35px;
+            height: 35px;
+            padding: 0;
+            display: inline-flex;
+            justify-content: center;
+            align-items: center;
+            background-color: #e9ecef;
+            border: 2px solid transparent;
+            transition: all 0.3s ease;
+        }
+
+        .size-btn.active {
+            background-color: var(--accent-color);
+            color: white;
+            transform: scale(1.1);
+        }
+
+        .quantity-control {
+            background-color: #f1f3f5;
+            border-radius: 20px;
+            padding: 5px;
+        }
+
+        .quantity-control .btn {
+            padding: 3px 10px;
+            font-size: 1rem;
+        }
+
+        .modal-header {
+            padding: 10px;
+            background-color: transparent;
+            border-bottom: none;
+        }
+
+        .close-btn {
+            background-color: #f8f9fa;
+            border: none;
+            border-radius: 50%;
+            width: 30px;
+            height: 30px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 1rem;
+            transition: background-color 0.3s ease;
+        }
+
+        .close-btn:hover {
+            background-color: var(--accent-color);
+            color: white;
+        }
+
+
+    </style>
  
 
 
@@ -3329,9 +3478,9 @@ input:checked + .slider:before {
 </div> -->
 
 <!-- Featured Items Section (Sample) -->
-<!-- Main Content -->
-<!-- Main Content -->
-<!-- Main Content -->
+
+{% load product_extras %}
+
 <div class="main-content" id="menuContent">
   <!-- Featured Section with Carousel View -->
   <div class="featured-section shared-view">
@@ -3343,21 +3492,49 @@ input:checked + .slider:before {
       {% for category_products in allProds %}
         {% for product in category_products %}
           <div class="food-item"
+               data-has-variations="{% if product.variations_list %}true{% else %}false{% endif %}"
                data-category="{{ product.category.name|lower }}"
                data-product-id="{{ product.id }}"
                data-name="{{ product.name }}"
                data-description="{{ product.description }}"
-               data-price="{{ product.price }}"
-               data-previous-price="{{ product.previous_price|default:'' }}"
-               data-image="{{ product.product_image.url }}">
+               data-image="{{ product.product_image.url }}"
+               {% if product.previous_price %}
+                 data-previous-price="{{ product.previous_price }}"
+               {% endif %}
+               
+               {% if product.variations_list %}
+                 {% with default_price=product.variations_list|get_default_price:"S" %}
+                   data-price="{% if default_price %}{{ default_price }}{% else %}{{ product.price }}{% endif %}"
+                 {% endwith %}
+                 
+                 {# Output variation prices for S, M, L, F #}
+                 {% for variation in product.variations_list %}
+                   {% if variation.name == "S" %}
+                     data-price-s="{{ variation.price }}"
+                   {% elif variation.name == "M" %}
+                     data-price-m="{{ variation.price }}"
+                   {% elif variation.name == "L" %}
+                     data-price-l="{{ variation.price }}"
+                   {% elif variation.name == "F" %}
+                     data-price-f="{{ variation.price }}"
+                   {% endif %}
+                 {% endfor %}
+               {% else %}
+                 {# No variations, use base price #}
+                 data-price="{{ product.price }}"
+                 data-price-s="{{ product.price }}"
+                 data-price-m="{{ product.price }}"
+                 data-price-l="{{ product.price }}"
+                 data-price-f="{{ product.price }}"
+               {% endif %}
+          >
             <div class="food-image-container">
               {% if product.status == 'Sale' %}
                 <span class="discount-badge">Sale</span>
               {% endif %}
               <div class="food-image">
-                <!-- Inner container with white background and no border radius -->
                 <div class="food-image-inner">
-                  <img src="{{ product.product_image.url }}" alt="{{ product.name }}" class="product-image-trigger" style="width: 100%; height: 100%; object-fit: cover;">
+                  <img src="{{ product.product_image.url }}" alt="{{ product.name }}" class="product-image-trigger" style="width:100%; height:100%; object-fit:cover;">
                 </div>
               </div>
             </div>
@@ -3370,16 +3547,26 @@ input:checked + .slider:before {
               </div>
               <div class="price-row">
                 <div class="price">
-                  <span>${{ product.price }}</span>
+                  <span class="display-price">
+                    {% if product.variations_list %}
+                      {% with default_price=product.variations_list|get_default_price:"S" %}
+                        ${{ default_price|default:product.price }}
+                      {% endwith %}
+                    {% else %}
+                      ${{ product.price }}
+                    {% endif %}
+                  </span>
                   {% if product.previous_price %}
-                    <span class="previous-price" style="text-decoration: line-through; font-size: 12px; color: var(--text-secondary); margin-left: 4px;">${{ product.previous_price }}</span>
+                    <span class="previous-price" style="text-decoration:line-through; font-size:12px; color:var(--text-secondary); margin-left:4px;">
+                      ${{ product.previous_price }}
+                    </span>
                   {% endif %}
                 </div>
                 {% if product.status != 'Unavailable' %}
                   <button class="add-to-cart"
                           data-product-id="{{ product.id }}"
                           data-name="{{ product.name }}"
-                          data-price="{{ product.price }}"
+                          data-price="{% if product.variations_list %}{% with default_price=product.variations_list|get_default_price:"S" %}{% if default_price %}{{ default_price }}{% else %}{{ product.price }}{% endif %}{% endwith %}{% else %}{{ product.price }}{% endif %}"
                           data-image="{{ product.product_image.url }}">
                     <i class="fas fa-shopping-cart"></i>
                   </button>
@@ -3568,72 +3755,48 @@ input:checked + .slider:before {
     <!-- Product Detail Modal -->
 <div class="modal fade" id="productDetailModal" tabindex="-1" aria-labelledby="productDetailModalLabel" aria-hidden="true">
   <div class="modal-dialog modal-dialog-centered">
-    <div class="modal-content" style="max-width: 400px; margin: auto; border-radius: 32px; overflow: hidden; box-shadow: 0 10px 30px rgba(0,0,0,0.15); border: none; background-color: #FFF8F0;">
-      <!-- Main Content Wrapper -->
-      <div class="position-relative">
-        <!-- Back Button (Left Arrow) -->
-        <button type="button" class="btn-back position-absolute top-4 start-4 z-3" 
-                data-bs-dismiss="modal" aria-label="Back"
-                style="background: white; border: none; width: 40px; height: 40px; border-radius: 50%; display: flex; align-items: center; justify-content: center; cursor: pointer; box-shadow: 0 2px 8px rgba(0,0,0,0.1);">
-          <i class="fas fa-chevron-left" style="color: #000;"></i>
+    <div class="modal-content product-modal">
+      <header class="modal-header">
+        <button type="button" class="close-btn" data-bs-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
         </button>
-        
-        <!-- Favorite Button (Heart) -->
-        <button type="button" class="btn-favorite position-absolute top-4 end-4 z-3" 
-                aria-label="Favorite"
-                style="background: white; border: none; width: 40px; height: 40px; border-radius: 50%; display: flex; align-items: center; justify-content: center; cursor: pointer; box-shadow: 0 2px 8px rgba(0,0,0,0.1);">
-          <i class="fas fa-heart" style="color: #FF6B6B;"></i>
-        </button>
-                
-        <!-- Image Section -->
-        <div class="position-relative" style="height: 300px; background-color: white; display: flex; align-items: center; justify-content: center; padding: 20px;">
-          <img id="detailProductImage" src="/api/placeholder/400/400" 
-               class="w-75 h-auto object-fit-contain" alt="Product Image"
-               style="transition: transform 0.3s ease; filter: drop-shadow(0 10px 15px rgba(0,0,0,0.1)); transform: scale(1.1);">
+      </header>
+      <section class="modal-body p-0">
+        <div class="product-image-wrapper">
+          <img id="detailProductImage" src="/api/placeholder/400/400" alt="Product Image" class="product-image">
+          <!-- Navigation Buttons -->
+          <button id="prevProduct" class="nav-btn nav-prev" aria-label="Previous Product">&lsaquo;</button>
+          <button id="nextProduct" class="nav-btn nav-next" aria-label="Next Product">&rsaquo;</button>
         </div>
+        <div class="product-details text-center">
+          <h2 id="detailProductName" class="product-name">Product Name</h2>
+          <div class="rating d-inline-flex align-items-center mb-2 p-1 rounded">
+            <i class="fas fa-star text-warning me-1"></i>
+            <span>4.5</span>
+          </div>
+          <div class="pricing mb-3">
+            <span id="detailProductPrice" class="current-price text-danger me-2">$0</span>
+            <span id="detailProductOldPrice" class="old-price text-muted text-decoration-line-through">$0</span>
+          </div>
 
-        <!-- Size Selection -->
-        <div class="d-flex justify-content-center" style="margin-top: -30px; position: relative; z-index: 10;">
-          <div class="d-flex gap-4">
-            <button class="size-btn" style="width: 45px; height: 45px; border-radius: 50%; background: white; border: none; box-shadow: 0 4px 12px rgba(0,0,0,0.1); display: flex; align-items: center; justify-content: center; font-weight: 500; transition: all 0.2s ease;">S</button>
-            <button class="size-btn active" style="width: 45px; height: 45px; border-radius: 50%; background: white; border: none; box-shadow: 0 4px 12px rgba(0,0,0,0.1); display: flex; align-items: center; justify-content: center; font-weight: 500; transition: all 0.2s ease;">M</button>
-            <button class="size-btn" style="width: 45px; height: 45px; border-radius: 50%; background: white; border: none; box-shadow: 0 4px 12px rgba(0,0,0,0.1); display: flex; align-items: center; justify-content: center; font-weight: 500; transition: all 0.2s ease;">L</button>
-          </div>
-        </div>
+          <!-- Size Selection (Hidden by Default) -->
 
-        <!-- Product Info -->
-        <div class="px-5 py-4">
-          <div class="d-flex justify-content-between align-items-start mb-1">
-            <h2 id="detailProductName" class="h3 mb-0 fw-bold">5 Pepper</h2>
-            <div class="d-flex align-items-center px-3 py-1" style="background: #FFF3D0; border-radius: 12px;">
-              <i class="fas fa-star me-1" style="color: #FFB800; font-size: 0.9rem;"></i>
-              <span style="font-weight: 600; color: #333;">4.5</span>
-            </div>
+          <div id="sizeSelectionContainer" class="size-selection d-flex justify-content-center mb-3" style="display: none;">
+            <button type="button" class="size-btn btn mx-1" data-size="S">S</button>
+            <button type="button" class="size-btn btn mx-1" data-size="M">M</button>
+            <button type="button" class="size-btn btn mx-1" data-size="L">L</button>
+            <button type="button" class="size-btn btn mx-1" data-size="F">F</button>
           </div>
-          
-          
-          <!-- Pricing and Quantity -->
-          <div class="d-flex justify-content-between align-items-center mb-5">
-            <div>
-              <h3 id="detailProductPrice" class="h2 mb-0 fw-bold">$129</h3>
-              <span id="detailProductOldPrice" class="text-muted text-decoration-line-through">$169</span>
-            </div>
-            
-            <div class="d-flex align-items-center" style="background: white; border-radius: 16px; box-shadow: 0 4px 15px rgba(0,0,0,0.08);">
-              <button class="quantity-btn btn px-3 py-2" style="font-size: 1.2rem; font-weight: bold; transition: all 0.2s ease;">−</button>
-              <span class="px-3 py-2" style="font-weight: 600; font-size: 1.1rem;">2</span>
-              <button class="quantity-btn btn px-3 py-2" style="font-size: 1.2rem; font-weight: bold; transition: all 0.2s ease;">+</button>
-            </div>
+          <div class="quantity-control d-inline-flex align-items-center">
+            <button type="button" class="btn btn-sm" id="decrement">−</button>
+            <span id="quantityDisplay" class="mx-2">2</span>
+            <button type="button" class="btn btn-sm" id="increment">+</button>
           </div>
         </div>
-        
-        
-      </div>
+      </section>
     </div>
   </div>
 </div>
-
-
 
 
     <!-- Table Reservation Modal -->
@@ -4268,123 +4431,188 @@ document.addEventListener('DOMContentLoaded', function() {
 });
 </script>
 
+
+<!-- JavaScript for Sliding Navigation -->
 <script>
 document.addEventListener('DOMContentLoaded', function() {
-    // Product detail modal handling
-    const productCards = document.querySelectorAll('.food-item');
-    const productDetailModal = new bootstrap.Modal(document.getElementById('productDetailModal'));
+    // Get modal element, size selection container, and size buttons
+    const productModal = document.getElementById('productDetailModal');
+    const sizeSelection = document.getElementById('sizeSelectionContainer');
+    const sizeButtons = productModal.querySelectorAll('.size-btn');
     
-    // Add keyframe animations and styles
-    const style = document.createElement('style');
-    style.textContent = `
-        @keyframes modalImageZoom {
-            from { transform: scale(0.9); opacity: 0; }
-            to { transform: scale(1.1); opacity: 1; }
-        }
-        @keyframes modalContentSlide {
-            from { transform: translateY(30px); opacity: 0; }
-            to { transform: translateY(0); opacity: 1; }
-        }
-        .modal-image-animate {
-            animation: modalImageZoom 0.4s ease-out forwards;
-        }
-        .modal-content-animate {
-            animation: modalContentSlide 0.4s ease-out forwards;
-        }
-        
-        /* Size button active state */
-        .size-btn.active {
-            background: #FFD384 !important;
-            color: #000;
-            font-weight: 600;
-            transform: scale(1.05);
-        }
-        
-        .size-btn:hover, .quantity-btn:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 6px 15px rgba(0,0,0,0.15);
-        }
-        
-        .size-btn:active, .quantity-btn:active {
-            transform: translateY(1px);
-        }
-    `;
-    document.head.appendChild(style);
-
-    // Size button selection
-    const sizeButtons = document.querySelectorAll('.size-btn');
-    sizeButtons.forEach(button => {
-        button.addEventListener('click', function() {
-            sizeButtons.forEach(btn => btn.classList.remove('active'));
-            this.classList.add('active');
-        });
-    });
-
+    // Modal content elements
+    const modalImage = document.getElementById('detailProductImage');
+    const modalName = document.getElementById('detailProductName');
+    const modalPrice = document.getElementById('detailProductPrice');
+    const modalOldPrice = document.getElementById('detailProductOldPrice');
+    const quantityDisplay = document.getElementById('quantityDisplay');
+    
     // Quantity control
-    const minusBtn = document.querySelector('.quantity-btn:first-child');
-    const plusBtn = document.querySelector('.quantity-btn:last-child');
-    const quantityDisplay = document.querySelector('.quantity-btn + span');
+    const decrementBtn = document.getElementById('decrement');
+    const incrementBtn = document.getElementById('increment');
     let quantity = 2;
     
-    if (minusBtn && plusBtn && quantityDisplay) {
-        minusBtn.addEventListener('click', function() {
-            if (quantity > 1) {
-                quantity--;
-                quantityDisplay.textContent = quantity;
-            }
-        });
-        
-        plusBtn.addEventListener('click', function() {
-            quantity++;
+    decrementBtn.addEventListener('click', () => {
+        if (quantity > 1) {
+            quantity--;
             quantityDisplay.textContent = quantity;
-        });
-    }
-
-    productCards.forEach(card => {
-        const imageTrigger = card.querySelector('.product-image-trigger');
-        if (imageTrigger) {
-            imageTrigger.addEventListener('click', function() {
-                const productData = {
-                    id: card.dataset.productId,
-                    name: card.dataset.name || "5 Pepper",
-                    description: card.dataset.description || "Mixed Pizza",
-                    price: card.dataset.price ? `$${card.dataset.price}` : "$129",
-                    previousPrice: card.dataset.previousPrice ? `$${card.dataset.previousPrice}` : "$169",
-                    image: card.dataset.image || "/api/placeholder/400/400"
-                };
-
-                // Populate modal with animations
-                const detailImage = document.getElementById('detailProductImage');
-                const modalContent = document.querySelector('.modal-content');
-                
-                detailImage.src = productData.image;
-                detailImage.classList.add('modal-image-animate');
-                modalContent.classList.add('modal-content-animate');
-                
-                document.getElementById('detailProductName').textContent = productData.name;
-                document.getElementById('detailProductPrice').textContent = productData.price;
-                document.getElementById('detailProductOldPrice').textContent = productData.previousPrice;
-                
-                // Reset quantity
-                quantity = 2;
-                if (quantityDisplay) {
-                    quantityDisplay.textContent = quantity;
-                }
-                
-                // Show modal
-                productDetailModal.show();
-            });
         }
     });
+    incrementBtn.addEventListener('click', () => {
+        quantity++;
+        quantityDisplay.textContent = quantity;
+    });
     
-    // Clean up animations when modal is hidden
-    document.getElementById('productDetailModal').addEventListener('hidden.bs.modal', function () {
-        document.getElementById('detailProductImage').classList.remove('modal-image-animate');
-        document.querySelector('.modal-content').classList.remove('modal-content-animate');
+    // Initially hide size selection
+    sizeSelection.classList.add('d-none');
+    sizeSelection.style.display = 'none';
+    
+    // Function to open modal with product data
+    function openProductDetailModal(productElement) {
+        // Read product attributes
+        const productName = productElement.dataset.name;
+        const productImage = productElement.dataset.image;
+        const basePrice = productElement.dataset.price;
+        const previousPrice = productElement.dataset.previousPrice;
+        const hasVariations = productElement.dataset.hasVariations === "true";
+        
+        // Variation prices with fallback to base price
+        const priceS = productElement.dataset.priceS || basePrice;
+        const priceM = productElement.dataset.priceM || basePrice;
+        const priceL = productElement.dataset.priceL || basePrice;
+        const priceF = productElement.dataset.priceF || basePrice;
+
+        // Populate modal content
+        modalImage.src = productImage;
+        modalName.textContent = productName;
+        
+        // Set default price to "S" if variations exist, otherwise use base price
+        const defaultPrice = hasVariations ? priceS : basePrice;
+        modalPrice.textContent = `$${defaultPrice}`;
+
+        if (previousPrice) {
+            modalOldPrice.textContent = `$${previousPrice}`;
+            modalOldPrice.style.display = 'inline';
+        } else {
+            modalOldPrice.style.display = 'none';
+        }
+
+        // Reset quantity
+        quantity = 1;
+        quantityDisplay.textContent = quantity;
+
+        // Reset size buttons (remove active state and data attributes)
+        sizeButtons.forEach(btn => {
+            btn.classList.remove('active');
+            btn.disabled = false;
+            btn.removeAttribute('data-price');
+        });
+
+        // Show or hide size selection based on variations
+        if (hasVariations) {
+            sizeSelection.classList.remove('d-none');
+            sizeSelection.style.display = 'flex';
+
+            sizeButtons.forEach(button => {
+                const size = button.dataset.size;
+                // Always assign a price for each size (fallback to basePrice)
+                if (size === 'S') {
+                    button.setAttribute('data-price', priceS);
+                    button.classList.add('active'); // default active size
+                } else if (size === 'M') {
+                    button.setAttribute('data-price', priceM);
+                } else if (size === 'L') {
+                    button.setAttribute('data-price', priceL);
+                } else if (size === 'F') {
+                    button.setAttribute('data-price', priceF);
+                }
+            });
+        } else {
+            sizeSelection.classList.add('d-none');
+            sizeSelection.style.display = 'none';
+        }
+    }
+
+    // Use event delegation to handle clicks on both carousel and grid items.
+    // We assume that both are inside the #menuContent container.
+    const menuContent = document.getElementById('menuContent');
+    if (menuContent) {
+        menuContent.addEventListener('click', function(event) {
+            const foodItem = event.target.closest('.food-item');
+            // Proceed only if a food-item was clicked and not the add-to-cart button
+            if (foodItem && !event.target.closest('.add-to-cart')) {
+                openProductDetailModal(foodItem);
+                // Open modal (jQuery fallback or Bootstrap 5)
+                if (window.jQuery && window.jQuery.fn.modal) {
+                    $(productModal).modal('show');
+                } else {
+                    const modalInstance = new bootstrap.Modal(productModal);
+                    modalInstance.show();
+                }
+            }
+        });
+    }
+    
+    // Size button click: update active state and price in modal
+    sizeButtons.forEach(button => {
+        button.addEventListener('click', function() {
+            if (!this.disabled) {
+                sizeButtons.forEach(btn => btn.classList.remove('active'));
+                this.classList.add('active');
+                const newPrice = this.getAttribute('data-price');
+                modalPrice.textContent = `$${newPrice}`;
+            }
+        });
+    });
+    
+    // Close button handling (multiple methods)
+    const closeBtns = [
+        productModal.querySelector('.close-btn'),
+        document.querySelector(`[data-bs-dismiss="modal"]`)
+    ].filter(Boolean);
+    
+    closeBtns.forEach(closeBtn => {
+        closeBtn.addEventListener('click', function(e) {
+            e.preventDefault();
+            e.stopPropagation();
+            try {
+                if (bootstrap && bootstrap.Modal) {
+                    const modalInstance = bootstrap.Modal.getInstance(productModal);
+                    if (modalInstance) {
+                        modalInstance.hide();
+                        return;
+                    }
+                }
+                if (window.jQuery && window.jQuery.fn.modal) {
+                    $(productModal).modal('hide');
+                    return;
+                }
+                productModal.classList.remove('show');
+                document.body.classList.remove('modal-open');
+                const backdrop = document.querySelector('.modal-backdrop');
+                if (backdrop) backdrop.remove();
+            } catch (error) {
+                console.error('Error closing modal:', error);
+            }
+        });
+    });
+    
+    productModal.addEventListener('hidden.bs.modal', function () {
+        console.log('Modal hidden via Bootstrap event');
+    });
+    productModal.addEventListener('hide.bs.modal', function () {
+        console.log('Modal hide event triggered');
     });
 });
+
+
+
 </script>
- 
+
+
+
+
+
 
 <!-- ===============================
      JAVASCRIPT TO TOGGLE SECTIONS
@@ -4566,7 +4794,237 @@ document.addEventListener('DOMContentLoaded', function() {
 <!-- Search features -->
 <script>
 document.addEventListener('DOMContentLoaded', function() {
-  // ===== 1. Add Keyframe Animations for Modal =====
+  // ===== 1. Unified Modal Functionality (Slide Navigation & Product Detail) =====
+  const productDetailModalElement = document.getElementById('productDetailModal');
+  const productDetailModal = new bootstrap.Modal(productDetailModalElement);
+  
+  // Modal element references (make sure these exist in your modal HTML)
+  const detailImage = document.getElementById('detailProductImage');
+  const detailName = document.getElementById('detailProductName');
+  const detailPrice = document.getElementById('detailProductPrice');
+  const detailOldPrice = document.getElementById('detailProductOldPrice');
+  const quantityDisplay = document.getElementById('quantityDisplay');
+  const prevBtn = document.getElementById('prevProduct');
+  const nextBtn = document.getElementById('nextProduct');
+  
+  let quantity = 2;
+  let currentIndex = 0;
+  
+  // Build the initial products array from carousel items (".food-item")
+  // Now we also add variation prices.
+  const carouselItems = Array.from(document.querySelectorAll('.food-item'));
+  let products = carouselItems.map(card => ({
+    id: card.dataset.productId,
+    name: card.dataset.name || "5 Pepper",
+    description: card.dataset.description || "Mixed Pizza",
+    price: card.dataset.price ? `$${card.dataset.price}` : "$129",
+    previousPrice: card.dataset.previousPrice ? `$${card.dataset.previousPrice}` : "$169",
+    image: card.dataset.image || "/api/placeholder/400/400",
+    category: card.dataset.category || 'featured',
+    status: card.querySelector('.discount-badge') ? 'Sale' : 'Regular',
+    hasVariations: card.dataset.hasVariations === "true",
+    priceS: card.dataset.priceS ? card.dataset.priceS : card.dataset.price,
+    priceM: card.dataset.priceM ? card.dataset.priceM : card.dataset.price,
+    priceL: card.dataset.priceL ? card.dataset.priceL : card.dataset.price,
+    priceF: card.dataset.priceF ? card.dataset.priceF : card.dataset.price
+  }));
+  
+  // Function to update modal content with slide animations
+  function updateModalContent(newIndex, direction = 'right') {
+  // Remove any previous enter classes
+  detailImage.classList.remove('slide-enter-active');
+  detailName.classList.remove('slide-enter-active');
+  detailPrice.classList.remove('slide-enter-active');
+  detailOldPrice.classList.remove('slide-enter-active');
+
+  // Add exit animation classes
+  detailImage.classList.add('slide-exit-active');
+  detailName.classList.add('slide-exit-active');
+  detailPrice.classList.add('slide-exit-active');
+  detailOldPrice.classList.add('slide-exit-active');
+
+  setTimeout(() => {
+    // Update modal content with the new product details
+    const product = products[newIndex];
+    detailImage.src = product.image;
+    detailName.textContent = product.name;
+    
+    // For products with variations, default to S price; otherwise, show base price.
+    if (product.hasVariations) {
+      detailPrice.textContent = `$${product.priceS}`;
+    } else {
+      detailPrice.textContent = product.price;
+    }
+    
+    detailOldPrice.textContent = product.previousPrice;
+
+    // Reset quantity on navigation
+    quantity = 2;
+    quantityDisplay.textContent = quantity;
+
+    // Handle size selection based on whether product has variations.
+    const sizeSelection = document.getElementById('sizeSelectionContainer');
+    const sizeButtons = sizeSelection.querySelectorAll('.size-btn');
+    if (product.hasVariations) {
+      sizeSelection.style.display = 'flex';
+      sizeSelection.classList.remove('d-none');
+      // Update each size button with its corresponding price.
+      sizeButtons.forEach(button => {
+        const size = button.dataset.size;
+        let newPrice;
+        if (size === 'S') {
+          newPrice = product.priceS;
+          button.classList.add('active');
+        } else if (size === 'M') {
+          newPrice = product.priceM;
+          button.classList.remove('active');
+        } else if (size === 'L') {
+          newPrice = product.priceL;
+          button.classList.remove('active');
+        } else if (size === 'F') {
+          newPrice = product.priceF;
+          button.classList.remove('active');
+        }
+        // Fallback if no specific price is provided.
+        if (!newPrice) newPrice = product.price;
+        button.dataset.price = newPrice;
+        button.disabled = false;
+        // Attach click event for size selection (update modal price)
+        button.onclick = function() {
+          if (!this.disabled) {
+            sizeButtons.forEach(btn => btn.classList.remove('active'));
+            this.classList.add('active');
+            detailPrice.textContent = `$${this.dataset.price}`;
+          }
+        };
+      });
+    } else {
+      sizeSelection.style.display = 'none';
+      sizeSelection.classList.add('d-none');
+    }
+
+    // Remove exit classes then trigger enter animation
+    detailImage.classList.remove('slide-exit-active');
+    detailName.classList.remove('slide-exit-active');
+    detailPrice.classList.remove('slide-exit-active');
+    detailOldPrice.classList.remove('slide-exit-active');
+
+    // Force reflow then add enter classes
+    void detailImage.offsetWidth;
+    detailImage.classList.add('slide-enter-active');
+    detailName.classList.add('slide-enter-active');
+    detailPrice.classList.add('slide-enter-active');
+    detailOldPrice.classList.add('slide-enter-active');
+  }, 400);
+}
+  
+  // Slide navigation button events
+  // Slide navigation button events
+    prevBtn.addEventListener('click', function() {
+      currentIndex = (currentIndex - 1 + products.length) % products.length;
+      updateModalContent(currentIndex, 'left');
+    });
+
+    nextBtn.addEventListener('click', function() {
+      currentIndex = (currentIndex + 1) % products.length;
+      updateModalContent(currentIndex, 'right');
+    });
+  
+  // Quantity control events
+  document.getElementById('decrement').addEventListener('click', function() {
+    if (quantity > 1) {
+      quantity--;
+      quantityDisplay.textContent = quantity;
+    }
+  });
+  document.getElementById('increment').addEventListener('click', function() {
+    quantity++;
+    quantityDisplay.textContent = quantity;
+  });
+  
+  // Unified function to open modal from any view (carousel or grid)
+  function openProductModal(productId) {
+    const index = products.findIndex(p => p.id === productId);
+    if (index === -1) return;
+    currentIndex = index;
+    const product = products[currentIndex];
+    
+    // Update modal details
+    detailImage.src = product.image;
+    detailName.textContent = product.name;
+    if (product.hasVariations) {
+      detailPrice.textContent = `$${product.priceS}`;
+    } else {
+      detailPrice.textContent = product.price;
+    }
+    detailOldPrice.textContent = product.previousPrice;
+    quantity = 2;
+    quantityDisplay.textContent = quantity;
+    
+    // Handle size selection
+    const sizeSelection = document.getElementById('sizeSelectionContainer');
+    const sizeButtons = sizeSelection.querySelectorAll('.size-btn');
+    if (product.hasVariations) {
+      sizeSelection.style.display = 'flex';
+      sizeSelection.classList.remove('d-none');
+      sizeButtons.forEach(button => {
+        const size = button.dataset.size;
+        let newPrice;
+        if (size === 'S') {
+          newPrice = product.priceS;
+          button.classList.add('active');
+        } else if (size === 'M') {
+          newPrice = product.priceM;
+          button.classList.remove('active');
+        } else if (size === 'L') {
+          newPrice = product.priceL;
+          button.classList.remove('active');
+        } else if (size === 'F') {
+          newPrice = product.priceF;
+          button.classList.remove('active');
+        }
+        if (!newPrice) newPrice = product.price;
+        button.dataset.price = newPrice;
+        button.disabled = false;
+        button.onclick = function() {
+          if (!this.disabled) {
+            sizeButtons.forEach(btn => btn.classList.remove('active'));
+            this.classList.add('active');
+            detailPrice.textContent = `$${this.dataset.price}`;
+          }
+        };
+      });
+    } else {
+      sizeSelection.style.display = 'none';
+      sizeSelection.classList.add('d-none');
+    }
+    
+    productDetailModal.show();
+  }
+  
+  // Attach click handler for carousel items (.food-item)
+  carouselItems.forEach(card => {
+    const trigger = card.querySelector('.product-image-trigger');
+    if (trigger) {
+      trigger.addEventListener('click', function() {
+        openProductModal(card.dataset.productId);
+      });
+    }
+  });
+  
+  // Attach click handler for carousel items (.food-item)
+  carouselItems.forEach(card => {
+    const trigger = card.querySelector('.product-image-trigger');
+    if (trigger) {
+      trigger.addEventListener('click', function() {
+        openProductModal(card.dataset.productId);
+      });
+    }
+  });
+  
+  // ===== 2. Product Grid, Category Filter, and Search Functionality =====
+  
+  // Add keyframe animations for modal (for grid view)
   const modalStyle = document.createElement('style');
   modalStyle.textContent = `
     @keyframes modalImageZoom {
@@ -4585,89 +5043,18 @@ document.addEventListener('DOMContentLoaded', function() {
     }
   `;
   document.head.appendChild(modalStyle);
-
-  // ===== 2. Utility: Show Product Detail Modal =====
+  
+  // For grid items, we override the default product detail trigger to use our unified function.
   function showProductDetail(productData) {
-    const productDetailModalInstance = new bootstrap.Modal(document.getElementById('productDetailModal'));
-    const detailImage = document.getElementById('detailProductImage');
-    const detailContent = document.querySelector('.card-body');
-    
-    // Populate modal elements
-    detailImage.src = productData.image;
-    detailImage.classList.add('modal-image-animate');
-    detailContent.classList.add('modal-content-animate');
-    
-    document.getElementById('detailProductName').textContent = productData.name;
-    document.getElementById('detailProductDescription').textContent = productData.description;
-    document.getElementById('detailProductPrice').textContent = productData.price;
-    
-    const oldPriceElement = document.getElementById('detailProductOldPrice');
-    if(productData.previousPrice) {
-      oldPriceElement.textContent = productData.previousPrice;
-      oldPriceElement.style.textDecoration = 'line-through';
-      oldPriceElement.style.color = '#666';
-    } else {
-      oldPriceElement.textContent = '';
-    }
-    
-    productDetailModalInstance.show();
-    
-    // Clean up animation classes when animations end
-    detailImage.addEventListener('animationend', () => {
-       detailImage.classList.remove('modal-image-animate');
-    });
-    detailContent.addEventListener('animationend', () => {
-       detailContent.classList.remove('modal-content-animate');
-    });
+    // We only need the product id since our unified function handles everything.
+    openProductModal(productData.id);
   }
-
-  // ===== 3. Attach Product Detail Modal to Carousel Items =====
-  document.querySelectorAll('.food-item').forEach(item => {
-    item.addEventListener('click', function(e) {
-      // Prevent modal from triggering when clicking the add-to-cart button
-      if (e.target.closest('.add-to-cart')) return;
-      
-      const productData = {
-        id: item.dataset.productId,
-        name: item.dataset.name,
-        description: item.dataset.description || '',
-        price: `$${item.dataset.price}`,
-        previousPrice: item.dataset.previousPrice ? `$${item.dataset.previousPrice}` : '',
-        image: item.dataset.image
-      };
-      
-      showProductDetail(productData);
-    });
-  });
-
-  // ===== 4. View Toggle Functionality =====
-  const featuredSection = document.querySelector('.featured-section');
-  const productGridContainer = document.getElementById('productGridContainer');
+  
+  // Grid view creation function
   const productGrid = document.getElementById('productGrid');
-  const viewAllButton = document.querySelector('.view-all');
-  const backButton = document.querySelector('.back-to-carousel');
-
-  // Helper: Extract products from carousel using dataset attributes
-  function extractProductsFromCarousel() {
-    const foodItems = document.querySelectorAll('.food-item');
-    return Array.from(foodItems).map(item => {
-      return {
-        id: item.dataset.productId,
-        name: item.dataset.name,
-        description: item.dataset.description || '',
-        price: item.dataset.price,
-        previousPrice: item.dataset.previousPrice,
-        image: item.dataset.image,
-        status: item.querySelector('.discount-badge') ? 'Sale' : 'Regular',
-        category: item.dataset.category  // used for filtering
-      };
-    });
-  }
-
-  // Helper: Create grid view items
-  function createGridView(products) {
+  function createGridView(productsList) {
     productGrid.innerHTML = '';
-    products.forEach(product => {
+    productsList.forEach(product => {
       const gridItem = document.createElement('div');
       gridItem.className = 'grid-item';
       gridItem.dataset.productId = product.id;
@@ -4677,6 +5064,12 @@ document.addEventListener('DOMContentLoaded', function() {
       gridItem.dataset.price = product.price;
       gridItem.dataset.previousPrice = product.previousPrice;
       gridItem.dataset.image = product.image;
+      // Pass along variations flag and prices
+      gridItem.dataset.hasVariations = product.hasVariations ? "true" : "false";
+        gridItem.dataset.priceS = product.priceS;
+        gridItem.dataset.priceM = product.priceM;
+        gridItem.dataset.priceL = product.priceL;
+        gridItem.dataset.priceF = product.priceF;
       
       const isOnSale = product.status === 'Sale';
       gridItem.innerHTML = `
@@ -4693,8 +5086,8 @@ document.addEventListener('DOMContentLoaded', function() {
           </div>
           <div class="price-row">
             <div class="price">
-              <span>$${product.price}</span>
-              ${product.previousPrice ? `<span class="previous-price" style="text-decoration: line-through; font-size: 12px; color: var(--text-secondary); margin-left: 4px;">$${product.previousPrice}</span>` : ''}
+              <span>${product.price}</span>
+              ${product.previousPrice ? `<span class="previous-price" style="text-decoration: line-through; font-size: 12px; color: var(--text-secondary); margin-left: 4px;">${product.previousPrice}</span>` : ''}
             </div>
             <button class="add-to-cart" data-product-id="${product.id}" data-name="${product.name}" data-price="${product.price}" data-image="${product.image}">
               <i class="fas fa-shopping-cart"></i>
@@ -4704,41 +5097,86 @@ document.addEventListener('DOMContentLoaded', function() {
       `;
       
       productGrid.appendChild(gridItem);
-
-      // Attach modal detail handler to grid item
+      
+      // Attach grid item click event to open modal detail.
       gridItem.addEventListener('click', function(e) {
-        if(e.target.closest('.add-to-cart')) return;
-        const productData = {
-          id: product.id,
-          name: product.name,
-          description: product.description,
-          price: `$${product.price}`,
-          previousPrice: product.previousPrice ? `$${product.previousPrice}` : '',
-          image: product.image
-        };
-        showProductDetail(productData);
+        // Prevent modal triggering when clicking the add-to-cart button
+        if (e.target.closest('.add-to-cart')) return;
+        openProductModal(product.id);
       });
     });
   }
-
-  // Helper: Determine which view is active by checking computed style
-  const getActiveItems = () => {
-    if (featuredSection && window.getComputedStyle(featuredSection).display !== 'none') {
-      // Carousel view: look for food items inside the featured section
-      return document.querySelectorAll('.featured-section .food-item');
-    } else {
-      // Grid view: use grid items
-      return document.querySelectorAll('.grid-item');
-    }
-  };
-
-  // ===== 5. Category Filter and Search Functionality - IMPROVED =====
+  
+  // ===== 3. View Toggle: Carousel to Grid and Back =====
+  const viewAllButton = document.querySelector('.view-all');
+  const featuredSection = document.querySelector('.featured-section');
+  const productGridContainer = document.getElementById('productGridContainer');
+  
+  // Helper: Extract products from carousel items for grid view.
+  function extractProductsFromCarousel() {
+    const foodItems = document.querySelectorAll('.food-item');
+    return Array.from(foodItems).map(item => ({
+      id: item.dataset.productId,
+      name: item.dataset.name,
+      description: item.dataset.description || '',
+      price: item.dataset.price,
+      previousPrice: item.dataset.previousPrice,
+      image: item.dataset.image,
+      status: item.querySelector('.discount-badge') ? 'Sale' : 'Regular',
+      category: item.dataset.category || 'featured',
+      hasVariations: item.dataset.hasVariations === "true",
+      priceS: item.dataset.priceS ? item.dataset.priceS : item.dataset.price,
+      priceM: item.dataset.priceM ? item.dataset.priceM : item.dataset.price,
+      priceL: item.dataset.priceL ? item.dataset.priceL : item.dataset.price,
+      priceF: item.dataset.priceF ? item.dataset.priceF : item.dataset.price
+    }));
+  }
+  
+  if (viewAllButton) {
+    viewAllButton.addEventListener('click', function() {
+      // Extract products from carousel and update the global products array.
+      const productsFromCarousel = extractProductsFromCarousel();
+      products = productsFromCarousel;
+      createGridView(productsFromCarousel);
+      
+      // Toggle view: hide carousel, show grid.
+      featuredSection.classList.add('fade-out');
+      setTimeout(() => {
+        featuredSection.style.display = 'none';
+        productGridContainer.style.display = 'block';
+        productGridContainer.classList.add('fade-in');
+        window.scrollTo(0, 0);
+        setTimeout(() => {
+          productGridContainer.classList.remove('fade-in');
+        }, 300);
+      }, 300);
+    });
+  }
+  
+  // Toggle back from grid to carousel view.
+  const backButton = document.querySelector('.back-to-carousel');
+  if (backButton) {
+    backButton.addEventListener('click', function() {
+      productGridContainer.classList.add('fade-out');
+      setTimeout(() => {
+        productGridContainer.style.display = 'none';
+        featuredSection.style.display = 'block';
+        featuredSection.classList.add('fade-in');
+        setTimeout(() => {
+          featuredSection.classList.remove('fade-in', 'fade-out');
+          productGridContainer.classList.remove('fade-out');
+        }, 300);
+      }, 300);
+    });
+  }
+  
+  // ===== 4. Category Filter and Search Functionality =====
   const categoryButtons = document.querySelectorAll('.category-btn');
   const searchInput = document.querySelector('.search-input');
   const searchDropdown = document.querySelector('.search-results-dropdown');
   const searchResultsContent = document.querySelector('.search-results-content');
-
-  // Special handling: Check if we're on restaurant ID 9 (no featured button)
+  
+  // Special handling for restaurant ID 9 (if applicable)
   const featuredButton = document.querySelector('[data-category="featured"]');
   const isRestaurantId9 = !featuredButton;
   let lastSelectedCategory = 'featured';
@@ -4748,63 +5186,60 @@ document.addEventListener('DOMContentLoaded', function() {
       lastSelectedCategory = activeButton.dataset.category.toLowerCase();
     }
   }
-
-  // Filter items based on category selection
+  
+  // Filter items based on category selection.
   function filterItemsByCategory(categoryName) {
-    const activeItems = getActiveItems();
+    const activeItems = featuredSection && featuredSection.style.display !== 'none'
+      ? document.querySelectorAll('.featured-section .food-item')
+      : document.querySelectorAll('.grid-item');
+      
     activeItems.forEach(item => {
       const itemCategory = (item.dataset.category || '').toLowerCase();
       if (isRestaurantId9) {
-        // For restaurant ID 9: only show exact matches
         item.style.display = (itemCategory === categoryName.toLowerCase()) ? '' : 'none';
       } else {
-        // For others: if 'featured', show all; otherwise match category
         item.style.display = (categoryName === 'featured' || itemCategory === categoryName.toLowerCase()) ? '' : 'none';
       }
     });
   }
-
-  // Category button click handler
+  
+  // Category button click handler.
   function handleCategoryClick(button) {
     categoryButtons.forEach(btn => btn.classList.remove('active'));
     button.classList.add('active');
     lastSelectedCategory = button.dataset.category.toLowerCase();
     filterItemsByCategory(lastSelectedCategory);
     
-    // Scroll the category button into view when selected
+    // Scroll the category button into view.
     button.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' });
     
     if (searchDropdown) searchDropdown.style.display = 'none';
     
-    // Update the indicator in the filter dropdown
+    // Update filter dropdown indicator.
     updateFilterDropdownIndicator(lastSelectedCategory);
   }
   
   categoryButtons.forEach(button => {
     button.addEventListener('click', () => handleCategoryClick(button));
   });
-
-  // Function to update the indicator in the filter dropdown
+  
+  // Update the indicator in the filter dropdown.
   function updateFilterDropdownIndicator(selectedCategory) {
     const dropdownItems = document.querySelectorAll('.filter-dropdown li');
     dropdownItems.forEach(li => {
       const categoryNameElement = li.querySelector('.category-name');
       const categoryName = categoryNameElement ? categoryNameElement.textContent.toLowerCase() : '';
       
-      // Remove existing active indicator
+      // Remove any active indicator.
       const existingIndicator = li.querySelector('.active-indicator');
       if (existingIndicator) {
         existingIndicator.remove();
       }
-      
-      // Reset styles
       li.style.backgroundColor = '';
       li.style.fontWeight = '';
       li.style.color = '';
       
-      // If this is the selected category, add the indicator and styles
       if (categoryName === selectedCategory) {
-        // Add active indicator
         const activeIndicator = document.createElement('span');
         activeIndicator.className = 'active-indicator';
         activeIndicator.innerHTML = '<i class="fas fa-check"></i>';
@@ -4814,32 +5249,26 @@ document.addEventListener('DOMContentLoaded', function() {
           font-size: 12px;
         `;
         li.appendChild(activeIndicator);
-        
-        // Update styles
         li.style.backgroundColor = 'rgba(70, 130, 255, 0.08)';
         li.style.fontWeight = '500';
         li.style.color = '#4682B4';
-        
-        // Scroll this item into view in the dropdown
         li.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
       }
       
-      // Update hover effects
       li.addEventListener('mouseover', () => {
-        li.style.backgroundColor = categoryName === selectedCategory ? 
+        li.style.backgroundColor = categoryName === selectedCategory ?
           'rgba(70, 130, 255, 0.12)' : 'rgba(0, 0, 0, 0.03)';
       });
       
       li.addEventListener('mouseout', () => {
-        li.style.backgroundColor = categoryName === selectedCategory ? 
+        li.style.backgroundColor = categoryName === selectedCategory ?
           'rgba(70, 130, 255, 0.08)' : '';
       });
     });
   }
-
-  // ===== 5.1. Filter Button Styling =====
+  
+  // ===== 5. Filter Dropdown for Categories =====
   const filterButton = document.querySelector('.filter-button');
-  // Apply enhanced filter button styling
   if (filterButton) {
     filterButton.style.cssText = `
       display: flex;
@@ -4855,17 +5284,12 @@ document.addEventListener('DOMContentLoaded', function() {
       border: none;
       cursor: pointer;
     `;
-
-    // Add active state with event listeners
     filterButton.addEventListener('mousedown', () => {
       filterButton.style.transform = 'scale(0.95)';
     });
-
     filterButton.addEventListener('mouseup', () => {
       filterButton.style.transform = '';
     });
-
-    // Style the icon if it exists
     const filterIcon = filterButton.querySelector('i');
     if (filterIcon) {
       filterIcon.style.cssText = `
@@ -4874,15 +5298,11 @@ document.addEventListener('DOMContentLoaded', function() {
       `;
     }
   }
-
-  // ===== 5.2. Filter Dropdown for Categories - IMPROVED =====
-  // First, remove any existing dropdown to prevent duplicates
+  
+  // Create filter dropdown.
   const existingDropdown = document.querySelector('.filter-dropdown');
-  if (existingDropdown) {
-    existingDropdown.remove();
-  }
-
-  // Create a dropdown container for filter options
+  if (existingDropdown) existingDropdown.remove();
+  
   const filterDropdown = document.createElement('div');
   filterDropdown.className = 'filter-dropdown';
   filterDropdown.style.cssText = `
@@ -4901,16 +5321,14 @@ document.addEventListener('DOMContentLoaded', function() {
     -webkit-backdrop-filter: blur(10px);
     transform-origin: top center;
   `;
-
-  // Create an unordered list to hold category options
+  
   const filterList = document.createElement('ul');
   filterList.style.cssText = `
     list-style: none;
     margin: 0;
     padding: 0;
   `;
-
-  // Add heading to the dropdown
+  
   const filterHeading = document.createElement('div');
   filterHeading.textContent = 'Filter by Category';
   filterHeading.style.cssText = `
@@ -4923,20 +5341,17 @@ document.addEventListener('DOMContentLoaded', function() {
     display: flex;
     align-items: center;
   `;
-
-  // Add filter icon to heading
-  const filterIcon = document.createElement('span');
-  filterIcon.innerHTML = '<i class="fas fa-sliders-h"></i>';
-  filterIcon.style.cssText = `
+  
+  const filterIconSpan = document.createElement('span');
+  filterIconSpan.innerHTML = '<i class="fas fa-sliders-h"></i>';
+  filterIconSpan.style.cssText = `
     margin-right: 8px;
     color: #4682B4;
     font-size: 14px;
   `;
-  filterHeading.prepend(filterIcon);
-
+  filterHeading.prepend(filterIconSpan);
   filterDropdown.appendChild(filterHeading);
-
-  // Populate the list using your category buttons
+  
   categoryButtons.forEach(button => {
     const li = document.createElement('li');
     const categoryName = button.dataset.category;
@@ -4959,36 +5374,20 @@ document.addEventListener('DOMContentLoaded', function() {
       position: relative;
       margin: 2px 6px;
       border-radius: 8px;
-      ${isActive ? 'background-color: rgba(70, 130, 255, 0.08);' : ''}
-      ${isActive ? 'font-weight: 500;' : ''}
-      ${isActive ? 'color: #4682B4;' : ''}
+      ${isActive ? 'background-color: rgba(70, 130, 255, 0.08); font-weight: 500; color: #4682B4;' : ''}
     `;
-    
-    // Add active indicator styling if this is the selected category
-    if (isActive) {
-      const activeIndicator = li.querySelector('.active-indicator');
-      if (activeIndicator) {
-        activeIndicator.style.cssText = `
-          margin-left: auto;
-          color: #4682B4;
-          font-size: 12px;
-        `;
-      }
-    }
     
     li.addEventListener('click', () => {
       const targetButton = Array.from(categoryButtons).find(
         btn => btn.dataset.category === categoryName
       );
-      
       if (targetButton) {
         handleCategoryClick(targetButton);
       }
-      
       filterDropdown.style.display = 'none';
       filterButton.classList.remove('active');
       
-      // Add ripple effect to the clicked item
+      // Ripple effect on click.
       const ripple = document.createElement('span');
       ripple.style.cssText = `
         position: absolute;
@@ -5018,8 +5417,7 @@ document.addEventListener('DOMContentLoaded', function() {
     filterList.appendChild(li);
   });
   filterDropdown.appendChild(filterList);
-
-  // Add a ripple animation keyframe if it doesn't exist
+  
   if (!document.querySelector('style#ripple-animation')) {
     const rippleStyle = document.createElement('style');
     rippleStyle.id = 'ripple-animation';
@@ -5037,73 +5435,53 @@ document.addEventListener('DOMContentLoaded', function() {
     `;
     document.head.appendChild(rippleStyle);
   }
-
-  // Append the dropdown to the body for better positioning
+  
   document.body.appendChild(filterDropdown);
-
-  // Function to position the dropdown based on filter button location
+  
+  // Position the dropdown relative to the filter button.
   function positionDropdown() {
     if (!filterButton) return;
-    
     const buttonRect = filterButton.getBoundingClientRect();
-    
-    // Position dropdown below the button
     filterDropdown.style.top = `${buttonRect.bottom + window.scrollY + 10}px`;
     filterDropdown.style.left = `${buttonRect.left + window.scrollX - 5}px`;
-    
-    // Adjust if overflowing right edge of viewport
-    const dropdownWidth = 200; // Width of the dropdown
+    const dropdownWidth = 200;
     if (buttonRect.left + dropdownWidth > window.innerWidth) {
       filterDropdown.style.left = `${buttonRect.right + window.scrollX - dropdownWidth + 5}px`;
     }
   }
-
-  // Toggle dropdown visibility with improved animation and positioning
+  
   if (filterButton) {
     filterButton.addEventListener('click', (e) => {
       e.stopPropagation();
-      
-      if (filterDropdown.style.display === 'none') {
-        // Position the dropdown before showing
+      if (filterDropdown.style.display === 'none' || filterDropdown.style.display === '') {
         positionDropdown();
-        
-        // Show with animation
         filterDropdown.style.display = 'block';
         filterDropdown.style.opacity = '0';
         filterDropdown.style.transform = 'translateY(-10px) scale(0.98)';
-        
         setTimeout(() => {
           filterDropdown.style.transition = 'opacity 0.25s cubic-bezier(0.4, 0, 0.2, 1), transform 0.25s cubic-bezier(0.4, 0, 0.2, 1)';
           filterDropdown.style.opacity = '1';
           filterDropdown.style.transform = 'translateY(0) scale(1)';
         }, 10);
-        
-        // Add active class to filter button
         filterButton.classList.add('active');
       } else {
-        // Hide with animation
         filterDropdown.style.opacity = '0';
         filterDropdown.style.transform = 'translateY(-10px) scale(0.98)';
-        
         setTimeout(() => {
           filterDropdown.style.display = 'none';
           filterDropdown.style.transition = '';
         }, 250);
-        
-        // Remove active class from filter button
         filterButton.classList.remove('active');
       }
     });
   }
-
-  // Update dropdown position on window resize
+  
   window.addEventListener('resize', () => {
     if (filterDropdown.style.display !== 'none') {
       positionDropdown();
     }
   });
-
-  // Hide the filter dropdown when clicking outside of it
+  
   document.addEventListener('click', (e) => {
     if (filterButton && !filterButton.contains(e.target) && !filterDropdown.contains(e.target)) {
       filterDropdown.style.display = 'none';
@@ -5111,8 +5489,8 @@ document.addEventListener('DOMContentLoaded', function() {
       filterButton.classList.remove('active');
     }
   });
-
-  // ===== 5.3. Helper: Create search result item element - IMPROVED =====
+  
+  // ===== 6. Search Functionality =====
   function createSearchResultItem(item) {
     const name = item.dataset.name || '';
     const category = item.dataset.category || '';
@@ -5126,39 +5504,28 @@ document.addEventListener('DOMContentLoaded', function() {
         <div class="search-result-category">${category}</div>
       </div>
     `;
-    
-    // When clicked, check if the product category is different from the active category.
-    // If so, trigger a category switch before scrolling to and highlighting the item.
     div.addEventListener('click', () => {
       const searchCategory = category.toLowerCase();
       if (searchCategory !== lastSelectedCategory) {
-        // Find the button that matches the search result's category
         const targetButton = Array.from(categoryButtons).find(
           btn => (btn.dataset.category || '').toLowerCase() === searchCategory
         );
         if (targetButton) {
-          // Switch to the new category and make sure it's visible
           handleCategoryClick(targetButton);
         }
       }
-      
-      // Scroll to the item and highlight it
       setTimeout(() => {
         item.scrollIntoView({ behavior: 'smooth', block: 'center' });
-        // Add highlighting effect
         item.style.transition = 'transform 0.3s ease';
         item.style.transform = 'scale(1.02)';
         setTimeout(() => { item.style.transform = ''; }, 300);
       }, 100);
-      
       if (searchDropdown) searchDropdown.style.display = 'none';
       if (searchInput) searchInput.value = '';
     });
-    
     return div;
   }
-
-  // ===== 5.4. Search Functionality - IMPROVED =====
+  
   if (searchInput && searchDropdown && searchResultsContent) {
     searchInput.addEventListener('input', function(e) {
       const searchTerm = e.target.value.toLowerCase().trim();
@@ -5170,7 +5537,9 @@ document.addEventListener('DOMContentLoaded', function() {
       
       searchResultsContent.innerHTML = '';
       let matches = 0;
-      const activeItems = getActiveItems();
+      const activeItems = featuredSection && featuredSection.style.display !== 'none'
+        ? document.querySelectorAll('.featured-section .food-item')
+        : document.querySelectorAll('.grid-item');
       
       activeItems.forEach(item => {
         const name = (item.dataset.name || '').toLowerCase();
@@ -5188,14 +5557,13 @@ document.addEventListener('DOMContentLoaded', function() {
       searchDropdown.style.display = 'block';
     });
     
-    // Hide the search dropdown when clicking outside
     document.addEventListener('click', function(e) {
       if (!searchInput.contains(e.target) && !searchDropdown.contains(e.target)) {
         searchDropdown.style.display = 'none';
       }
     });
   }
-
+  
   // ===== 6. Toggle from Carousel to Grid View =====
   if (viewAllButton) {
     viewAllButton.addEventListener('click', function() {
@@ -5253,27 +5621,7 @@ document.addEventListener('DOMContentLoaded', function() {
     });
   }
   
-  // ===== 8. Handle Add-to-Cart for Grid Items =====
-  productGrid.addEventListener('click', function(e) {
-    if (e.target.closest('.add-to-cart')) {
-      const button = e.target.closest('.add-to-cart');
-      const productId = button.dataset.productId;
-      const productName = button.dataset.name;
-      const productPrice = button.dataset.price;
-      
-      if (typeof addToCart === 'function') {
-        addToCart(productId, productName, productPrice);
-      } else {
-        console.log('Adding to cart:', productName);
-        button.classList.add('added');
-        setTimeout(() => {
-          button.classList.remove('added');
-        }, 300);
-      }
-    }
-  });
-
-  // ===== 9. Initialization: Set Default Category Filtering - IMPROVED =====
+  // ===== 7. Initialization: Set Default Category Filtering =====
   if (!isRestaurantId9 && featuredButton) {
     categoryButtons.forEach(btn => btn.classList.remove('active'));
     featuredButton.classList.add('active');
@@ -5283,20 +5631,41 @@ document.addEventListener('DOMContentLoaded', function() {
     if (activeButton) {
       lastSelectedCategory = activeButton.dataset.category.toLowerCase();
       filterItemsByCategory(lastSelectedCategory);
-      
-      // Make sure active button is visible initially
       setTimeout(() => {
         activeButton.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' });
       }, 100);
     }
   }
   
-  // Initialize the filter dropdown indicator
   setTimeout(() => {
     updateFilterDropdownIndicator(lastSelectedCategory);
   }, 200);
 });
+  
+// ===== 8. Handle Add-to-Cart for Grid Items =====
+productGrid.addEventListener('click', function(e) {
+  if (e.target.closest('.add-to-cart')) {
+    const button = e.target.closest('.add-to-cart');
+    const productId = button.dataset.productId;
+    const productName = button.dataset.name;
+    const productPrice = button.dataset.price;
+    
+    if (typeof addToCart === 'function') {
+      addToCart(productId, productName, productPrice);
+    } else {
+      console.log('Adding to cart:', productName);
+      button.classList.add('added');
+      setTimeout(() => {
+        button.classList.remove('added');
+      }, 300);
+    }
+  }
+});
 </script>
+
+
+
+
 
 
 <script>
@@ -5498,6 +5867,7 @@ function closeNotification() {
 
 
 </script>
+
 
 
 

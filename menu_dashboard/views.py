@@ -134,20 +134,19 @@ from django.utils.timezone import now
 
 def restaurant_menu(request, restaurant_name_slug, hashed_slug):
     restaurant = get_object_or_404(Restaurant, hashed_slug=hashed_slug)
+    
     # Capture user details
     ip_address = request.META.get('REMOTE_ADDR')
     user_agent_str = request.META.get('HTTP_USER_AGENT', '')
-
-    # Use django-user-agents to get a parsed user agent
     parsed_user_agent = request.user_agent
     device = parsed_user_agent.device.family if parsed_user_agent and hasattr(parsed_user_agent, 'device') else "Unknown Device"
-
+    
     # Log visit including device info
     MenuVisit.objects.create(
         restaurant=restaurant,
         ip_address=ip_address,
         user_agent=user_agent_str,
-        device=device  # This assumes you've added this field to MenuVisit
+        device=device
     )
     
     # Get categories in order
@@ -156,12 +155,37 @@ def restaurant_menu(request, restaurant_name_slug, hashed_slug):
     
     for category in categories:
         category_products = Product.objects.filter(restaurant=restaurant, category=category)
+        for product in category_products:
+            # Check if the product truly has variations in the database
+            if product.variations.exists():
+                product.variations_list = product.variations.all()
+                default_variation = product.variations.filter(name='S').first() or product.variations.first()
+                if default_variation:
+                    product.display_price = default_variation.price
+                else:
+                    product.display_price = product.price
+            else:
+                product.variations_list = None
+                product.display_price = product.price
         if category_products.exists():
             categorized_products.append(list(category_products))
     
+    # Handle uncategorized products with the same variation logic
     uncategorized_products = Product.objects.filter(restaurant=restaurant, category__isnull=True)
+    for product in uncategorized_products:
+        if product.variations.exists():
+            product.variations_list = product.variations.all()
+            default_variation = product.variations.filter(name='S').first() or product.variations.first()
+            if default_variation:
+                product.display_price = default_variation.price
+            else:
+                product.display_price = product.price
+        else:
+            product.variations_list = None
+            product.display_price = product.price
     if uncategorized_products.exists():
         categorized_products.append(list(uncategorized_products))
+    
     if not categorized_products:
         categorized_products = [[]]
     
@@ -169,6 +193,7 @@ def restaurant_menu(request, restaurant_name_slug, hashed_slug):
         customer, created = Customer.objects.get_or_create(user=request.user)
         customer.assign_restaurant(restaurant)
     
+    # Brand color handling
     brand_colors = restaurant.brand_colors.all()
     primary_brand_color = brand_colors.first().color if brand_colors.exists() else "#f7c028"
     secondary_brand_color = brand_colors[1].color if brand_colors.count() >= 2 else "#000000"
@@ -188,6 +213,7 @@ def restaurant_menu(request, restaurant_name_slug, hashed_slug):
         messages.info(request, "To place an order, please log in or continue as a guest.")
     
     return render(request, 'menu_dashboard/index.html', context)
+
 
 
 

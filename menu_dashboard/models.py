@@ -14,6 +14,7 @@ import hashlib
 from django.utils.timezone import now
 from django.conf import settings
 
+
 from datetime import datetime
 
 class Restaurant(models.Model):
@@ -178,8 +179,8 @@ class Product(models.Model):
     promo_start_date = models.DateField(null=True, blank=True)
     promo_end_date = models.DateField(null=True, blank=True)
     promo_discription = models.CharField(max_length=200, null=True, blank=True)
-    has_variations = models.BooleanField(default=False)  # New field
-    
+    has_variations = models.BooleanField(default=False)
+
     class Meta:
         indexes = [
             models.Index(fields=['restaurant', 'category', 'status']),
@@ -189,29 +190,51 @@ class Product(models.Model):
         return self.name or "No Name"
     
     def save(self, *args, **kwargs):
-        if not self.restaurant_id:
-            if self.user.groups.filter(name='Restaurant').exists():
-                restaurant = self.user.restaurant
-                self.restaurant = restaurant
+        # Save the instance first to ensure it has a primary key
         super().save(*args, **kwargs)
-        cache.delete(f'product_{self.id}')  # Invalidate cache on save
-    
-    @classmethod
-    def get_product(cls, product_id):
-        cache_key = f'product_{product_id}'
-        product = cache.get(cache_key)
-        if product is None:
-            product = cls.objects.select_related('restaurant').get(id=product_id)
-            cache.set(cache_key, product, timeout=3600)  # Cache for 1 hour
-        return product
 
+        # Now check variations
+        if self.variations.exists():
+            self.has_variations = True
+            super().save(update_fields=['has_variations'])  # Save only this field to avoid recursion
+
+        # Invalidate cache
+        cache.delete(f'product_{self.id}')
+
+    
+    def get_default_price(self, size="S"):
+        """
+        Returns the price for the specified variation size if available.
+        If the product has variations and a variation with the provided size exists,
+        its price is returned. Otherwise, the base product price is returned.
+        """
+        if self.has_variations:
+            variation = self.variations.filter(name=size).first()
+            if variation:
+                return variation.price
+        return self.price
+    
+    def get_all_variations(self):
+        """
+        Returns a dictionary of all variations with their prices.
+        """
+        return {
+            variation.name: {
+                'price': variation.price,
+                'is_default': variation.is_default,
+                'has_promo': variation.has_promo,
+                'promo_price': variation.promo_price
+            }
+            for variation in self.variations.all()
+        }
 
 class ProductVariation(models.Model):
-    """Model for storing different size/format variations of a product (e.g., shot vs bottle)"""
+    """Model for storing different size/format variations of a product"""
     product = models.ForeignKey(Product, on_delete=models.CASCADE, related_name='variations')
-    name = models.CharField(max_length=50, help_text="E.g., 'Shot', 'Bottle', 'Small', 'Large'")
+    name = models.CharField(max_length=50, help_text="E.g., 'S', 'M', 'L', 'F")
     price = models.DecimalField(max_digits=8, decimal_places=2)
     is_default = models.BooleanField(default=False, help_text="Is this the default variation?")
+    
     # Promo fields for variations
     has_promo = models.BooleanField(default=False)
     promo_price = models.DecimalField(max_digits=8, decimal_places=2, null=True, blank=True)
@@ -231,11 +254,11 @@ class ProductVariation(models.Model):
                 is_default=True
             ).exclude(id=self.id).update(is_default=False)
         
-        # If this is the first variation for a product, set has_variations on the product
-        if not self.pk and not self.product.has_variations:
+        # Ensure product has_variations is set
+        if not self.product.has_variations:
             self.product.has_variations = True
             self.product.save(update_fields=['has_variations'])
-            
+        
         super().save(*args, **kwargs)
 
 
