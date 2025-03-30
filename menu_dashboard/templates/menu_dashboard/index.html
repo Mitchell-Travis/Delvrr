@@ -3576,6 +3576,7 @@ input:checked + .slider:before {
   </div>
 </div> -->
 
+<!-- Featured Items Section (Sample) -->
 {% load product_extras %}
 
 <div class="main-content" id="menuContent">
@@ -3598,24 +3599,31 @@ input:checked + .slider:before {
                {% if product.previous_price %}
                  data-previous-price="{{ product.previous_price }}"
                {% endif %}
-
+               
                {% if product.variations_list %}
                  {% with default_price=product.variations_list|get_default_price:"S" %}
-                   {% with percentage_price=product.price|calculate_percentage:product.discount_percentage %}
-                     data-price="{{ percentage_price|default:default_price|default:product.price }}"
-                   {% endwith %}
+                   data-price="{% if default_price %}{{ default_price }}{% else %}{{ product.price }}{% endif %}"
                  {% endwith %}
                  
                  {# Output variation prices for S, M, L, F #}
                  {% for variation in product.variations_list %}
-                   {% with percentage_price=variation.price|calculate_percentage:variation.discount_percentage %}
-                     data-price-{{ variation.name|lower }}="{{ percentage_price|default:variation.price }}"
-                   {% endwith %}
+                   {% if variation.name == "S" %}
+                     data-price-s="{{ variation.price }}"
+                   {% elif variation.name == "M" %}
+                     data-price-m="{{ variation.price }}"
+                   {% elif variation.name == "L" %}
+                     data-price-l="{{ variation.price }}"
+                   {% elif variation.name == "F" %}
+                     data-price-f="{{ variation.price }}"
+                   {% endif %}
                  {% endfor %}
                {% else %}
-                 {% with percentage_price=product.price|calculate_percentage:product.discount_percentage %}
-                   data-price="{{ percentage_price|default:product.price }}"
-                 {% endwith %}
+                 {# No variations, use base price #}
+                 data-price="{{ product.price }}"
+                 data-price-s="{{ product.price }}"
+                 data-price-m="{{ product.price }}"
+                 data-price-l="{{ product.price }}"
+                 data-price-f="{{ product.price }}"
                {% endif %}
           >
             <div class="food-image-container">
@@ -3638,9 +3646,13 @@ input:checked + .slider:before {
               <div class="price-row">
                 <div class="price">
                   <span class="display-price">
-                    {% with percentage_price=product.price|calculate_percentage:product.discount_percentage %}
-                      ${{ percentage_price|default:product.price }}
-                    {% endwith %}
+                    {% if product.variations_list %}
+                      {% with default_price=product.variations_list|get_default_price:"S" %}
+                        ${{ default_price|default:product.price }}
+                      {% endwith %}
+                    {% else %}
+                      ${{ product.price }}
+                    {% endif %}
                   </span>
                   {% if product.previous_price %}
                     <span class="previous-price" style="text-decoration:line-through; font-size:12px; color:var(--text-secondary); margin-left:4px;">
@@ -3652,9 +3664,7 @@ input:checked + .slider:before {
                   <button class="add-to-cart"
                           data-product-id="{{ product.id }}"
                           data-name="{{ product.name }}"
-                          {% with percentage_price=product.price|calculate_percentage:product.discount_percentage %}
-                            data-price="{{ percentage_price|default:product.price }}"
-                          {% endwith %}
+                          data-price="{% if product.variations_list %}{% with default_price=product.variations_list|get_default_price:"S" %}{% if default_price %}{{ default_price }}{% else %}{{ product.price }}{% endif %}{% endwith %}{% else %}{{ product.price }}{% endif %}"
                           data-image="{{ product.product_image.url }}">
                     <i class="fas fa-shopping-cart"></i>
                   </button>
@@ -3667,7 +3677,6 @@ input:checked + .slider:before {
     </div>
   </div>
 </div>
-
 
 
 
@@ -3877,10 +3886,13 @@ input:checked + .slider:before {
               <span id="detailProductOldPrice" class="old-price text-decoration-line-through">$0</span>
             </div>
             <!-- GST note -->
-            <div class="gst-note">
-              <small>10% GST will be added</small>
-            </div>
-          </div>
+           <!-- GST note -->
+{% if product.charge_gst %}
+    <div class="gst-note">
+        <small>10% GST will be added</small>
+    </div>
+{% endif %}
+
           
           <div class="controls-container">
             <!-- Size Selection (Hidden by Default) -->
@@ -4551,23 +4563,6 @@ document.addEventListener('DOMContentLoaded', function() {
     const modalOldPrice = document.getElementById('detailProductOldPrice');
     const quantityDisplay = document.getElementById('quantityDisplay');
     
-    // Prevent zooming on touch devices
-    document.addEventListener('touchstart', function(event) {
-        if (event.touches.length > 1) {
-            event.preventDefault();
-        }
-    }, { passive: false });
-    
-    // Prevent double-tap zoom
-    let lastTouchEnd = 0;
-    document.addEventListener('touchend', function(event) {
-        const now = Date.now();
-        if (now - lastTouchEnd <= 300) {
-            event.preventDefault();
-        }
-        lastTouchEnd = now;
-    }, { passive: false });
-    
     // Quantity control
     const decrementBtn = document.getElementById('decrement');
     const incrementBtn = document.getElementById('increment');
@@ -4579,13 +4574,13 @@ document.addEventListener('DOMContentLoaded', function() {
             quantityDisplay.textContent = quantity;
         }
     });
-    
     incrementBtn.addEventListener('click', () => {
         quantity++;
         quantityDisplay.textContent = quantity;
     });
     
     // Initially hide size selection
+    sizeSelection.classList.add('d-none');
     sizeSelection.style.display = 'none';
     
     // Function to open modal with product data
@@ -4631,6 +4626,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
         // Show or hide size selection based on variations
         if (hasVariations) {
+            sizeSelection.classList.remove('d-none');
             sizeSelection.style.display = 'flex';
 
             sizeButtons.forEach(button => {
@@ -4648,6 +4644,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 }
             });
         } else {
+            sizeSelection.classList.add('d-none');
             sizeSelection.style.display = 'none';
         }
     }
