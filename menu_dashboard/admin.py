@@ -86,21 +86,38 @@ admin.site.register(Restaurant, RestaurantAdmin)
 
 
 # First, define the inline class
+# Inline for Product Variations
 class ProductVariationInline(admin.TabularInline):
     model = ProductVariation
     extra = 1
-
-# Then use it in your ProductAdmin class
+    fields = ('name', 'price', 'discount_percentage', 'is_default', 'has_promo', 'promo_price')
+    
 @admin.register(Product)
 class ProductAdmin(admin.ModelAdmin):
-    list_display = ('name', 'restaurant', 'category', 'price')
-    list_filter = ('restaurant', 'category')
+    list_display = (
+        'name', 
+        'restaurant', 
+        'category', 
+        'price', 
+        'get_display_price', 
+        'display_image'
+    )
+    list_filter = ('restaurant', 'category', 'price_by_percentage')
     search_fields = ('name', 'description', 'restaurant__restaurant_name')
     ordering = ('restaurant', 'category', 'name')
     
     fieldsets = (
         (None, {
-            'fields': ('restaurant', 'category', 'name', 'description', 'price')
+            'fields': (
+                'restaurant', 
+                'category', 
+                'name', 
+                'description', 
+                'price', 
+                'price_by_percentage', 
+                'discount_percentage', 
+                'special_offer'
+            )
         }),
         ('Options', {
             'fields': ('has_variations', 'product_image') if hasattr(Product, 'product_image') else ('has_variations',)
@@ -116,16 +133,15 @@ class ProductAdmin(admin.ModelAdmin):
         return form
     
     def display_image(self, obj):
-        if hasattr(obj, 'image') and obj.product_image:
+        if obj.product_image:
             return format_html('<img src="{}" width="50" height="50" />', obj.product_image.url)
         return "No Image"
     display_image.short_description = 'Image'
-
-
-
+    
+@admin.register(ProductVariation)
 class ProductVariationAdmin(admin.ModelAdmin):
-    list_display = ('product', 'name', 'price')
-admin.site.register(ProductVariation, ProductVariationAdmin)
+    list_display = ('product', 'name', 'price', 'discount_percentage', 'get_discounted_price')
+
 
 
 class CategoryAdmin(admin.ModelAdmin):

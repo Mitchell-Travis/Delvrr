@@ -2988,153 +2988,252 @@ input:checked + .slider:before {
 </style>
 
 <style>
-        :root {
-            --primary-bg: #f8f9fa;
-            --accent-color: #ff6b6b;
-            --text-color: #2c3e50;
-            --transition-speed: 0.4s;
-        }
+    :root {
+      --primary-bg: #f8f9fa;
+      --accent-color: #ff6b6b;
+      --text-color: #2c3e50;
+      --transition-speed: 0.4s;
+    }
 
-        .product-modal {
-            max-width: 420px;
-            border-radius: 15px;
-            overflow: hidden;
-            box-shadow: 0 15px 30px rgba(0,0,0,0.08);
-            background: linear-gradient(to bottom right, #ffffff, var(--primary-bg));
-        }
+    body {
+      touch-action: manipulation;
+      font-family: system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+    }
 
-        .product-image-wrapper {
-            position: relative;
-            height: 300px;
-            background-color: #f1f3f5;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            overflow: hidden;
-        }
+    .product-modal {
+      max-width: 380px;
+      border-radius: 12px;
+      overflow: hidden;
+      box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+      background: var(--primary-bg);
+      border: none;
+    }
 
-        .product-image {
-            max-width: 90%;
-            max-height: 90%;
-            transition: transform 0.3s ease;
-        }
+    .modal-header {
+      position: absolute;
+      top: 8px;
+      right: 8px;
+      z-index: 10;
+      padding: 0;
+      border: none;
+      background: transparent;
+    }
 
-        .product-details {
-            padding: 15px;
-        }
+    .close-btn {
+      background-color: rgba(255, 255, 255, 0.8);
+      border: none;
+      border-radius: 50%;
+      width: 32px;
+      height: 32px;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      font-size: 1rem;
+      box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+      transition: all 0.2s ease;
+      color: var(--text-color);
+    }
 
-        .product-name {
-            font-size: 1.3rem;
-            margin-bottom: 0.3rem;
-        }
+    .close-btn:hover {
+      background-color: var(--accent-color);
+      color: white;
+    }
 
-        .nav-btn {
-            position: absolute;
-            top: 50%;
-            transform: translateY(-50%);
-            background: rgba(255,255,255,0.8);
-            border: none;
-            width: 40px;
-            height: 40px;
-            border-radius: 50%;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            transition: all 0.3s ease;
-            z-index: 10;
-            font-size: 1.5rem;
-        }
+    .product-image-wrapper {
+      position: relative;
+      height: 240px;
+      background-color: #f1f3f5;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      overflow: hidden;
+    }
 
-        .nav-btn:hover {
-            background: var(--accent-color);
-            color: white;
-            transform: translateY(-50%) scale(1.1);
-        }
+    .product-image {
+      max-width: 90%;
+      max-height: 90%;
+      transition: transform 0.3s ease;
+      object-fit: contain;
+    }
 
-        .nav-prev {
-            left: 5px;
-        }
+    .nav-btn {
+      position: absolute;
+      top: 50%;
+      transform: translateY(-50%);
+      background: rgba(255,255,255,0.8);
+      border: none;
+      width: 36px;
+      height: 36px;
+      border-radius: 50%;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      transition: all var(--transition-speed);
+      z-index: 10;
+      font-size: 1.2rem;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    }
 
-        .nav-next {
-            right: 5px;
-        }
+    .nav-btn:hover, .nav-btn:active {
+      background: var(--accent-color);
+      color: white;
+    }
 
-        .rating {
-            font-size: 0.85rem;
-            margin-bottom: 8px;
-        }
+    .nav-prev {
+      left: 8px;
+    }
 
-        .pricing {
-            margin-bottom: 12px;
-        }
+    .nav-next {
+      right: 8px;
+    }
 
-        .current-price {
-            font-size: 1.2rem;
-        }
+    .product-details {
+      padding: 15px 12px;
+    }
 
-        .old-price {
-            font-size: 0.9rem;
-        }
+    .product-info-container {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 8px;
+    }
 
-        .size-selection {
-            margin-bottom: 12px;
-        }
+    .product-name {
+      font-size: 1.2rem;
+      margin: 0;
+      font-weight: 600;
+      color: var(--text-color);
+    }
 
-        .size-btn {
-            width: 35px;
-            height: 35px;
-            padding: 0;
-            display: inline-flex;
-            justify-content: center;
-            align-items: center;
-            background-color: #e9ecef;
-            border: 2px solid transparent;
-            transition: all 0.3s ease;
-        }
+    .rating {
+      display: inline-flex;
+      align-items: center;
+      
+      padding: 3px 8px;
+      border-radius: 20px;
+      font-weight: 500;
+      font-size: 0.75rem;
+    }
 
-        .size-btn.active {
-            background-color: var(--accent-color);
-            color: white;
-            transform: scale(1.1);
-        }
+    .rating i {
+      color: #ffc107;
+      margin-right: 3px;
+    }
 
-        .quantity-control {
-            background-color: #f1f3f5;
-            border-radius: 20px;
-            padding: 5px;
-        }
+    .pricing {
+      margin: 5px 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+    }
 
-        .quantity-control .btn {
-            padding: 3px 10px;
-            font-size: 1rem;
-        }
+    .current-price {
+      font-size: 1.1rem;
+      font-weight: 600;
+      color: var(--accent-color);
+    }
 
-        .modal-header {
-            padding: 10px;
-            background-color: transparent;
-            border-bottom: none;
-        }
+    .old-price {
+      font-size: 0.85rem;
+      color: #6c757d;
+    }
 
-        .close-btn {
-            background-color: #f8f9fa;
-            border: none;
-            border-radius: 50%;
-            width: 30px;
-            height: 30px;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            font-size: 1rem;
-            transition: background-color 0.3s ease;
-        }
+    .gst-note {
+      font-size: 0.7rem;
+      color: #6c757d;
+      margin-bottom: 8px;
+    }
 
-        .close-btn:hover {
-            background-color: var(--accent-color);
-            color: white;
-        }
+    .controls-container {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      align-items: center;
+    }
 
+    .size-selection {
+      display: flex;
+      justify-content: center;
+      gap: 6px;
+    }
 
-    </style>
+    .size-btn {
+      width: 32px;
+      height: 32px;
+      border-radius: 50%;
+      padding: 0;
+      background-color: #e9ecef;
+      border: none;
+      color: var(--text-color);
+      font-weight: 500;
+      font-size: 0.85rem;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      transition: all 0.2s ease;
+    }
+
+    .size-btn:hover {
+      background-color: #dee2e6;
+    }
+
+    .size-btn.active {
+      background-color: var(--accent-color);
+      color: white;
+      transform: scale(1.05);
+    }
+
+    .quantity-control {
+      display: inline-flex;
+      align-items: center;
+      background-color: #f1f3f5;
+      border-radius: 20px;
+      padding: 3px 8px;
+    }
+
+    .quantity-control .btn {
+      width: 24px;
+      height: 24px;
+      border-radius: 50%;
+      padding: 0;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      background-color: white;
+      border: none;
+      font-size: 1rem;
+      color: var(--text-color);
+      transition: all 0.2s ease;
+      box-shadow: 0 1px 2px rgba(0,0,0,0.1);
+    }
+
+    .quantity-control .btn:hover {
+      background-color: var(--accent-color);
+      color: white;
+    }
+
+    #quantityDisplay {
+      margin: 0 8px;
+      font-weight: 500;
+      font-size: 0.9rem;
+    }
+
+    /* Animation for modal */
+    @keyframes modalFadeIn {
+      from { opacity: 0; transform: scale(0.95); }
+      to { opacity: 1; transform: scale(1); }
+    }
+
+    .modal.show .modal-content {
+      animation: modalFadeIn 0.2s ease forwards;
+    }
+
+    /* Fix for touch interactions */
+    button {
+      touch-action: manipulation;
+    }
+  </style>
  
 
 
@@ -3477,8 +3576,6 @@ input:checked + .slider:before {
   </div>
 </div> -->
 
-<!-- Featured Items Section (Sample) -->
-
 {% load product_extras %}
 
 <div class="main-content" id="menuContent">
@@ -3501,31 +3598,24 @@ input:checked + .slider:before {
                {% if product.previous_price %}
                  data-previous-price="{{ product.previous_price }}"
                {% endif %}
-               
+
                {% if product.variations_list %}
                  {% with default_price=product.variations_list|get_default_price:"S" %}
-                   data-price="{% if default_price %}{{ default_price }}{% else %}{{ product.price }}{% endif %}"
+                   {% with percentage_price=product.price|calculate_percentage:product.discount_percentage %}
+                     data-price="{{ percentage_price|default:default_price|default:product.price }}"
+                   {% endwith %}
                  {% endwith %}
                  
                  {# Output variation prices for S, M, L, F #}
                  {% for variation in product.variations_list %}
-                   {% if variation.name == "S" %}
-                     data-price-s="{{ variation.price }}"
-                   {% elif variation.name == "M" %}
-                     data-price-m="{{ variation.price }}"
-                   {% elif variation.name == "L" %}
-                     data-price-l="{{ variation.price }}"
-                   {% elif variation.name == "F" %}
-                     data-price-f="{{ variation.price }}"
-                   {% endif %}
+                   {% with percentage_price=variation.price|calculate_percentage:variation.discount_percentage %}
+                     data-price-{{ variation.name|lower }}="{{ percentage_price|default:variation.price }}"
+                   {% endwith %}
                  {% endfor %}
                {% else %}
-                 {# No variations, use base price #}
-                 data-price="{{ product.price }}"
-                 data-price-s="{{ product.price }}"
-                 data-price-m="{{ product.price }}"
-                 data-price-l="{{ product.price }}"
-                 data-price-f="{{ product.price }}"
+                 {% with percentage_price=product.price|calculate_percentage:product.discount_percentage %}
+                   data-price="{{ percentage_price|default:product.price }}"
+                 {% endwith %}
                {% endif %}
           >
             <div class="food-image-container">
@@ -3548,13 +3638,9 @@ input:checked + .slider:before {
               <div class="price-row">
                 <div class="price">
                   <span class="display-price">
-                    {% if product.variations_list %}
-                      {% with default_price=product.variations_list|get_default_price:"S" %}
-                        ${{ default_price|default:product.price }}
-                      {% endwith %}
-                    {% else %}
-                      ${{ product.price }}
-                    {% endif %}
+                    {% with percentage_price=product.price|calculate_percentage:product.discount_percentage %}
+                      ${{ percentage_price|default:product.price }}
+                    {% endwith %}
                   </span>
                   {% if product.previous_price %}
                     <span class="previous-price" style="text-decoration:line-through; font-size:12px; color:var(--text-secondary); margin-left:4px;">
@@ -3566,7 +3652,9 @@ input:checked + .slider:before {
                   <button class="add-to-cart"
                           data-product-id="{{ product.id }}"
                           data-name="{{ product.name }}"
-                          data-price="{% if product.variations_list %}{% with default_price=product.variations_list|get_default_price:"S" %}{% if default_price %}{{ default_price }}{% else %}{{ product.price }}{% endif %}{% endwith %}{% else %}{{ product.price }}{% endif %}"
+                          {% with percentage_price=product.price|calculate_percentage:product.discount_percentage %}
+                            data-price="{{ percentage_price|default:product.price }}"
+                          {% endwith %}
                           data-image="{{ product.product_image.url }}">
                     <i class="fas fa-shopping-cart"></i>
                   </button>
@@ -3579,6 +3667,9 @@ input:checked + .slider:before {
     </div>
   </div>
 </div>
+
+
+
 
 
 
@@ -3760,46 +3851,57 @@ input:checked + .slider:before {
     <div class="modal-content product-modal">
       <header class="modal-header">
         <button type="button" class="close-btn" data-bs-dismiss="modal" aria-label="Close">
-          <span aria-hidden="true">&times;</span>
+          <i class="fas fa-times"></i>
         </button>
       </header>
       <section class="modal-body p-0">
         <div class="product-image-wrapper">
           <img id="detailProductImage" src="/api/placeholder/400/400" alt="Product Image" class="product-image">
           <!-- Navigation Buttons -->
-          <button id="prevProduct" class="nav-btn nav-prev" aria-label="Previous Product">&lsaquo;</button>
-          <button id="nextProduct" class="nav-btn nav-next" aria-label="Next Product">&rsaquo;</button>
+          <button id="prevProduct" class="nav-btn nav-prev" aria-label="Previous Product">
+            <i class="fas fa-chevron-left"></i>
+          </button>
+          <button id="nextProduct" class="nav-btn nav-next" aria-label="Next Product">
+            <i class="fas fa-chevron-right"></i>
+          </button>
         </div>
         <div class="product-details text-center">
-          <h2 id="detailProductName" class="product-name">Product Name</h2>
-          <div class="rating d-inline-flex align-items-center mb-2 p-1 rounded">
-            <i class="fas fa-star text-warning me-1"></i>
-            <span>4.5</span>
+          <div class="product-info-container">
+            <h2 id="detailProductName" class="product-name">Product Name</h2>
+            <div class="rating">
+              <i class="fas fa-star"></i>
+              <span>4.5</span>
+            </div>
+            <div class="pricing">
+              <span id="detailProductPrice" class="current-price">$0</span>
+              <span id="detailProductOldPrice" class="old-price text-decoration-line-through">$0</span>
+            </div>
+            <!-- GST note -->
+            <div class="gst-note">
+              <small>10% GST will be added</small>
+            </div>
           </div>
-          <div class="pricing mb-3">
-            <span id="detailProductPrice" class="current-price text-danger me-2">$0</span>
-            <span id="detailProductOldPrice" class="old-price text-muted text-decoration-line-through">$0</span>
-          </div>
-
-          <!-- Size Selection (Hidden by Default) -->
-
-          <div id="sizeSelectionContainer" class="size-selection d-flex justify-content-center mb-3" style="display: none;">
-            <button type="button" class="size-btn btn mx-1" data-size="S">S</button>
-            <button type="button" class="size-btn btn mx-1" data-size="M">M</button>
-            <button type="button" class="size-btn btn mx-1" data-size="L">L</button>
-            <button type="button" class="size-btn btn mx-1" data-size="F">F</button>
-          </div>
-          <div class="quantity-control d-inline-flex align-items-center d-none">
-            <button type="button" class="btn btn-sm" id="decrement">−</button>
-            <span id="quantityDisplay" class="mx-2">2</span>
-            <button type="button" class="btn btn-sm" id="increment">+</button>
+          
+          <div class="controls-container">
+            <!-- Size Selection (Hidden by Default) -->
+            <div id="sizeSelectionContainer" class="size-selection">
+              <button type="button" class="size-btn" data-size="S">S</button>
+              <button type="button" class="size-btn" data-size="M">M</button>
+              <button type="button" class="size-btn" data-size="L">L</button>
+              <button type="button" class="size-btn" data-size="F">F</button>
+            </div>
+            
+            <div class="quantity-control d-none">
+              <button type="button" class="btn" id="decrement">−</button>
+              <span id="quantityDisplay">2</span>
+              <button type="button" class="btn" id="increment">+</button>
+            </div>
           </div>
         </div>
       </section>
     </div>
   </div>
 </div>
-
 
     <!-- Table Reservation Modal -->
     
@@ -4449,6 +4551,23 @@ document.addEventListener('DOMContentLoaded', function() {
     const modalOldPrice = document.getElementById('detailProductOldPrice');
     const quantityDisplay = document.getElementById('quantityDisplay');
     
+    // Prevent zooming on touch devices
+    document.addEventListener('touchstart', function(event) {
+        if (event.touches.length > 1) {
+            event.preventDefault();
+        }
+    }, { passive: false });
+    
+    // Prevent double-tap zoom
+    let lastTouchEnd = 0;
+    document.addEventListener('touchend', function(event) {
+        const now = Date.now();
+        if (now - lastTouchEnd <= 300) {
+            event.preventDefault();
+        }
+        lastTouchEnd = now;
+    }, { passive: false });
+    
     // Quantity control
     const decrementBtn = document.getElementById('decrement');
     const incrementBtn = document.getElementById('increment');
@@ -4460,13 +4579,13 @@ document.addEventListener('DOMContentLoaded', function() {
             quantityDisplay.textContent = quantity;
         }
     });
+    
     incrementBtn.addEventListener('click', () => {
         quantity++;
         quantityDisplay.textContent = quantity;
     });
     
     // Initially hide size selection
-    sizeSelection.classList.add('d-none');
     sizeSelection.style.display = 'none';
     
     // Function to open modal with product data
@@ -4512,7 +4631,6 @@ document.addEventListener('DOMContentLoaded', function() {
 
         // Show or hide size selection based on variations
         if (hasVariations) {
-            sizeSelection.classList.remove('d-none');
             sizeSelection.style.display = 'flex';
 
             sizeButtons.forEach(button => {
@@ -4530,7 +4648,6 @@ document.addEventListener('DOMContentLoaded', function() {
                 }
             });
         } else {
-            sizeSelection.classList.add('d-none');
             sizeSelection.style.display = 'none';
         }
     }
@@ -4606,9 +4723,6 @@ document.addEventListener('DOMContentLoaded', function() {
         console.log('Modal hide event triggered');
     });
 });
-
-
-
 </script>
 
 

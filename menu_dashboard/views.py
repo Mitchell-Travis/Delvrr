@@ -132,73 +132,83 @@ def contact(request):
 
 from django.utils.timezone import now
 
+def apply_product_discount(product, today):
+    """
+    Applies a discount to a product if conditions are met (e.g., 50% off wings on Wednesdays).
+    """
+    product.is_discounted = False
+
+    if today == 2 and 'wings' in product.name.lower():  # Wednesday
+        if product.display_price:
+            product.display_price /= 2
+            product.is_discounted = True
+
+    product.gst_note = "10% GST will be added"
+
+def prepare_products(products, today):
+    """
+    Prepares product data by adding variations, default price, and discount logic.
+    """
+    for product in products:
+        if product.variations.exists():
+            product.variations_list = product.variations.all()
+            default_variation = product.variations.filter(name='S').first() or product.variations.first()
+            product.display_price = default_variation.price if default_variation else None
+        else:
+            product.variations_list = None
+            product.display_price = product.price
+
+        apply_product_discount(product, today)
+
+    return list(products)
+
 def restaurant_menu(request, restaurant_name_slug, hashed_slug):
     restaurant = get_object_or_404(Restaurant, hashed_slug=hashed_slug)
     
     # Capture user details
     ip_address = request.META.get('REMOTE_ADDR')
     user_agent_str = request.META.get('HTTP_USER_AGENT', '')
-    parsed_user_agent = request.user_agent
+    parsed_user_agent = getattr(request, "user_agent", None)
     device = parsed_user_agent.device.family if parsed_user_agent and hasattr(parsed_user_agent, 'device') else "Unknown Device"
-    
-    # Log visit including device info
+
+    # Log menu visit
     MenuVisit.objects.create(
         restaurant=restaurant,
         ip_address=ip_address,
         user_agent=user_agent_str,
         device=device
     )
-    
-    # Get categories in order
+
+    # Get current weekday (0 = Monday, ..., 6 = Sunday)
+    today = datetime.today().weekday()
+
+    # Fetch categories and products efficiently
     categories = Category.objects.filter(products__restaurant=restaurant).distinct().order_by('order')
-    categorized_products = []
+    categorized_products = [
+        prepare_products(Product.objects.filter(restaurant=restaurant, category=category), today)
+        for category in categories
+    ]
+
+    # Handle uncategorized products
+    uncategorized_products = prepare_products(Product.objects.filter(restaurant=restaurant, category__isnull=True), today)
     
-    for category in categories:
-        category_products = Product.objects.filter(restaurant=restaurant, category=category)
-        for product in category_products:
-            # Check if the product truly has variations in the database
-            if product.variations.exists():
-                product.variations_list = product.variations.all()
-                default_variation = product.variations.filter(name='S').first() or product.variations.first()
-                if default_variation:
-                    product.display_price = default_variation.price
-                else:
-                    product.display_price = product.price
-            else:
-                product.variations_list = None
-                product.display_price = product.price
-        if category_products.exists():
-            categorized_products.append(list(category_products))
-    
-    # Handle uncategorized products with the same variation logic
-    uncategorized_products = Product.objects.filter(restaurant=restaurant, category__isnull=True)
-    for product in uncategorized_products:
-        if product.variations.exists():
-            product.variations_list = product.variations.all()
-            default_variation = product.variations.filter(name='S').first() or product.variations.first()
-            if default_variation:
-                product.display_price = default_variation.price
-            else:
-                product.display_price = product.price
-        else:
-            product.variations_list = None
-            product.display_price = product.price
-    if uncategorized_products.exists():
-        categorized_products.append(list(uncategorized_products))
-    
+    if uncategorized_products:
+        categorized_products.append(uncategorized_products)
+
     if not categorized_products:
         categorized_products = [[]]
-    
+
+    # Assign restaurant to the customer if logged in
     if request.user.is_authenticated:
-        customer, created = Customer.objects.get_or_create(user=request.user)
+        customer, _ = Customer.objects.get_or_create(user=request.user)
         customer.assign_restaurant(restaurant)
-    
-    # Brand color handling
+
+    # Get brand colors
     brand_colors = restaurant.brand_colors.all()
-    primary_brand_color = brand_colors.first().color if brand_colors.exists() else "#f7c028"
-    secondary_brand_color = brand_colors[1].color if brand_colors.count() >= 2 else "#000000"
-    third_brand_color = brand_colors[2].color if brand_colors.count() >= 3 else "#ffffff"
-    
+    primary_brand_color = brand_colors[0].color if brand_colors.exists() else "#f7c028"
+    secondary_brand_color = brand_colors[1].color if brand_colors.count() > 1 else "#000000"
+    third_brand_color = brand_colors[2].color if brand_colors.count() > 2 else "#ffffff"
+
     context = {
         'restaurant': restaurant,
         'allProds': categorized_products,
@@ -206,12 +216,12 @@ def restaurant_menu(request, restaurant_name_slug, hashed_slug):
         'primary_brand_color': primary_brand_color,
         'secondary_brand_color': secondary_brand_color,
         'third_brand_color': third_brand_color,
-        'hide_all_category': restaurant.id == 9,  # Flag to hide "All" button for restaurant ID 9
+        'hide_all_category': restaurant.id == 9,
     }
-    
+
     if not request.user.is_authenticated:
         messages.info(request, "To place an order, please log in or continue as a guest.")
-    
+
     return render(request, 'menu_dashboard/index.html', context)
 
 

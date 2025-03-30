@@ -28,6 +28,7 @@ class Restaurant(models.Model):
     latitude = models.DecimalField(max_digits=9, decimal_places=6, null=True, blank=True)
     longitude = models.DecimalField(max_digits=9, decimal_places=6, null=True, blank=True)
     business_hours = models.CharField(max_length=255, null=True, blank=True)
+    charge_gst = models.BooleanField(default=False)
 
     class Meta:
         indexes = [
@@ -167,8 +168,8 @@ class Product(models.Model):
     )
     name = models.CharField(max_length=40, db_index=True)
     product_image = models.ImageField(upload_to='product_image/', null=True, blank=True)
-    price = models.DecimalField(max_digits=8, decimal_places=2)
-    description = models.CharField(max_length=200)
+    price = models.DecimalField(max_digits=8, decimal_places=2, null=True, blank=True)
+    description = models.CharField(max_length=200, null=True, blank=True)
     restaurant = models.ForeignKey('Restaurant', on_delete=models.CASCADE, related_name='products', null=True, blank=True)
     category = models.ForeignKey(Category, on_delete=models.SET_NULL, null=True, blank=True, related_name='products')
     subcategory = models.CharField(max_length=50, null=True, blank=True)
@@ -180,6 +181,21 @@ class Product(models.Model):
     promo_end_date = models.DateField(null=True, blank=True)
     promo_discription = models.CharField(max_length=200, null=True, blank=True)
     has_variations = models.BooleanField(default=False)
+    
+    # New Fields
+    special_offer = models.CharField(
+        max_length=100, null=True, blank=True,
+        help_text="E.g., 'Limited Time Offer!' or '50% off on Wednesdays'"
+    )
+    discount_percentage = models.DecimalField(
+        max_digits=5, decimal_places=2, null=True, blank=True,
+        help_text=("For fixed pricing, this is the discount rate applied to the price. "
+                   "If using percentage pricing, this value is shown as the price (with a '%' sign).")
+    )
+    price_by_percentage = models.BooleanField(
+        default=False,
+        help_text="If enabled, the product will display its price as a percentage (e.g., '50%') instead of a fixed amount."
+    )
 
     class Meta:
         indexes = [
@@ -189,30 +205,31 @@ class Product(models.Model):
     def __str__(self):
         return self.name or "No Name"
     
-    def save(self, *args, **kwargs):
-        # Save the instance first to ensure it has a primary key
-        super().save(*args, **kwargs)
+    def get_display_price(self, size="S"):
+        """
+        Returns the price to display for the product.
+        - If price_by_percentage is True, returns the discount_percentage value with a '%' sign.
+        - Otherwise, if discount_percentage is provided, applies it to the fixed price.
+        - If no discount is provided, returns the fixed price.
+        """
+        if self.price_by_percentage:
+            return f"{self.discount_percentage}%" if self.discount_percentage is not None else ""
+        else:
+            if self.discount_percentage and self.price:
+                return round(self.price * (1 - self.discount_percentage / 100), 2)
+            return self.price
 
-        # Now check variations
-        if self.variations.exists():
-            self.has_variations = True
-            super().save(update_fields=['has_variations'])  # Save only this field to avoid recursion
-
-        # Invalidate cache
-        cache.delete(f'product_{self.id}')
-
-    
     def get_default_price(self, size="S"):
         """
-        Returns the price for the specified variation size if available.
-        If the product has variations and a variation with the provided size exists,
-        its price is returned. Otherwise, the base product price is returned.
+        Returns the default price for a product or a variation.
+        For products with variations, it delegates to the variation's logic.
+        Otherwise, it uses get_display_price().
         """
         if self.has_variations:
             variation = self.variations.filter(name=size).first()
             if variation:
-                return variation.price
-        return self.price
+                return variation.get_discounted_price()
+        return self.get_display_price()
     
     def get_all_variations(self):
         """
@@ -239,6 +256,12 @@ class ProductVariation(models.Model):
     has_promo = models.BooleanField(default=False)
     promo_price = models.DecimalField(max_digits=8, decimal_places=2, null=True, blank=True)
     
+    # New Discount Field for variations (optional)
+    discount_percentage = models.DecimalField(
+        max_digits=5, decimal_places=2, null=True, blank=True, 
+        help_text="Set a percentage discount, e.g., 50 for 50% off"
+    )
+
     class Meta:
         unique_together = ('product', 'name')
         ordering = ['product', '-is_default', 'name']
@@ -246,6 +269,15 @@ class ProductVariation(models.Model):
     def __str__(self):
         return f"{self.product.name} - {self.name}"
     
+    def get_discounted_price(self):
+        """
+        Returns the variation price after applying the discount, if applicable.
+        Note: This method assumes variations use fixed pricing.
+        """
+        if self.discount_percentage:
+            return round(self.price * (1 - self.discount_percentage / 100), 2)
+        return self.price
+
     def save(self, *args, **kwargs):
         # If this is set as default, unset any other defaults for this product
         if self.is_default:
@@ -260,6 +292,8 @@ class ProductVariation(models.Model):
             self.product.save(update_fields=['has_variations'])
         
         super().save(*args, **kwargs)
+
+
 
 
 class Orders(models.Model):
