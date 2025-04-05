@@ -2988,252 +2988,239 @@ input:checked + .slider:before {
 </style>
 
 <style>
-    :root {
-      --primary-bg: #f8f9fa;
-      --accent-color: #ff6b6b;
-      --text-color: #2c3e50;
-      --transition-speed: 0.4s;
-    }
+  :root {
+  --bg-color: #ffffff;
+  --accent: #ff6b6b;
+  --accent-light: #ff8c8c;
+  --text: #2c3e50;
+  --subtext: #7d879c;
+  --shadow: rgba(0, 0, 0, 0.1);
+  --transition: 0.3s;
+}
 
-    body {
-      touch-action: manipulation;
-      font-family: system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
-    }
+body {
+  font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+  background: #f2f4f7;
+}
 
-    .product-modal {
-      max-width: 380px;
-      border-radius: 12px;
-      overflow: hidden;
-      box-shadow: 0 10px 25px rgba(0,0,0,0.1);
-      background: var(--primary-bg);
-      border: none;
-    }
+.product-modal {
+  background: var(--bg-color);
+  border-radius: 16px;
+  overflow: hidden;
+  box-shadow: 0 15px 30px var(--shadow);
+  position: relative;
+}
 
-    .modal-header {
-      position: absolute;
-      top: 8px;
-      right: 8px;
-      z-index: 10;
-      padding: 0;
-      border: none;
-      background: transparent;
-    }
+/* Smaller Close Button */
+.modal-close {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  background: linear-gradient(135deg, var(--accent), var(--accent-light));
+  border: none;
+  border-radius: 50%;
+  width: 36px;
+  height: 36px;
+  font-size: 1.2rem;
+  color: white;
+  cursor: pointer;
+  z-index: 10;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  transition: transform var(--transition), box-shadow var(--transition);
+}
+.modal-close:hover {
+  transform: scale(1.1);
+  box-shadow: 0 6px 8px rgba(0, 0, 0, 0.2);
+}
 
-    .close-btn {
-      background-color: rgba(255, 255, 255, 0.8);
-      border: none;
-      border-radius: 50%;
-      width: 32px;
-      height: 32px;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      font-size: 1rem;
-      box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
-      transition: all 0.2s ease;
-      color: var(--text-color);
-    }
+/* Modal Entrance Animation */
+@keyframes modalAppear {
+  from {
+    opacity: 0;
+    transform: scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+.modal.show .modal-dialog {
+  animation: modalAppear 0.3s ease-out;
+}
 
-    .close-btn:hover {
-      background-color: var(--accent-color);
-      color: white;
-    }
+.modal-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+}
 
-    .product-image-wrapper {
-      position: relative;
-      height: 240px;
-      background-color: #f1f3f5;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      overflow: hidden;
-    }
+.image-section {
+  position: relative;
+  background: #f8f9fa;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 15px;
+}
+.image-section img {
+  max-width: 100%;
+  max-height: 280px;
+  transition: transform var(--transition);
+  object-fit: cover;
+  border-radius: 12px;
+}
+/* Adjusted hover effect for minimal zoom */
+.image-section img:hover {
+  transform: scale(1.02);
+}
 
-    .product-image {
-      max-width: 90%;
-      max-height: 90%;
-      transition: transform 0.3s ease;
-      object-fit: contain;
-    }
+.nav-btn {
+  position: absolute;
+  top: 50%;
+  background: rgba(255,255,255,0.9);
+  border: none;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  font-size: 1.2rem;
+  cursor: pointer;
+  transition: background var(--transition);
+  transform: translateY(-50%);
+}
+.nav-btn:hover {
+  background: var(--accent);
+  color: #fff;
+}
+.prev { left: 10px; }
+.next { right: 10px; }
 
-    .nav-btn {
-      position: absolute;
-      top: 50%;
-      transform: translateY(-50%);
-      background: rgba(255,255,255,0.8);
-      border: none;
-      width: 36px;
-      height: 36px;
-      border-radius: 50%;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      transition: all var(--transition-speed);
-      z-index: 10;
-      font-size: 1.2rem;
-      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-    }
+.info-section {
+  padding: 15px;
+  text-align: center;
+}
+.info-section h2 {
+  margin: 0;
+  font-size: 1.4rem;
+  color: var(--text);
+}
+.rating {
+  margin: 6px 0;
+  display: inline-flex;
+  align-items: center;
+  color: var(--accent);
+  font-weight: bold;
+}
+.rating i {
+  margin-right: 5px;
+}
+.pricing {
+  margin: 8px 0;
+  display: flex;
+  justify-content: center;
+  gap: 10px;
+}
+.current-price {
+  font-size: 1.3rem;
+  font-weight: bold;
+  color: var(--accent);
+}
+.old-price {
+  font-size: 0.95rem;
+  color: var(--subtext);
+  text-decoration: line-through;
+}
+.gst-note {
+  font-size: 0.8rem;
+  color: var(--subtext);
+  margin-bottom: 12px;
+}
+.controls {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  align-items: center;
+}
+.size-selection {
+  display: flex;
+  gap: 10px;
+}
+.size-btn {
+  width: 38px;
+  height: 38px;
+  border-radius: 50%;
+  border: none;
+  background: #e9ecef;
+  color: var(--text);
+  font-weight: 600;
+  cursor: pointer;
+  transition: background var(--transition), transform var(--transition);
+}
+.size-btn:hover {
+  background: #dfe4ea;
+}
+.size-btn.active {
+  background: var(--accent);
+  color: #fff;
+  transform: scale(1.1);
+}
+.quantity-control {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  background: #f1f3f5;
+  border-radius: 30px;
+  padding: 5px 15px;
+}
+.quantity-btn {
+  background: #fff;
+  border: none;
+  border-radius: 50%;
+  width: 32px;
+  height: 32px;
+  font-size: 1.2rem;
+  color: var(--text);
+  cursor: pointer;
+  transition: background var(--transition);
+  box-shadow: 0 2px 4px var(--shadow);
+}
+.quantity-btn:hover {
+  background: var(--accent);
+  color: #fff;
+}
+#quantityDisplay {
+  font-size: 1rem;
+  font-weight: 500;
+}
 
-    .nav-btn:hover, .nav-btn:active {
-      background: var(--accent-color);
-      color: white;
-    }
+/* Responsive adjustments */
+@media(min-width: 768px) {
+  .modal-grid {
+    grid-template-columns: 1fr 1fr;
+  }
+  .image-section, .info-section {
+    padding: 20px;
+  }
+  .image-section img {
+    max-height: 350px;
+  }
+}
 
-    .nav-prev {
-      left: 8px;
-    }
+/* Animation for modal */
+@keyframes modalFadeIn {
+  from { opacity: 0; transform: scale(0.95); }
+  to { opacity: 1; transform: scale(1); }
+}
 
-    .nav-next {
-      right: 8px;
-    }
+.modal.show .modal-content {
+  animation: modalFadeIn 0.2s ease forwards;
+}
 
-    .product-details {
-      padding: 15px 12px;
-    }
+/* Fix for touch interactions */
+button {
+  touch-action: manipulation;
+}
 
-    .product-info-container {
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      gap: 8px;
-    }
+</style>
 
-    .product-name {
-      font-size: 1.2rem;
-      margin: 0;
-      font-weight: 600;
-      color: var(--text-color);
-    }
-
-    .rating {
-      display: inline-flex;
-      align-items: center;
-      
-      padding: 3px 8px;
-      border-radius: 20px;
-      font-weight: 500;
-      font-size: 0.75rem;
-    }
-
-    .rating i {
-      color: #ffc107;
-      margin-right: 3px;
-    }
-
-    .pricing {
-      margin: 5px 0;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      gap: 8px;
-    }
-
-    .current-price {
-      font-size: 1.1rem;
-      font-weight: 600;
-      color: var(--accent-color);
-    }
-
-    .old-price {
-      font-size: 0.85rem;
-      color: #6c757d;
-    }
-
-    .gst-note {
-      font-size: 0.7rem;
-      color: #6c757d;
-      margin-bottom: 8px;
-    }
-
-    .controls-container {
-      display: flex;
-      flex-direction: column;
-      gap: 10px;
-      align-items: center;
-    }
-
-    .size-selection {
-      display: flex;
-      justify-content: center;
-      gap: 6px;
-    }
-
-    .size-btn {
-      width: 32px;
-      height: 32px;
-      border-radius: 50%;
-      padding: 0;
-      background-color: #e9ecef;
-      border: none;
-      color: var(--text-color);
-      font-weight: 500;
-      font-size: 0.85rem;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      transition: all 0.2s ease;
-    }
-
-    .size-btn:hover {
-      background-color: #dee2e6;
-    }
-
-    .size-btn.active {
-      background-color: var(--accent-color);
-      color: white;
-      transform: scale(1.05);
-    }
-
-    .quantity-control {
-      display: inline-flex;
-      align-items: center;
-      background-color: #f1f3f5;
-      border-radius: 20px;
-      padding: 3px 8px;
-    }
-
-    .quantity-control .btn {
-      width: 24px;
-      height: 24px;
-      border-radius: 50%;
-      padding: 0;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      background-color: white;
-      border: none;
-      font-size: 1rem;
-      color: var(--text-color);
-      transition: all 0.2s ease;
-      box-shadow: 0 1px 2px rgba(0,0,0,0.1);
-    }
-
-    .quantity-control .btn:hover {
-      background-color: var(--accent-color);
-      color: white;
-    }
-
-    #quantityDisplay {
-      margin: 0 8px;
-      font-weight: 500;
-      font-size: 0.9rem;
-    }
-
-    /* Animation for modal */
-    @keyframes modalFadeIn {
-      from { opacity: 0; transform: scale(0.95); }
-      to { opacity: 1; transform: scale(1); }
-    }
-
-    .modal.show .modal-content {
-      animation: modalFadeIn 0.2s ease forwards;
-    }
-
-    /* Fix for touch interactions */
-    button {
-      touch-action: manipulation;
-    }
-  </style>
  
 
 
@@ -3596,6 +3583,7 @@ input:checked + .slider:before {
                data-name="{{ product.name }}"
                data-description="{{ product.description }}"
                data-image="{{ product.product_image.url }}"
+               data-gst="{{ product.gst_note }}"
                {% if product.previous_price %}
                  data-previous-price="{{ product.previous_price }}"
                {% endif %}
@@ -3853,67 +3841,51 @@ input:checked + .slider:before {
   </nav> -->
   </section>
 
-    <!-- Product Detail Modal -->
-    <!-- Product Detail Modal -->
-<div class="modal fade" id="productDetailModal" tabindex="-1" aria-labelledby="productDetailModalLabel" aria-hidden="true">
+  <!-- Reimagined Product Detail Modal with Enhanced Close Button -->
+<div class="modal fade" id="productDetailModal" tabindex="-1" aria-hidden="true">
   <div class="modal-dialog modal-dialog-centered">
     <div class="modal-content product-modal">
-      <header class="modal-header">
-        <button type="button" class="close-btn" data-bs-dismiss="modal" aria-label="Close">
-          <i class="fas fa-times"></i>
-        </button>
-      </header>
-      <section class="modal-body p-0">
-        <div class="product-image-wrapper">
-          <img id="detailProductImage" src="/api/placeholder/400/400" alt="Product Image" class="product-image">
-          <!-- Navigation Buttons -->
-          <button id="prevProduct" class="nav-btn nav-prev" aria-label="Previous Product">
-            <i class="fas fa-chevron-left"></i>
-          </button>
-          <button id="nextProduct" class="nav-btn nav-next" aria-label="Next Product">
-            <i class="fas fa-chevron-right"></i>
-          </button>
+      <button type="button" class="modal-close" data-bs-dismiss="modal" aria-label="Close">
+        &times;
+      </button>
+      <div class="modal-grid">
+        <div class="image-section">
+          <img id="detailProductImage" src="/api/placeholder/400/400" alt="Product Image">
+          <button id="prevProduct" class="nav-btn prev" aria-label="Previous Product">&#10094;</button>
+          <button id="nextProduct" class="nav-btn next" aria-label="Next Product">&#10095;</button>
         </div>
-        <div class="product-details text-center">
-          <div class="product-info-container">
-            <h2 id="detailProductName" class="product-name">Product Name</h2>
-            <div class="rating">
-              <i class="fas fa-star"></i>
-              <span>4.5</span>
-            </div>
-            <div class="pricing">
-              <span id="detailProductPrice" class="current-price">$0</span>
-              <span id="detailProductOldPrice" class="old-price text-decoration-line-through">$0</span>
-            </div>
-            <!-- GST note -->
-           <!-- GST note -->
-{% if product.charge_gst %}
-    <div class="gst-note">
-        <small>10% GST will be added</small>
-    </div>
-{% endif %}
-
-          
-          <div class="controls-container">
-            <!-- Size Selection (Hidden by Default) -->
+        <div class="info-section">
+          <h2 id="detailProductName">Product Name</h2>
+          <div class="rating">
+            <i class="fas fa-star"></i>
+            <span>4.5</span>
+          </div>
+          <div class="pricing">
+            <span id="detailProductPrice" class="current-price">$0</span>
+            <span id="detailProductOldPrice" class="old-price">$0</span>
+          </div>
+          <div id="modalGSTNote" class="gst-note">
+            <small></small>
+          </div>
+          <div class="controls">
             <div id="sizeSelectionContainer" class="size-selection">
               <button type="button" class="size-btn" data-size="S">S</button>
               <button type="button" class="size-btn" data-size="M">M</button>
               <button type="button" class="size-btn" data-size="L">L</button>
               <button type="button" class="size-btn" data-size="F">F</button>
             </div>
-            
             <div class="quantity-control d-none">
-              <button type="button" class="btn" id="decrement">−</button>
-              <span id="quantityDisplay">2</span>
-              <button type="button" class="btn" id="increment">+</button>
+              <button type="button" id="decrement" class="quantity-btn">−</button>
+              <span id="quantityDisplay">1</span>
+              <button type="button" id="increment" class="quantity-btn">+</button>
             </div>
           </div>
         </div>
-      </section>
+      </div>
     </div>
   </div>
 </div>
+
 
     <!-- Table Reservation Modal -->
     
@@ -3927,13 +3899,13 @@ input:checked + .slider:before {
       <div class="logo-wrapper">
         <!-- Replace the SVG with your image -->
         <img 
-          src="../../../static/menu_dashboard/delvrr.JPG" 
+          src="../../../static/menu_dashboard/delvrr-logo.JPG" 
           alt="Delvrr Logo" 
           class="logo-image" 
         />
       </div>
     </div>
-    <div class="tagline">Developers © Rimsle</div>
+    <!-- <div class="tagline">Developers © Rimsle</div> -->
     <div class="loading-dots">
       <div class="dot"></div>
       <div class="dot"></div>
@@ -4585,7 +4557,7 @@ document.addEventListener('DOMContentLoaded', function() {
     
     // Function to open modal with product data
     function openProductDetailModal(productElement) {
-        // Read product attributes
+    // Read product attributes
         const productName = productElement.dataset.name;
         const productImage = productElement.dataset.image;
         const basePrice = productElement.dataset.price;
@@ -4613,11 +4585,21 @@ document.addEventListener('DOMContentLoaded', function() {
             modalOldPrice.style.display = 'none';
         }
 
+        // Update GST note in modal based on the data attribute
+        const gstNote = productElement.dataset.gst;
+        const modalGSTNote = document.getElementById('modalGSTNote');
+        if (gstNote) {
+            modalGSTNote.querySelector('small').textContent = gstNote;
+            modalGSTNote.style.display = 'block';
+        } else {
+            modalGSTNote.style.display = 'none';
+        }
+
         // Reset quantity
         quantity = 1;
         quantityDisplay.textContent = quantity;
 
-        // Reset size buttons (remove active state and data attributes)
+        // Reset size buttons
         sizeButtons.forEach(btn => {
             btn.classList.remove('active');
             btn.disabled = false;
@@ -4648,7 +4630,6 @@ document.addEventListener('DOMContentLoaded', function() {
             sizeSelection.style.display = 'none';
         }
     }
-
     // Use event delegation to handle clicks on both carousel and grid items.
     // We assume that both are inside the #menuContent container.
     const menuContent = document.getElementById('menuContent');
@@ -4919,12 +4900,13 @@ document.addEventListener('DOMContentLoaded', function() {
   const quantityDisplay = document.getElementById('quantityDisplay');
   const prevBtn = document.getElementById('prevProduct');
   const nextBtn = document.getElementById('nextProduct');
+  const modalGSTNote = document.getElementById('modalGSTNote'); // GST note element
   
   let quantity = 2;
   let currentIndex = 0;
   
   // Build the initial products array from carousel items (".food-item")
-  // Now we also add variation prices.
+  // Now we also add variation prices and GST note.
   const carouselItems = Array.from(document.querySelectorAll('.food-item'));
   let products = carouselItems.map(card => ({
     id: card.dataset.productId,
@@ -4939,109 +4921,118 @@ document.addEventListener('DOMContentLoaded', function() {
     priceS: card.dataset.priceS ? card.dataset.priceS : card.dataset.price,
     priceM: card.dataset.priceM ? card.dataset.priceM : card.dataset.price,
     priceL: card.dataset.priceL ? card.dataset.priceL : card.dataset.price,
-    priceF: card.dataset.priceF ? card.dataset.priceF : card.dataset.price
+    priceF: card.dataset.priceF ? card.dataset.priceF : card.dataset.price,
+    gst: card.dataset.gst || ""  // New: GST note for this product
   }));
   
   // Function to update modal content with slide animations
   function updateModalContent(newIndex, direction = 'right') {
-  // Remove any previous enter classes
-  detailImage.classList.remove('slide-enter-active');
-  detailName.classList.remove('slide-enter-active');
-  detailPrice.classList.remove('slide-enter-active');
-  detailOldPrice.classList.remove('slide-enter-active');
+    // Remove any previous enter classes
+    detailImage.classList.remove('slide-enter-active');
+    detailName.classList.remove('slide-enter-active');
+    detailPrice.classList.remove('slide-enter-active');
+    detailOldPrice.classList.remove('slide-enter-active');
 
-  // Add exit animation classes
-  detailImage.classList.add('slide-exit-active');
-  detailName.classList.add('slide-exit-active');
-  detailPrice.classList.add('slide-exit-active');
-  detailOldPrice.classList.add('slide-exit-active');
+    // Add exit animation classes
+    detailImage.classList.add('slide-exit-active');
+    detailName.classList.add('slide-exit-active');
+    detailPrice.classList.add('slide-exit-active');
+    detailOldPrice.classList.add('slide-exit-active');
 
-  setTimeout(() => {
-    // Update modal content with the new product details
-    const product = products[newIndex];
-    detailImage.src = product.image;
-    detailName.textContent = product.name;
-    
-    // For products with variations, default to S price; otherwise, show base price.
-    if (product.hasVariations) {
-      detailPrice.textContent = `$${product.priceS}`;
-    } else {
-      detailPrice.textContent = product.price;
-    }
-    
-    detailOldPrice.textContent = product.previousPrice;
+    setTimeout(() => {
+      // Update modal content with the new product details
+      const product = products[newIndex];
+      detailImage.src = product.image;
+      detailName.textContent = product.name;
+      
+      // For products with variations, default to S price; otherwise, show base price.
+      if (product.hasVariations) {
+        detailPrice.textContent = `$${product.priceS}`;
+      } else {
+        detailPrice.textContent = product.price;
+      }
+      
+      detailOldPrice.textContent = product.previousPrice;
 
-    // Reset quantity on navigation
-    quantity = 2;
-    quantityDisplay.textContent = quantity;
+      // Reset quantity on navigation
+      quantity = 2;
+      quantityDisplay.textContent = quantity;
 
-    // Handle size selection based on whether product has variations.
-    const sizeSelection = document.getElementById('sizeSelectionContainer');
-    const sizeButtons = sizeSelection.querySelectorAll('.size-btn');
-    if (product.hasVariations) {
-      sizeSelection.style.display = 'flex';
-      sizeSelection.classList.remove('d-none');
-      // Update each size button with its corresponding price.
-      sizeButtons.forEach(button => {
-        const size = button.dataset.size;
-        let newPrice;
-        if (size === 'S') {
-          newPrice = product.priceS;
-          button.classList.add('active');
-        } else if (size === 'M') {
-          newPrice = product.priceM;
-          button.classList.remove('active');
-        } else if (size === 'L') {
-          newPrice = product.priceL;
-          button.classList.remove('active');
-        } else if (size === 'F') {
-          newPrice = product.priceF;
-          button.classList.remove('active');
-        }
-        // Fallback if no specific price is provided.
-        if (!newPrice) newPrice = product.price;
-        button.dataset.price = newPrice;
-        button.disabled = false;
-        // Attach click event for size selection (update modal price)
-        button.onclick = function() {
-          if (!this.disabled) {
-            sizeButtons.forEach(btn => btn.classList.remove('active'));
-            this.classList.add('active');
-            detailPrice.textContent = `$${this.dataset.price}`;
+      // Handle size selection based on whether product has variations.
+      const sizeSelection = document.getElementById('sizeSelectionContainer');
+      const sizeButtons = sizeSelection.querySelectorAll('.size-btn');
+      if (product.hasVariations) {
+        sizeSelection.style.display = 'flex';
+        sizeSelection.classList.remove('d-none');
+        // Update each size button with its corresponding price.
+        sizeButtons.forEach(button => {
+          const size = button.dataset.size;
+          let newPrice;
+          if (size === 'S') {
+            newPrice = product.priceS;
+            button.classList.add('active');
+          } else if (size === 'M') {
+            newPrice = product.priceM;
+            button.classList.remove('active');
+          } else if (size === 'L') {
+            newPrice = product.priceL;
+            button.classList.remove('active');
+          } else if (size === 'F') {
+            newPrice = product.priceF;
+            button.classList.remove('active');
           }
-        };
-      });
-    } else {
-      sizeSelection.style.display = 'none';
-      sizeSelection.classList.add('d-none');
-    }
+          if (!newPrice) newPrice = product.price;
+          button.dataset.price = newPrice;
+          button.disabled = false;
+          // Attach click event for size selection (update modal price)
+          button.onclick = function() {
+            if (!this.disabled) {
+              sizeButtons.forEach(btn => btn.classList.remove('active'));
+              this.classList.add('active');
+              detailPrice.textContent = `$${this.dataset.price}`;
+            }
+          };
+        });
+      } else {
+        sizeSelection.style.display = 'none';
+        sizeSelection.classList.add('d-none');
+      }
+      
+      // Update GST note in modal
+      if (modalGSTNote) {
+        if (product.gst.trim()) {
+          modalGSTNote.querySelector('small').textContent = product.gst;
+          modalGSTNote.style.display = 'block';
+        } else {
+          modalGSTNote.style.display = 'none';
+        }
+      }
 
-    // Remove exit classes then trigger enter animation
-    detailImage.classList.remove('slide-exit-active');
-    detailName.classList.remove('slide-exit-active');
-    detailPrice.classList.remove('slide-exit-active');
-    detailOldPrice.classList.remove('slide-exit-active');
+      // Remove exit classes then trigger enter animation
+      detailImage.classList.remove('slide-exit-active');
+      detailName.classList.remove('slide-exit-active');
+      detailPrice.classList.remove('slide-exit-active');
+      detailOldPrice.classList.remove('slide-exit-active');
 
-    // Force reflow then add enter classes
-    void detailImage.offsetWidth;
-    detailImage.classList.add('slide-enter-active');
-    detailName.classList.add('slide-enter-active');
-    detailPrice.classList.add('slide-enter-active');
-    detailOldPrice.classList.add('slide-enter-active');
-  }, 400);
-}
+      // Force reflow then add enter classes
+      void detailImage.offsetWidth;
+      detailImage.classList.add('slide-enter-active');
+      detailName.classList.add('slide-enter-active');
+      detailPrice.classList.add('slide-enter-active');
+      detailOldPrice.classList.add('slide-enter-active');
+    }, 400);
+  }
   
   // Slide navigation button events
-  // Slide navigation button events
-    prevBtn.addEventListener('click', function() {
-      currentIndex = (currentIndex - 1 + products.length) % products.length;
-      updateModalContent(currentIndex, 'left');
-    });
+  prevBtn.addEventListener('click', function() {
+    currentIndex = (currentIndex - 1 + products.length) % products.length;
+    updateModalContent(currentIndex, 'left');
+  });
 
-    nextBtn.addEventListener('click', function() {
-      currentIndex = (currentIndex + 1) % products.length;
-      updateModalContent(currentIndex, 'right');
-    });
+  nextBtn.addEventListener('click', function() {
+    currentIndex = (currentIndex + 1) % products.length;
+    updateModalContent(currentIndex, 'right');
+  });
   
   // Quantity control events
   document.getElementById('decrement').addEventListener('click', function() {
@@ -5112,18 +5103,18 @@ document.addEventListener('DOMContentLoaded', function() {
       sizeSelection.classList.add('d-none');
     }
     
+    // Update GST note for the opened product
+    if (modalGSTNote) {
+      if (product.gst.trim()) {
+        modalGSTNote.querySelector('small').textContent = product.gst;
+        modalGSTNote.style.display = 'block';
+      } else {
+        modalGSTNote.style.display = 'none';
+      }
+    }
+    
     productDetailModal.show();
   }
-  
-  // Attach click handler for carousel items (.food-item)
-  carouselItems.forEach(card => {
-    const trigger = card.querySelector('.product-image-trigger');
-    if (trigger) {
-      trigger.addEventListener('click', function() {
-        openProductModal(card.dataset.productId);
-      });
-    }
-  });
   
   // Attach click handler for carousel items (.food-item)
   carouselItems.forEach(card => {
@@ -5166,58 +5157,57 @@ document.addEventListener('DOMContentLoaded', function() {
   // Grid view creation function
   const productGrid = document.getElementById('productGrid');
   function createGridView(productsList) {
-  productGrid.innerHTML = '';
-  productsList.forEach(product => {
-    const gridItem = document.createElement('div');
-    gridItem.className = 'grid-item';
-    gridItem.dataset.productId = product.id;
-    gridItem.dataset.category = product.category;
-    gridItem.dataset.name = product.name;
-    gridItem.dataset.description = product.description;
-    // Keep the original price (with the "$" sign) for both grid and detail view.
-    gridItem.dataset.price = product.price;
-    gridItem.dataset.previousPrice = product.previousPrice;
-    gridItem.dataset.image = product.image;
-    gridItem.dataset.hasVariations = product.hasVariations ? "true" : "false";
-    gridItem.dataset.priceS = product.priceS;
-    gridItem.dataset.priceM = product.priceM;
-    gridItem.dataset.priceL = product.priceL;
-    gridItem.dataset.priceF = product.priceF;
-    
-    const isOnSale = product.status === 'Sale';
-    gridItem.innerHTML = `
-      <div class="grid-image-container">
-        ${isOnSale ? '<span class="discount-badge">Sale</span>' : ''}
-        <img src="${product.image}" alt="${product.name}" class="grid-image">
-      </div>
-      <div class="grid-details">
-        <h3>${product.name}</h3>
-        <div class="rating">
-          <i class="fas fa-star"></i>
-          <span>4.9</span>
-          <span class="review-count">(203)</span>
+    productGrid.innerHTML = '';
+    productsList.forEach(product => {
+      const gridItem = document.createElement('div');
+      gridItem.className = 'grid-item';
+      gridItem.dataset.productId = product.id;
+      gridItem.dataset.category = product.category;
+      gridItem.dataset.name = product.name;
+      gridItem.dataset.description = product.description;
+      gridItem.dataset.price = product.price;
+      gridItem.dataset.previousPrice = product.previousPrice;
+      gridItem.dataset.image = product.image;
+      gridItem.dataset.hasVariations = product.hasVariations ? "true" : "false";
+      gridItem.dataset.priceS = product.priceS;
+      gridItem.dataset.priceM = product.priceM;
+      gridItem.dataset.priceL = product.priceL;
+      gridItem.dataset.priceF = product.priceF;
+      gridItem.dataset.gst = product.gst; // Pass GST note to grid item
+      
+      const isOnSale = product.status === 'Sale';
+      gridItem.innerHTML = `
+        <div class="grid-image-container">
+          ${isOnSale ? '<span class="discount-badge">Sale</span>' : ''}
+          <img src="${product.image}" alt="${product.name}" class="grid-image">
         </div>
-        <div class="price-row">
-          <div class="price">
-            <span>${product.price}</span>
+        <div class="grid-details">
+          <h3>${product.name}</h3>
+          <div class="rating">
+            <i class="fas fa-star"></i>
+            <span>4.9</span>
+            <span class="review-count">(203)</span>
           </div>
-          <button class="add-to-cart" data-product-id="${product.id}" data-name="${product.name}" data-price="${product.price}" data-image="${product.image}">
-            <i class="fas fa-shopping-cart"></i>
-          </button>
+          <div class="price-row">
+            <div class="price">
+              <span>${product.price}</span>
+            </div>
+            <button class="add-to-cart" data-product-id="${product.id}" data-name="${product.name}" data-price="${product.price}" data-image="${product.image}">
+              <i class="fas fa-shopping-cart"></i>
+            </button>
+          </div>
         </div>
-      </div>
-    `;
-    
-    productGrid.appendChild(gridItem);
-    
-    // Attach grid item click event to open modal detail.
-    gridItem.addEventListener('click', function(e) {
-      if (e.target.closest('.add-to-cart')) return;
-      openProductModal(product.id);
+      `;
+      
+      productGrid.appendChild(gridItem);
+      
+      // Attach grid item click event to open modal detail.
+      gridItem.addEventListener('click', function(e) {
+        if (e.target.closest('.add-to-cart')) return;
+        openProductModal(product.id);
+      });
     });
-  });
-}
-
+  }
   
   // ===== 3. View Toggle: Carousel to Grid and Back =====
   const viewAllButton = document.querySelector('.view-all');
@@ -5226,27 +5216,27 @@ document.addEventListener('DOMContentLoaded', function() {
   
   // Helper: Extract products from carousel items for grid view.
   function extractProductsFromCarousel() {
-  const foodItems = document.querySelectorAll('.food-item');
-  return Array.from(foodItems).map(item => ({
-    id: item.dataset.productId,
-    name: item.dataset.name,
-    description: item.dataset.description || '',
-    price: item.dataset.price ? `$${item.dataset.price}` : '$129',
-    previousPrice: item.dataset.previousPrice ? `$${item.dataset.previousPrice}` : '$169',
-    image: item.dataset.image,
-    status: item.querySelector('.discount-badge') ? 'Sale' : 'Regular',
-    category: item.dataset.category || 'featured',
-    hasVariations: item.dataset.hasVariations === "true",
-    priceS: item.dataset.priceS ? item.dataset.priceS : item.dataset.price,
-    priceM: item.dataset.priceM ? item.dataset.priceM : item.dataset.price,
-    priceL: item.dataset.priceL ? item.dataset.priceL : item.dataset.price,
-    priceF: item.dataset.priceF ? item.dataset.priceF : item.dataset.price
-  }));
-}
+    const foodItems = document.querySelectorAll('.food-item');
+    return Array.from(foodItems).map(item => ({
+      id: item.dataset.productId,
+      name: item.dataset.name,
+      description: item.dataset.description || '',
+      price: item.dataset.price ? `$${item.dataset.price}` : '$129',
+      previousPrice: item.dataset.previousPrice ? `$${item.dataset.previousPrice}` : '$169',
+      image: item.dataset.image,
+      status: item.querySelector('.discount-badge') ? 'Sale' : 'Regular',
+      category: item.dataset.category || 'featured',
+      hasVariations: item.dataset.hasVariations === "true",
+      priceS: item.dataset.priceS ? item.dataset.priceS : item.dataset.price,
+      priceM: item.dataset.priceM ? item.dataset.priceM : item.dataset.price,
+      priceL: item.dataset.priceL ? item.dataset.priceL : item.dataset.price,
+      priceF: item.dataset.priceF ? item.dataset.priceF : item.dataset.price,
+      gst: item.dataset.gst || ""
+    }));
+  }
   
   if (viewAllButton) {
     viewAllButton.addEventListener('click', function() {
-      // Extract products from carousel and update the global products array.
       const productsFromCarousel = extractProductsFromCarousel();
       products = productsFromCarousel;
       createGridView(productsFromCarousel);
@@ -5774,6 +5764,7 @@ productGrid.addEventListener('click', function(e) {
   }
 });
 </script>
+
 
 
 

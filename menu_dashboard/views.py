@@ -170,8 +170,8 @@ def restaurant_menu(request, restaurant_name_slug, hashed_slug):
             if product.is_discounted and product.display_price:
                 product.display_price /= 2
 
-            # Add GST note if applicable
-            product.gst_note = "10% GST will be added" if restaurant.charge_gst else ""
+            # Add GST note if applicable (now on a per-product basis)
+            product.gst_note = "10% GST will be added" if product.charge_gst else ""
 
         if category_products.exists():
             categorized_products.append(list(category_products))
@@ -189,8 +189,8 @@ def restaurant_menu(request, restaurant_name_slug, hashed_slug):
         if product.is_discounted and product.display_price:
             product.display_price /= 2
 
-        # Add GST note if applicable
-        product.gst_note = "10% GST will be added" if restaurant.charge_gst else ""
+        # Add GST note if applicable (per product)
+        product.gst_note = "10% GST will be added" if product.charge_gst else ""
 
     if uncategorized_products.exists():
         categorized_products.append(list(uncategorized_products))
@@ -223,6 +223,7 @@ def restaurant_menu(request, restaurant_name_slug, hashed_slug):
         messages.info(request, "To place an order, please log in or continue as a guest.")
 
     return render(request, 'menu_dashboard/index.html', context)
+
 
 
 

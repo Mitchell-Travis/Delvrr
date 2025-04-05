@@ -13,6 +13,9 @@ from django.utils.text import slugify
 import hashlib
 from django.utils.timezone import now
 from django.conf import settings
+from io import BytesIO
+from django.core.files.uploadedfile import InMemoryUploadedFile
+import sys
 
 
 from datetime import datetime
@@ -20,7 +23,7 @@ from datetime import datetime
 class Restaurant(models.Model):
     user = models.OneToOneField(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
     restaurant_name = models.CharField(max_length=40, null=True, blank=True, db_index=True)
-    slug = models.SlugField(max_length=40, unique=True, blank=True)
+    slug = models.SlugField(max_length=255, null=True, blank=True)
     hashed_slug = models.CharField(max_length=64, unique=True, blank=True)  # NEW: Hashed Identifier
     logo_pic = models.ImageField(upload_to='logo_pic/RestaurantLogo/', null=True, blank=True)
     address = models.CharField(max_length=255, blank=True, null=True)
@@ -28,7 +31,7 @@ class Restaurant(models.Model):
     latitude = models.DecimalField(max_digits=9, decimal_places=6, null=True, blank=True)
     longitude = models.DecimalField(max_digits=9, decimal_places=6, null=True, blank=True)
     business_hours = models.CharField(max_length=255, null=True, blank=True)
-    charge_gst = models.BooleanField(default=True)
+    
 
     class Meta:
         indexes = [
@@ -171,7 +174,7 @@ class Product(models.Model):
     price = models.DecimalField(max_digits=8, decimal_places=2, null=True, blank=True)
     description = models.CharField(max_length=200, null=True, blank=True)
     restaurant = models.ForeignKey('Restaurant', on_delete=models.CASCADE, related_name='products', null=True, blank=True)
-    category = models.ForeignKey(Category, on_delete=models.SET_NULL, null=True, blank=True, related_name='products')
+    category = models.ForeignKey('Category', on_delete=models.SET_NULL, null=True, blank=True, related_name='products')
     subcategory = models.CharField(max_length=50, null=True, blank=True)
     pub_date = models.DateField(null=True, blank=True)
     status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='Available', db_index=True)
@@ -181,6 +184,7 @@ class Product(models.Model):
     promo_end_date = models.DateField(null=True, blank=True)
     promo_discription = models.CharField(max_length=200, null=True, blank=True)
     has_variations = models.BooleanField(default=False)
+    charge_gst = models.BooleanField(default=False, help_text="If True, 10% GST will be added.")
     
     # New Fields
     special_offer = models.CharField(
@@ -196,7 +200,7 @@ class Product(models.Model):
         default=False,
         help_text="If enabled, the product will display its price as a percentage (e.g., '50%') instead of a fixed amount."
     )
-
+    
     class Meta:
         indexes = [
             models.Index(fields=['restaurant', 'category', 'status']),
@@ -204,6 +208,74 @@ class Product(models.Model):
     
     def __str__(self):
         return self.name or "No Name"
+    
+    def save(self, *args, **kwargs):
+        # Check if there is an image to resize
+        if self.product_image:
+            self.resize_image()
+        super().save(*args, **kwargs)
+    
+    def resize_image(self, max_width=800, max_height=800, quality=85):
+        """
+        Resizes the product image to improve load time while maintaining quality.
+        
+        Args:
+            max_width (int): Maximum width of the image
+            max_height (int): Maximum height of the image
+            quality (int): JPEG compression quality (1-100)
+        """
+        # Only process if this is an image file
+        if self.product_image and hasattr(self.product_image, 'path'):
+            # For newly uploaded images
+            if isinstance(self.product_image.file, InMemoryUploadedFile):
+                img = Image.open(self.product_image)
+                
+                # Convert to RGB if image is in RGBA mode (removes transparency)
+                if img.mode == 'RGBA':
+                    img = img.convert('RGB')
+                
+                # Calculate new dimensions while maintaining aspect ratio
+                img_width, img_height = img.size
+                if img_width > max_width or img_height > max_height:
+                    ratio = min(max_width/img_width, max_height/img_height)
+                    new_width = int(img_width * ratio)
+                    new_height = int(img_height * ratio)
+                    img = img.resize((new_width, new_height), Image.LANCZOS)
+                
+                # Save the resized image
+                output = BytesIO()
+                img.save(output, format='JPEG', quality=quality, optimize=True)
+                output.seek(0)
+                
+                # Replace the image file with our resized version
+                self.product_image = InMemoryUploadedFile(
+                    output,
+                    'ImageField',
+                    f"{self.product_image.name.split('.')[0]}.jpg",
+                    'image/jpeg',
+                    sys.getsizeof(output),
+                    None
+                )
+            # For images already in the filesystem
+            else:
+                img_path = self.product_image.path
+                img = Image.open(img_path)
+                
+                # Only process if image exceeds max dimensions
+                img_width, img_height = img.size
+                if img_width > max_width or img_height > max_height:
+                    # Convert to RGB if image is in RGBA mode
+                    if img.mode == 'RGBA':
+                        img = img.convert('RGB')
+                    
+                    # Calculate new dimensions while maintaining aspect ratio
+                    ratio = min(max_width/img_width, max_height/img_height)
+                    new_width = int(img_width * ratio)
+                    new_height = int(img_height * ratio)
+                    img = img.resize((new_width, new_height), Image.LANCZOS)
+                    
+                    # Save the resized image
+                    img.save(img_path, format='JPEG', quality=quality, optimize=True)
     
     def get_display_price(self, size="S"):
         """
@@ -218,7 +290,7 @@ class Product(models.Model):
             if self.discount_percentage and self.price:
                 return round(self.price * (1 - self.discount_percentage / 100), 2)
             return self.price
-
+    
     def get_default_price(self, size="S"):
         """
         Returns the default price for a product or a variation.
