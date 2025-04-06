@@ -114,7 +114,9 @@ class ProductAdmin(admin.ModelAdmin):
                 'name', 
                 'description', 
                 'price',
-                'charge_gst'
+                'charge_gst',
+                'special_offer',
+                'price_by_percentage'
             )
         }),
         ('Options', {

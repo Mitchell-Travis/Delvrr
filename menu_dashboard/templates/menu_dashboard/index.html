@@ -3016,13 +3016,13 @@ body {
   position: absolute;
   top: 12px;
   right: 12px;
-  background: linear-gradient(135deg, var(--accent), var(--accent-light));
+  background: #ffffff;
   border: none;
   border-radius: 50%;
   width: 36px;
   height: 36px;
   font-size: 1.2rem;
-  color: white;
+  color: red;
   cursor: pointer;
   z-index: 10;
   box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
@@ -3584,13 +3584,14 @@ button {
                data-description="{{ product.description }}"
                data-image="{{ product.product_image.url }}"
                data-gst="{{ product.gst_note }}"
+               data-price-by-percentage="{% if product.price_by_percentage %}true{% else %}false{% endif %}"
                {% if product.previous_price %}
                  data-previous-price="{{ product.previous_price }}"
                {% endif %}
                
                {% if product.variations_list %}
                  {% with default_price=product.variations_list|get_default_price:"S" %}
-                   data-price="{% if default_price %}{{ default_price }}{% else %}{{ product.price }}{% endif %}"
+                   data-price="{% if default_price %}{{ default_price }}{% else %}{{ product.display_price }}{% endif %}"
                  {% endwith %}
                  
                  {# Output variation prices for S, M, L, F #}
@@ -3606,12 +3607,12 @@ button {
                    {% endif %}
                  {% endfor %}
                {% else %}
-                 {# No variations, use base price #}
-                 data-price="{{ product.price }}"
-                 data-price-s="{{ product.price }}"
-                 data-price-m="{{ product.price }}"
-                 data-price-l="{{ product.price }}"
-                 data-price-f="{{ product.price }}"
+                 {# No variations, use display_price which could be percentage or regular price #}
+                 data-price="{{ product.display_price }}"
+                 data-price-s="{{ product.display_price }}"
+                 data-price-m="{{ product.display_price }}"
+                 data-price-l="{{ product.display_price }}"
+                 data-price-f="{{ product.display_price }}"
                {% endif %}
           >
             <div class="food-image-container">
@@ -3636,10 +3637,14 @@ button {
                   <span class="display-price">
                     {% if product.variations_list %}
                       {% with default_price=product.variations_list|get_default_price:"S" %}
-                        ${{ default_price|default:product.price }}
+                        ${{ default_price|default:product.display_price }}
                       {% endwith %}
                     {% else %}
-                      ${{ product.price }}
+                      {% if product.price_by_percentage %}
+                        {{ product.display_price }}
+                      {% else %}
+                        ${{ product.display_price }}
+                      {% endif %}
                     {% endif %}
                   </span>
                   {% if product.previous_price %}
@@ -3652,7 +3657,8 @@ button {
                   <button class="add-to-cart"
                           data-product-id="{{ product.id }}"
                           data-name="{{ product.name }}"
-                          data-price="{% if product.variations_list %}{% with default_price=product.variations_list|get_default_price:"S" %}{% if default_price %}{{ default_price }}{% else %}{{ product.price }}{% endif %}{% endwith %}{% else %}{{ product.price }}{% endif %}"
+                          data-price="{% if product.variations_list %}{% with default_price=product.variations_list|get_default_price:'S' %}{% if default_price %}{{ default_price }}{% else %}{{ product.display_price }}{% endif %}{% endwith %}{% else %}{{ product.display_price }}{% endif %}"
+                          data-price-by-percentage="{% if product.price_by_percentage %}true{% else %}false{% endif %}"
                           data-image="{{ product.product_image.url }}">
                     <i class="fas fa-shopping-cart"></i>
                   </button>
@@ -3665,7 +3671,6 @@ button {
     </div>
   </div>
 </div>
-
 
 
 
@@ -3885,7 +3890,6 @@ button {
     </div>
   </div>
 </div>
-
 
     <!-- Table Reservation Modal -->
     
@@ -4557,12 +4561,13 @@ document.addEventListener('DOMContentLoaded', function() {
     
     // Function to open modal with product data
     function openProductDetailModal(productElement) {
-    // Read product attributes
+        // Read product attributes
         const productName = productElement.dataset.name;
         const productImage = productElement.dataset.image;
         const basePrice = productElement.dataset.price;
         const previousPrice = productElement.dataset.previousPrice;
         const hasVariations = productElement.dataset.hasVariations === "true";
+        const isPriceByPercentage = productElement.dataset.priceByPercentage === "true";
         
         // Variation prices with fallback to base price
         const priceS = productElement.dataset.priceS || basePrice;
@@ -4576,9 +4581,15 @@ document.addEventListener('DOMContentLoaded', function() {
         
         // Set default price to "S" if variations exist, otherwise use base price
         const defaultPrice = hasVariations ? priceS : basePrice;
-        modalPrice.textContent = `$${defaultPrice}`;
+        
+        // Format the price display based on whether it's percentage-based or not
+        if (isPriceByPercentage) {
+            modalPrice.textContent = defaultPrice; // No dollar sign for percentages
+        } else {
+            modalPrice.textContent = `$${defaultPrice}`;
+        }
 
-        if (previousPrice) {
+        if (previousPrice && !isPriceByPercentage) {
             modalOldPrice.textContent = `$${previousPrice}`;
             modalOldPrice.style.display = 'inline';
         } else {
@@ -4624,12 +4635,19 @@ document.addEventListener('DOMContentLoaded', function() {
                 } else if (size === 'F') {
                     button.setAttribute('data-price', priceF);
                 }
+                
+                // Store the percentage pricing flag on each button
+                button.setAttribute('data-price-by-percentage', isPriceByPercentage);
             });
         } else {
             sizeSelection.classList.add('d-none');
             sizeSelection.style.display = 'none';
         }
+        
+        // Store the percentage pricing flag on the modal for later use
+        productModal.setAttribute('data-price-by-percentage', isPriceByPercentage);
     }
+    
     // Use event delegation to handle clicks on both carousel and grid items.
     // We assume that both are inside the #menuContent container.
     const menuContent = document.getElementById('menuContent');
@@ -4657,7 +4675,14 @@ document.addEventListener('DOMContentLoaded', function() {
                 sizeButtons.forEach(btn => btn.classList.remove('active'));
                 this.classList.add('active');
                 const newPrice = this.getAttribute('data-price');
-                modalPrice.textContent = `$${newPrice}`;
+                const isPriceByPercentage = productModal.getAttribute('data-price-by-percentage') === "true";
+                
+                // Format the price display based on whether it's percentage-based or not
+                if (isPriceByPercentage) {
+                    modalPrice.textContent = newPrice; // No dollar sign for percentages
+                } else {
+                    modalPrice.textContent = `$${newPrice}`;
+                }
             }
         });
     });

@@ -163,11 +163,13 @@ def restaurant_menu(request, restaurant_name_slug, hashed_slug):
             # Handle variations
             product.variations_list = product.variations.all() if product.variations.exists() else None
             default_variation = product.variations.filter(name='S').first() or product.variations.first()
-            product.display_price = default_variation.price if default_variation else product.price
+            
+            # Use get_display_price for percentage-based pricing
+            product.display_price = default_variation.price if default_variation else product.get_display_price()
 
             # Apply 50% discount on wings every Wednesday
             product.is_discounted = today == 2 and 'wings' in product.name.lower()
-            if product.is_discounted and product.display_price:
+            if product.is_discounted and product.display_price and not product.price_by_percentage:
                 product.display_price /= 2
 
             # Add GST note if applicable (now on a per-product basis)
@@ -182,11 +184,13 @@ def restaurant_menu(request, restaurant_name_slug, hashed_slug):
     for product in uncategorized_products:
         product.variations_list = product.variations.all() if product.variations.exists() else None
         default_variation = product.variations.filter(name='S').first() or product.variations.first()
-        product.display_price = default_variation.price if default_variation else product.price
+        
+        # Use get_display_price for percentage-based pricing
+        product.display_price = default_variation.price if default_variation else product.get_display_price()
 
         # Apply discount on wings
         product.is_discounted = today == 2 and 'wings' in product.name.lower()
-        if product.is_discounted and product.display_price:
+        if product.is_discounted and product.display_price and not product.price_by_percentage:
             product.display_price /= 2
 
         # Add GST note if applicable (per product)
