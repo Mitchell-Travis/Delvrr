@@ -4913,8 +4913,8 @@ document.addEventListener('DOMContentLoaded', function() {
     id: card.dataset.productId,
     name: card.dataset.name || "5 Pepper",
     description: card.dataset.description || "Mixed Pizza",
-    price: card.dataset.price ? `$${card.dataset.price}` : "$129",
-    previousPrice: card.dataset.previousPrice ? `$${card.dataset.previousPrice}` : "$169",
+    price: card.dataset.price || "$129",
+    previousPrice: card.dataset.previousPrice || "$169",
     image: card.dataset.image || "/api/placeholder/400/400",
     category: card.dataset.category || 'featured',
     status: card.querySelector('.discount-badge') ? 'Sale' : 'Regular',
@@ -4928,101 +4928,131 @@ document.addEventListener('DOMContentLoaded', function() {
   
   // Function to update modal content with slide animations
   function updateModalContent(newIndex, direction = 'right') {
-    // Remove any previous enter classes
-    detailImage.classList.remove('slide-enter-active');
-    detailName.classList.remove('slide-enter-active');
-    detailPrice.classList.remove('slide-enter-active');
-    detailOldPrice.classList.remove('slide-enter-active');
+  // Remove any previous enter classes
+  detailImage.classList.remove('slide-enter-active');
+  detailName.classList.remove('slide-enter-active');
+  detailPrice.classList.remove('slide-enter-active');
+  detailOldPrice.classList.remove('slide-enter-active');
 
-    // Add exit animation classes
-    detailImage.classList.add('slide-exit-active');
-    detailName.classList.add('slide-exit-active');
-    detailPrice.classList.add('slide-exit-active');
-    detailOldPrice.classList.add('slide-exit-active');
+  // Add exit animation classes
+  detailImage.classList.add('slide-exit-active');
+  detailName.classList.add('slide-exit-active');
+  detailPrice.classList.add('slide-exit-active');
+  detailOldPrice.classList.add('slide-exit-active');
 
-    setTimeout(() => {
-      // Update modal content with the new product details
-      const product = products[newIndex];
-      detailImage.src = product.image;
-      detailName.textContent = product.name;
-      
-      // For products with variations, default to S price; otherwise, show base price.
-      if (product.hasVariations) {
-        detailPrice.textContent = `$${product.priceS}`;
+  setTimeout(() => {
+    // Update modal content with the new product details
+    const product = products[newIndex];
+    detailImage.src = product.image;
+    detailName.textContent = product.name;
+    
+    // Check if price is percentage-based (properly evaluate it as boolean)
+    const isPricePercentage = product.priceByPercentage === true || product.priceByPercentage === "true";
+    
+    // Format price display correctly
+    if (product.hasVariations) {
+      // Fix for price display
+      if (isPricePercentage) {
+        detailPrice.textContent = product.priceS;
       } else {
+        // Check if price already starts with $ and only add if needed
+        detailPrice.textContent = product.priceS.toString().startsWith('$') ? product.priceS : `$${product.priceS}`;
+      }
+    } else {
+      // Fix for price display
+      if (isPricePercentage) {
         detailPrice.textContent = product.price;
-      }
-      
-      detailOldPrice.textContent = product.previousPrice;
-
-      // Reset quantity on navigation
-      quantity = 2;
-      quantityDisplay.textContent = quantity;
-
-      // Handle size selection based on whether product has variations.
-      const sizeSelection = document.getElementById('sizeSelectionContainer');
-      const sizeButtons = sizeSelection.querySelectorAll('.size-btn');
-      if (product.hasVariations) {
-        sizeSelection.style.display = 'flex';
-        sizeSelection.classList.remove('d-none');
-        // Update each size button with its corresponding price.
-        sizeButtons.forEach(button => {
-          const size = button.dataset.size;
-          let newPrice;
-          if (size === 'S') {
-            newPrice = product.priceS;
-            button.classList.add('active');
-          } else if (size === 'M') {
-            newPrice = product.priceM;
-            button.classList.remove('active');
-          } else if (size === 'L') {
-            newPrice = product.priceL;
-            button.classList.remove('active');
-          } else if (size === 'F') {
-            newPrice = product.priceF;
-            button.classList.remove('active');
-          }
-          if (!newPrice) newPrice = product.price;
-          button.dataset.price = newPrice;
-          button.disabled = false;
-          // Attach click event for size selection (update modal price)
-          button.onclick = function() {
-            if (!this.disabled) {
-              sizeButtons.forEach(btn => btn.classList.remove('active'));
-              this.classList.add('active');
-              detailPrice.textContent = `$${this.dataset.price}`;
-            }
-          };
-        });
       } else {
-        sizeSelection.style.display = 'none';
-        sizeSelection.classList.add('d-none');
+        // Check if price already starts with $ and only add if needed
+        detailPrice.textContent = product.price.toString().startsWith('$') ? product.price : `$${product.price}`;
       }
-      
-      // Update GST note in modal
-      if (modalGSTNote) {
-        if (product.gst.trim()) {
-          modalGSTNote.querySelector('small').textContent = product.gst;
-          modalGSTNote.style.display = 'block';
-        } else {
-          modalGSTNote.style.display = 'none';
+    }
+    
+    // Fix for previous price display
+    if (product.previousPrice) {
+      detailOldPrice.textContent = product.previousPrice.toString().startsWith('$') ? 
+        product.previousPrice : `$${product.previousPrice}`;
+    } else {
+      detailOldPrice.textContent = '';
+    }
+
+    // Reset quantity on navigation
+    quantity = 2;
+    quantityDisplay.textContent = quantity;
+
+    // Handle size selection based on whether product has variations.
+    const sizeSelection = document.getElementById('sizeSelectionContainer');
+    const sizeButtons = sizeSelection.querySelectorAll('.size-btn');
+    if (product.hasVariations) {
+      sizeSelection.style.display = 'flex';
+      sizeSelection.classList.remove('d-none');
+      // Update each size button with its corresponding price.
+      sizeButtons.forEach(button => {
+        const size = button.dataset.size;
+        let newPrice;
+        if (size === 'S') {
+          newPrice = product.priceS;
+          button.classList.add('active');
+        } else if (size === 'M') {
+          newPrice = product.priceM;
+          button.classList.remove('active');
+        } else if (size === 'L') {
+          newPrice = product.priceL;
+          button.classList.remove('active');
+        } else if (size === 'F') {
+          newPrice = product.priceF;
+          button.classList.remove('active');
         }
+        if (!newPrice) newPrice = product.price;
+        button.dataset.price = newPrice;
+        button.disabled = false;
+        // Attach click event for size selection (update modal price)
+        button.onclick = function() {
+          if (!this.disabled) {
+            sizeButtons.forEach(btn => btn.classList.remove('active'));
+            this.classList.add('active');
+            // Display price differently based on whether it's a percentage
+            if (isPricePercentage) {
+              detailPrice.textContent = this.dataset.price;
+            } else {
+              // Check if price already starts with $ to avoid duplicate $ signs
+              detailPrice.textContent = this.dataset.price.toString().startsWith('$') ? 
+                this.dataset.price : `$${this.dataset.price}`;
+            }
+          }
+        };
+      });
+    } else {
+      sizeSelection.style.display = 'none';
+      sizeSelection.classList.add('d-none');
+    }
+    
+    // Update GST note in modal
+    if (modalGSTNote) {
+      if (product.gst && product.gst.trim()) {
+        modalGSTNote.querySelector('small').textContent = product.gst;
+        modalGSTNote.style.display = 'block';
+      } else {
+        modalGSTNote.style.display = 'none';
       }
+    }
 
-      // Remove exit classes then trigger enter animation
-      detailImage.classList.remove('slide-exit-active');
-      detailName.classList.remove('slide-exit-active');
-      detailPrice.classList.remove('slide-exit-active');
-      detailOldPrice.classList.remove('slide-exit-active');
+    // Remove exit classes then trigger enter animation
+    detailImage.classList.remove('slide-exit-active');
+    detailName.classList.remove('slide-exit-active');
+    detailPrice.classList.remove('slide-exit-active');
+    detailOldPrice.classList.remove('slide-exit-active');
 
-      // Force reflow then add enter classes
-      void detailImage.offsetWidth;
-      detailImage.classList.add('slide-enter-active');
-      detailName.classList.add('slide-enter-active');
-      detailPrice.classList.add('slide-enter-active');
-      detailOldPrice.classList.add('slide-enter-active');
-    }, 400);
-  }
+    // Force reflow then add enter classes
+    void detailImage.offsetWidth;
+    detailImage.classList.add('slide-enter-active');
+    detailName.classList.add('slide-enter-active');
+    detailPrice.classList.add('slide-enter-active');
+    detailOldPrice.classList.add('slide-enter-active');
+  }, 400);
+}
+
+
   
   // Slide navigation button events
   prevBtn.addEventListener('click', function() {
@@ -5049,73 +5079,105 @@ document.addEventListener('DOMContentLoaded', function() {
   
   // Unified function to open modal from any view (carousel or grid)
   function openProductModal(productId) {
-    const index = products.findIndex(p => p.id === productId);
-    if (index === -1) return;
-    currentIndex = index;
-    const product = products[currentIndex];
-    
-    // Update modal details
-    detailImage.src = product.image;
-    detailName.textContent = product.name;
-    if (product.hasVariations) {
-      detailPrice.textContent = `$${product.priceS}`;
+  const index = products.findIndex(p => p.id === productId);
+  if (index === -1) return;
+  currentIndex = index;
+  const product = products[currentIndex];
+  
+  // Check if price is percentage-based (properly evaluate it as boolean)
+  const isPricePercentage = product.priceByPercentage === true || product.priceByPercentage === "true";
+  
+  // Update modal details
+  detailImage.src = product.image;
+  detailName.textContent = product.name;
+  
+  // Format price display based on whether it's percentage or regular price
+  if (product.hasVariations) {
+    if (isPricePercentage) {
+      detailPrice.textContent = product.priceS;
     } else {
+      // Check if price already starts with $ to avoid duplicate $ signs
+      detailPrice.textContent = product.priceS.toString().startsWith('$') ? 
+        product.priceS : `$${product.priceS}`;
+    }
+  } else {
+    if (isPricePercentage) {
       detailPrice.textContent = product.price;
-    }
-    detailOldPrice.textContent = product.previousPrice;
-    quantity = 2;
-    quantityDisplay.textContent = quantity;
-    
-    // Handle size selection
-    const sizeSelection = document.getElementById('sizeSelectionContainer');
-    const sizeButtons = sizeSelection.querySelectorAll('.size-btn');
-    if (product.hasVariations) {
-      sizeSelection.style.display = 'flex';
-      sizeSelection.classList.remove('d-none');
-      sizeButtons.forEach(button => {
-        const size = button.dataset.size;
-        let newPrice;
-        if (size === 'S') {
-          newPrice = product.priceS;
-          button.classList.add('active');
-        } else if (size === 'M') {
-          newPrice = product.priceM;
-          button.classList.remove('active');
-        } else if (size === 'L') {
-          newPrice = product.priceL;
-          button.classList.remove('active');
-        } else if (size === 'F') {
-          newPrice = product.priceF;
-          button.classList.remove('active');
-        }
-        if (!newPrice) newPrice = product.price;
-        button.dataset.price = newPrice;
-        button.disabled = false;
-        button.onclick = function() {
-          if (!this.disabled) {
-            sizeButtons.forEach(btn => btn.classList.remove('active'));
-            this.classList.add('active');
-            detailPrice.textContent = `$${this.dataset.price}`;
-          }
-        };
-      });
     } else {
-      sizeSelection.style.display = 'none';
-      sizeSelection.classList.add('d-none');
+      // Check if price already starts with $ to avoid duplicate $ signs
+      detailPrice.textContent = product.price.toString().startsWith('$') ? 
+        product.price : `$${product.price}`;
     }
-    
-    // Update GST note for the opened product
-    if (modalGSTNote) {
-      if (product.gst.trim()) {
-        modalGSTNote.querySelector('small').textContent = product.gst;
-        modalGSTNote.style.display = 'block';
-      } else {
-        modalGSTNote.style.display = 'none';
-      }
-    }
-    
-    productDetailModal.show();
   }
+  
+  // Fix for previous price display
+  if (product.previousPrice) {
+    detailOldPrice.textContent = product.previousPrice.toString().startsWith('$') ? 
+      product.previousPrice : `$${product.previousPrice}`;
+  } else {
+    detailOldPrice.textContent = '';
+  }
+  
+  quantity = 2;
+  quantityDisplay.textContent = quantity;
+  
+  // Handle size selection
+  const sizeSelection = document.getElementById('sizeSelectionContainer');
+  const sizeButtons = sizeSelection.querySelectorAll('.size-btn');
+  if (product.hasVariations) {
+    sizeSelection.style.display = 'flex';
+    sizeSelection.classList.remove('d-none');
+    sizeButtons.forEach(button => {
+      const size = button.dataset.size;
+      let newPrice;
+      if (size === 'S') {
+        newPrice = product.priceS;
+        button.classList.add('active');
+      } else if (size === 'M') {
+        newPrice = product.priceM;
+        button.classList.remove('active');
+      } else if (size === 'L') {
+        newPrice = product.priceL;
+        button.classList.remove('active');
+      } else if (size === 'F') {
+        newPrice = product.priceF;
+        button.classList.remove('active');
+      }
+      if (!newPrice) newPrice = product.price;
+      button.dataset.price = newPrice;
+      button.disabled = false;
+      button.onclick = function() {
+        if (!this.disabled) {
+          sizeButtons.forEach(btn => btn.classList.remove('active'));
+          this.classList.add('active');
+          // Display price differently based on whether it's a percentage
+          if (isPricePercentage) {
+            detailPrice.textContent = this.dataset.price;
+          } else {
+            // Check if price already starts with $ to avoid duplicate $ signs
+            detailPrice.textContent = this.dataset.price.toString().startsWith('$') ? 
+              this.dataset.price : `$${this.dataset.price}`;
+          }
+        }
+      };
+    });
+  } else {
+    sizeSelection.style.display = 'none';
+    sizeSelection.classList.add('d-none');
+  }
+  
+  // Update GST note for the opened product
+  if (modalGSTNote) {
+    if (product.gst && product.gst.trim()) {
+      modalGSTNote.querySelector('small').textContent = product.gst;
+      modalGSTNote.style.display = 'block';
+    } else {
+      modalGSTNote.style.display = 'none';
+    }
+  }
+  
+  productDetailModal.show();
+}
   
   // Attach click handler for carousel items (.food-item)
   carouselItems.forEach(card => {
@@ -5158,57 +5220,70 @@ document.addEventListener('DOMContentLoaded', function() {
   // Grid view creation function
   const productGrid = document.getElementById('productGrid');
   function createGridView(productsList) {
-    productGrid.innerHTML = '';
-    productsList.forEach(product => {
-      const gridItem = document.createElement('div');
-      gridItem.className = 'grid-item';
-      gridItem.dataset.productId = product.id;
-      gridItem.dataset.category = product.category;
-      gridItem.dataset.name = product.name;
-      gridItem.dataset.description = product.description;
-      gridItem.dataset.price = product.price;
-      gridItem.dataset.previousPrice = product.previousPrice;
-      gridItem.dataset.image = product.image;
-      gridItem.dataset.hasVariations = product.hasVariations ? "true" : "false";
-      gridItem.dataset.priceS = product.priceS;
-      gridItem.dataset.priceM = product.priceM;
-      gridItem.dataset.priceL = product.priceL;
-      gridItem.dataset.priceF = product.priceF;
-      gridItem.dataset.gst = product.gst; // Pass GST note to grid item
-      
-      const isOnSale = product.status === 'Sale';
-      gridItem.innerHTML = `
-        <div class="grid-image-container">
-          ${isOnSale ? '<span class="discount-badge">Sale</span>' : ''}
-          <img src="${product.image}" alt="${product.name}" class="grid-image">
+  productGrid.innerHTML = '';
+  productsList.forEach(product => {
+    const gridItem = document.createElement('div');
+    gridItem.className = 'grid-item';
+    gridItem.dataset.productId = product.id;
+    gridItem.dataset.category = product.category;
+    gridItem.dataset.name = product.name;
+    gridItem.dataset.description = product.description;
+    gridItem.dataset.price = product.price;
+    gridItem.dataset.previousPrice = product.previousPrice;
+    gridItem.dataset.image = product.image;
+    gridItem.dataset.hasVariations = product.hasVariations ? "true" : "false";
+    gridItem.dataset.priceS = product.priceS;
+    gridItem.dataset.priceM = product.priceM;
+    gridItem.dataset.priceL = product.priceL;
+    gridItem.dataset.priceF = product.priceF;
+    gridItem.dataset.gst = product.gst;
+    gridItem.dataset.priceByPercentage = product.priceByPercentage ? "true" : "false";
+    
+    const isOnSale = product.status === 'Sale';
+    
+    // Fix for price display: Check if price already starts with $ and avoid adding another one
+    let priceDisplay;
+    if (product.priceByPercentage === true) {
+      // For percentage, just show the raw value which should include % sign
+      priceDisplay = product.price;
+    } else {
+      // For regular price, check if it already has $ and only add if needed
+      priceDisplay = product.price.toString().startsWith('$') ? product.price : `$${product.price}`;
+    }
+    
+    gridItem.innerHTML = `
+      <div class="grid-image-container">
+        ${isOnSale ? '<span class="discount-badge">Sale</span>' : ''}
+        <img src="${product.image}" alt="${product.name}" class="grid-image">
+      </div>
+      <div class="grid-details">
+        <h3>${product.name}</h3>
+        <div class="rating">
+          <i class="fas fa-star"></i>
+          <span>4.9</span>
+          <span class="review-count">(203)</span>
         </div>
-        <div class="grid-details">
-          <h3>${product.name}</h3>
-          <div class="rating">
-            <i class="fas fa-star"></i>
-            <span>4.9</span>
-            <span class="review-count">(203)</span>
+        <div class="price-row">
+          <div class="price">
+            <span>${priceDisplay}</span>
           </div>
-          <div class="price-row">
-            <div class="price">
-              <span>${product.price}</span>
-            </div>
-            <button class="add-to-cart" data-product-id="${product.id}" data-name="${product.name}" data-price="${product.price}" data-image="${product.image}">
-              <i class="fas fa-shopping-cart"></i>
-            </button>
-          </div>
+          <button class="add-to-cart" data-product-id="${product.id}" data-name="${product.name}" data-price="${product.price}" data-image="${product.image}">
+            <i class="fas fa-shopping-cart"></i>
+          </button>
         </div>
-      `;
-      
-      productGrid.appendChild(gridItem);
-      
-      // Attach grid item click event to open modal detail.
-      gridItem.addEventListener('click', function(e) {
-        if (e.target.closest('.add-to-cart')) return;
-        openProductModal(product.id);
-      });
+      </div>
+    `;
+    
+    productGrid.appendChild(gridItem);
+    
+    // Attach grid item click event to open modal detail.
+    gridItem.addEventListener('click', function(e) {
+      if (e.target.closest('.add-to-cart')) return;
+      openProductModal(product.id);
     });
-  }
+  });
+}
+  
   
   // ===== 3. View Toggle: Carousel to Grid and Back =====
   const viewAllButton = document.querySelector('.view-all');
@@ -5217,25 +5292,26 @@ document.addEventListener('DOMContentLoaded', function() {
   
   // Helper: Extract products from carousel items for grid view.
   function extractProductsFromCarousel() {
-    const foodItems = document.querySelectorAll('.food-item');
-    return Array.from(foodItems).map(item => ({
-      id: item.dataset.productId,
-      name: item.dataset.name,
-      description: item.dataset.description || '',
-      price: item.dataset.price ? `$${item.dataset.price}` : '$129',
-      previousPrice: item.dataset.previousPrice ? `$${item.dataset.previousPrice}` : '$169',
-      image: item.dataset.image,
-      status: item.querySelector('.discount-badge') ? 'Sale' : 'Regular',
-      category: item.dataset.category || 'featured',
-      hasVariations: item.dataset.hasVariations === "true",
-      priceS: item.dataset.priceS ? item.dataset.priceS : item.dataset.price,
-      priceM: item.dataset.priceM ? item.dataset.priceM : item.dataset.price,
-      priceL: item.dataset.priceL ? item.dataset.priceL : item.dataset.price,
-      priceF: item.dataset.priceF ? item.dataset.priceF : item.dataset.price,
-      gst: item.dataset.gst || ""
-    }));
-  }
-  
+  const foodItems = document.querySelectorAll('.food-item');
+  return Array.from(foodItems).map(item => ({
+    id: item.dataset.productId,
+    name: item.dataset.name,
+    description: item.dataset.description || '',
+    price: item.dataset.price,
+    previousPrice: item.dataset.previousPrice ? item.dataset.previousPrice : '169',
+    image: item.dataset.image,
+    status: item.querySelector('.discount-badge') ? 'Sale' : 'Regular',
+    category: item.dataset.category || 'featured',
+    hasVariations: item.dataset.hasVariations === "true",
+    priceS: item.dataset.priceS ? item.dataset.priceS : item.dataset.price,
+    priceM: item.dataset.priceM ? item.dataset.priceM : item.dataset.price,
+    priceL: item.dataset.priceL ? item.dataset.priceL : item.dataset.price,
+    priceF: item.dataset.priceF ? item.dataset.priceF : item.dataset.price,
+    gst: item.dataset.gst || "",
+    // Properly capture priceByPercentage attribute
+    priceByPercentage: item.dataset.priceByPercentage === "true"
+  }));
+}
   if (viewAllButton) {
     viewAllButton.addEventListener('click', function() {
       const productsFromCarousel = extractProductsFromCarousel();
