@@ -25,6 +25,7 @@ import logging
 from django.views.generic import DetailView
 from django.db.models import Prefetch
 from django.core.cache import cache
+from django.db.models import Prefetch, Q, F, Case, When, FloatField
 # from celery import shared_task
 
 # from django.db.models import Func, F
@@ -139,13 +140,11 @@ from django.utils.timezone import now
 def restaurant_menu(request, restaurant_name_slug, hashed_slug):
     restaurant = get_object_or_404(Restaurant, hashed_slug=hashed_slug)
 
-    # Capture user details
+    # Log menu visit (could also be async via Celery if high traffic)
     ip_address = request.META.get('REMOTE_ADDR')
     user_agent_str = request.META.get('HTTP_USER_AGENT', '')
     parsed_user_agent = request.user_agent
     device = parsed_user_agent.device.family if parsed_user_agent and hasattr(parsed_user_agent, 'device') else "Unknown Device"
-
-    # Log menu visit
     MenuVisit.objects.create(
         restaurant=restaurant,
         ip_address=ip_address,
@@ -153,65 +152,69 @@ def restaurant_menu(request, restaurant_name_slug, hashed_slug):
         device=device
     )
 
-    # Get categories in order
-    categories = Category.objects.filter(products__restaurant=restaurant).distinct().order_by('order')
-    categorized_products = []
+    # Use caching for categories if they don't change frequently.
+    cache_key = f"restaurant_{restaurant.id}_categories"
+    categories = cache.get(cache_key)
+    if not categories:
+        # Prefetch related products with their variations in one go.
+        product_queryset = Product.objects.filter(restaurant=restaurant).prefetch_related('variations')
+        categories = list(
+            Category.objects.filter(products__restaurant=restaurant)
+            .distinct()
+            .order_by('order')
+            .prefetch_related(Prefetch('products', queryset=product_queryset))
+        )
+        cache.set(cache_key, categories, 300)  # cache for 5 minutes
 
-    # Get the current weekday (0 = Monday, 1 = Tuesday, ..., 6 = Sunday)
+    # Get current weekday (0 = Monday, 1 = Tuesday, ..., 6 = Sunday)
     today = datetime.today().weekday()
-
+    
+    categorized_products = []
+    # Process categorized products
     for category in categories:
-        category_products = Product.objects.filter(restaurant=restaurant, category=category).prefetch_related('variations')
+        # Use the pre-fetched products (from the Prefetch above)
+        category_products = category.products.all()
 
+        # Process each product in Python (or use annotations for simple conditions)
         for product in category_products:
-            # Handle variations
-            product.variations_list = product.variations.all() if product.variations.exists() else None
+            # Pre-calculate variations if available
+            product.variations_list = list(product.variations.all()) if product.variations.exists() else None
             default_variation = product.variations.filter(name='S').first() or product.variations.first()
-            
-            # Use get_display_price for percentage-based pricing
             product.display_price = default_variation.price if default_variation else product.get_display_price()
-
-            # Apply 50% discount on wings every Wednesday
+            
+            # Apply discount logic: discount wings on Wednesday
             product.is_discounted = today == 2 and 'wings' in product.name.lower()
             if product.is_discounted and product.display_price and not product.price_by_percentage:
                 product.display_price /= 2
 
-            # Add GST note if applicable (now on a per-product basis)
+            # Add GST note if applicable
             product.gst_note = "10% GST will be added" if product.charge_gst else ""
 
         if category_products.exists():
             categorized_products.append(list(category_products))
 
-    # Handle uncategorized products
+    # Process uncategorized products similarly using a cached query if desired.
     uncategorized_products = Product.objects.filter(restaurant=restaurant, category__isnull=True).prefetch_related('variations')
-    
     for product in uncategorized_products:
-        product.variations_list = product.variations.all() if product.variations.exists() else None
+        product.variations_list = list(product.variations.all()) if product.variations.exists() else None
         default_variation = product.variations.filter(name='S').first() or product.variations.first()
-        
-        # Use get_display_price for percentage-based pricing
         product.display_price = default_variation.price if default_variation else product.get_display_price()
-
-        # Apply discount on wings
         product.is_discounted = today == 2 and 'wings' in product.name.lower()
         if product.is_discounted and product.display_price and not product.price_by_percentage:
             product.display_price /= 2
-
-        # Add GST note if applicable (per product)
         product.gst_note = "10% GST will be added" if product.charge_gst else ""
 
     if uncategorized_products.exists():
         categorized_products.append(list(uncategorized_products))
-
     if not categorized_products:
         categorized_products = [[]]
 
-    # Assign restaurant to customer if authenticated
+    # If user is authenticated, assign restaurant to customer (could also be done asynchronously)
     if request.user.is_authenticated:
         customer, _ = Customer.objects.get_or_create(user=request.user)
         customer.assign_restaurant(restaurant)
 
-    # Brand colors
+    # Cache brand colors if needed
     brand_colors = restaurant.brand_colors.all()
     primary_brand_color = brand_colors.first().color if brand_colors.exists() else "#f7c028"
     secondary_brand_color = brand_colors[1].color if brand_colors.count() >= 2 else "#000000"

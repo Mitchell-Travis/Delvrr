@@ -3587,38 +3587,38 @@ button {
       {% for category_products in allProds %}
         {% for product in category_products %}
           <div class="food-item"
-         data-has-variations="{% if product.variations_list %}true{% else %}false{% endif %}"
-         data-category="{{ product.category.name|lower }}"
-         data-product-id="{{ product.id }}"
-         data-name="{{ product.name }}"
-         data-description="{{ product.description }}"
-         data-image="{{ product.product_image.url }}"
-         data-gst="{{ product.gst_note }}"
-         data-price-by-percentage="{% if product.price_by_percentage %}true{% else %}false{% endif %}"
-         data-special-offer="{{ product.special_offer|default_if_none:'' }}"
-         {% if product.variations_list %}
-           {% with default_price=product.variations_list|get_default_price:"S" %}
-             data-price="{% if default_price %}{{ default_price }}{% else %}{{ product.get_display_price }}{% endif %}"
-           {% endwith %}
-           {% for variation in product.variations_list %}
-             {% if variation.name == "S" %}
-               data-price-s="{{ variation.price }}"
-             {% elif variation.name == "M" %}
-               data-price-m="{{ variation.price }}"
-             {% elif variation.name == "L" %}
-               data-price-l="{{ variation.price }}"
-             {% elif variation.name == "F" %}
-               data-price-f="{{ variation.price }}"
-             {% endif %}
-           {% endfor %}
-         {% else %}
-           data-price="{{ product.get_display_price }}"
-           data-price-s="{{ product.get_display_price }}"
-           data-price-m="{{ product.get_display_price }}"
-           data-price-l="{{ product.get_display_price }}"
-           data-price-f="{{ product.get_display_price }}"
-         {% endif %}
-    >
+               data-has-variations="{% if product.variations_list %}true{% else %}false{% endif %}"
+               data-category="{{ product.category.name|lower }}"
+               data-product-id="{{ product.id }}"
+               data-name="{{ product.name }}"
+               data-description="{{ product.description }}"
+               data-image="{{ product.product_image.url }}"
+               data-gst="{{ product.gst_note }}"
+               data-price-by-percentage="{% if product.price_by_percentage %}true{% else %}false{% endif %}"
+               data-special-offer="{{ product.special_offer|default_if_none:'' }}"
+               {% if product.variations_list %}
+                 {% with default_price=product.variations_list|get_default_price:"S" %}
+                   data-price="{% if default_price %}{{ default_price }}{% else %}{{ product.get_display_price }}{% endif %}"
+                 {% endwith %}
+                 {% for variation in product.variations_list %}
+                   {% if variation.name == "S" %}
+                     data-price-s="{{ variation.price }}"
+                   {% elif variation.name == "M" %}
+                     data-price-m="{{ variation.price }}"
+                   {% elif variation.name == "L" %}
+                     data-price-l="{{ variation.price }}"
+                   {% elif variation.name == "F" %}
+                     data-price-f="{{ variation.price }}"
+                   {% endif %}
+                 {% endfor %}
+               {% else %}
+                 data-price="{{ product.get_display_price }}"
+                 data-price-s="{{ product.get_display_price }}"
+                 data-price-m="{{ product.get_display_price }}"
+                 data-price-l="{{ product.get_display_price }}"
+                 data-price-f="{{ product.get_display_price }}"
+               {% endif %}
+          >
             <div class="food-image-container">
               {% if product.status == 'Sale' %}
                 <span class="discount-badge">Sale</span>
@@ -3628,6 +3628,7 @@ button {
                   <img src="{{ product.product_image.url }}"
                        alt="{{ product.name }}"
                        class="product-image-trigger"
+                       loading="lazy"
                        style="width:100%; height:100%; object-fit:cover;">
                 </div>
               </div>
@@ -3681,6 +3682,7 @@ button {
     </div>
   </div>
 </div>
+
 
 
 
@@ -4953,105 +4955,106 @@ document.addEventListener('DOMContentLoaded', function() {
 
   // Update modal content with slide animations
   function updateModalContent(newIndex, direction = 'right') {
-  if (!modalProducts.length) return;
-  
-  // Remove enter animations
-  detailImage.classList.remove('slide-enter-active');
-  detailName.classList.remove('slide-enter-active');
-  detailPrice.classList.remove('slide-enter-active');
-  detailOldPrice.classList.remove('slide-enter-active');
+    if (!modalProducts.length) return;
+    
+    // Remove enter animations
+    detailImage.classList.remove('slide-enter-active');
+    detailName.classList.remove('slide-enter-active');
+    detailPrice.classList.remove('slide-enter-active');
+    detailOldPrice.classList.remove('slide-enter-active');
 
-  // Add exit animations
-  detailImage.classList.add('slide-exit-active');
-  detailName.classList.add('slide-exit-active');
-  detailPrice.classList.add('slide-exit-active');
-  detailOldPrice.classList.add('slide-exit-active');
+    // Add exit animations
+    detailImage.classList.add('slide-exit-active');
+    detailName.classList.add('slide-exit-active');
+    detailPrice.classList.add('slide-exit-active');
+    detailOldPrice.classList.add('slide-exit-active');
 
-  setTimeout(() => {
-    const product = modalProducts[newIndex];
-    detailImage.src = product.image;
-    detailName.textContent = product.name;
-
-    // Handle price and special offer display
-    if (product.specialOffer && product.specialOffer.trim()) {
-      // Hide price and old price when there’s a special offer
-      detailPrice.textContent = '';
-      detailOldPrice.textContent = '';
-      // Show special offer text
-      specialOfferNote.style.display = 'block';
-      specialOfferNote.textContent = product.specialOffer;
-    } else {
-      // No special offer, display the price
-      const isPricePercentage = product.priceByPercentage;
-      if (product.hasVariations) {
-        detailPrice.textContent = isPricePercentage ? product.priceS : 
-          (product.priceS.startsWith('$') ? product.priceS : `$${product.priceS}`);
+    setTimeout(() => {
+      const product = modalProducts[newIndex];
+      
+      // Set up a one-time onload event for the new image
+      detailImage.onload = function() {
+        // Remove exit animations
+        detailImage.classList.remove('slide-exit-active');
+        // Trigger enter animations
+        detailImage.classList.add('slide-enter-active');
+        // Clear onload handler to prevent multiple triggers
+        detailImage.onload = null;
+      };
+      
+      // Update image source; lazy loading browser attribute is not needed in modal if already loaded
+      detailImage.src = product.image;
+      detailName.textContent = product.name;
+      
+      // Handle price and special offer display
+      if (product.specialOffer && product.specialOffer.trim()) {
+        detailPrice.textContent = '';
+        detailOldPrice.textContent = '';
+        specialOfferNote.style.display = 'block';
+        specialOfferNote.textContent = product.specialOffer;
       } else {
-        detailPrice.textContent = isPricePercentage ? product.price : 
-          (product.price.startsWith('$') ? product.price : `$${product.price}`);
+        const isPricePercentage = product.priceByPercentage;
+        if (product.hasVariations) {
+          detailPrice.textContent = isPricePercentage ? product.priceS : 
+            (product.priceS.startsWith('$') ? product.priceS : `$${product.priceS}`);
+        } else {
+          detailPrice.textContent = isPricePercentage ? product.price : 
+            (product.price.startsWith('$') ? product.price : `$${product.price}`);
+        }
+        detailOldPrice.textContent = product.previousPrice ? 
+          (product.previousPrice.startsWith('$') ? product.previousPrice : `$${product.previousPrice}`) : '';
+        specialOfferNote.style.display = 'none';
       }
-      // Show old price if it exists
-      detailOldPrice.textContent = product.previousPrice ? 
-        (product.previousPrice.startsWith('$') ? product.previousPrice : `$${product.previousPrice}`) : '';
-      // Hide special offer note
-      specialOfferNote.style.display = 'none';
-    }
+      
+      // Set quantity
+      quantity = 2;
+      quantityDisplay.textContent = quantity;
 
-    // Set quantity
-    quantity = 2;
-    quantityDisplay.textContent = quantity;
-
-    // Handle size variations
-    const sizeSelection = document.getElementById('sizeSelectionContainer');
-    const sizeButtons = sizeSelection?.querySelectorAll('.size-btn') || [];
-    if (product.hasVariations && sizeSelection) {
-      sizeSelection.style.display = 'flex';
-      sizeSelection.classList.remove('d-none');
-      sizeButtons.forEach(button => {
-        const size = button.dataset.size;
-        let newPrice;
-        if (size === 'S') newPrice = product.priceS, button.classList.add('active');
-        else if (size === 'M') newPrice = product.priceM, button.classList.remove('active');
-        else if (size === 'L') newPrice = product.priceL, button.classList.remove('active');
-        else if (size === 'F') newPrice = product.priceF, button.classList.remove('active');
-        button.dataset.price = newPrice || product.price;
-        button.disabled = false;
-        button.onclick = function() {
-          if (!this.disabled) {
-            sizeButtons.forEach(btn => btn.classList.remove('active'));
-            this.classList.add('active');
-            // Only update price if there’s no special offer
-            if (!product.specialOffer || !product.specialOffer.trim()) {
-              detailPrice.textContent = this.dataset.price.startsWith('$') ? this.dataset.price : `$${this.dataset.price}`;
+      // Handle size variations
+      const sizeSelection = document.getElementById('sizeSelectionContainer');
+      const sizeButtons = sizeSelection?.querySelectorAll('.size-btn') || [];
+      if (product.hasVariations && sizeSelection) {
+        sizeSelection.style.display = 'flex';
+        sizeSelection.classList.remove('d-none');
+        sizeButtons.forEach(button => {
+          const size = button.dataset.size;
+          let newPrice;
+          if (size === 'S') newPrice = product.priceS, button.classList.add('active');
+          else if (size === 'M') newPrice = product.priceM, button.classList.remove('active');
+          else if (size === 'L') newPrice = product.priceL, button.classList.remove('active');
+          else if (size === 'F') newPrice = product.priceF, button.classList.remove('active');
+          button.dataset.price = newPrice || product.price;
+          button.disabled = false;
+          button.onclick = function() {
+            if (!this.disabled) {
+              sizeButtons.forEach(btn => btn.classList.remove('active'));
+              this.classList.add('active');
+              if (!product.specialOffer || !product.specialOffer.trim()) {
+                detailPrice.textContent = this.dataset.price.startsWith('$') ? this.dataset.price : `$${this.dataset.price}`;
+              }
             }
-          }
-        };
-      });
-    } else if (sizeSelection) {
-      sizeSelection.style.display = 'none';
-      sizeSelection.classList.add('d-none');
-    }
+          };
+        });
+      } else if (sizeSelection) {
+        sizeSelection.style.display = 'none';
+        sizeSelection.classList.add('d-none');
+      }
 
-    // Handle GST note
-    if (modalGSTNote) {
-      modalGSTNote.style.display = product.gst.trim() ? 'block' : 'none';
-      if (product.gst.trim()) modalGSTNote.querySelector('small').textContent = product.gst;
-    }
-
-    // Remove exit animations
-    detailImage.classList.remove('slide-exit-active');
-    detailName.classList.remove('slide-exit-active');
-    detailPrice.classList.remove('slide-exit-active');
-    detailOldPrice.classList.remove('slide-exit-active');
-
-    // Trigger reflow and add enter animations
-    void detailImage.offsetWidth;
-    detailImage.classList.add('slide-enter-active');
-    detailName.classList.add('slide-enter-active');
-    detailPrice.classList.add('slide-enter-active');
-    detailOldPrice.classList.add('slide-enter-active');
-  }, 400);
-}
+      // Handle GST note
+      if (modalGSTNote) {
+        modalGSTNote.style.display = product.gst.trim() ? 'block' : 'none';
+        if (product.gst.trim()) modalGSTNote.querySelector('small').textContent = product.gst;
+      }
+      
+      // Remove exit animations from text elements and add enter animations
+      detailName.classList.remove('slide-exit-active');
+      detailPrice.classList.remove('slide-exit-active');
+      detailOldPrice.classList.remove('slide-exit-active');
+      detailName.classList.add('slide-enter-active');
+      detailPrice.classList.add('slide-enter-active');
+      detailOldPrice.classList.add('slide-enter-active');
+    }, 400);
+  }
 
   // Slide navigation events
   prevBtn.addEventListener('click', () => {
@@ -5091,13 +5094,13 @@ document.addEventListener('DOMContentLoaded', function() {
     if (trigger) trigger.addEventListener('click', () => openProductModal(card.dataset.productId));
   });
 
-  // Modal animations
+  // Modal animations styles injected
   const modalStyle = document.createElement('style');
   modalStyle.textContent = `
     @keyframes modalImageZoom { from { transform: scale(0.95); opacity: 0; } to { transform: scale(1); opacity: 1; } }
     @keyframes modalContentSlide { from { transform: translateY(20px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
-    .modal-image-animate { animation: modalImageZoom 0.3s ease-out forwards; }
-    .modal-content-animate { animation: modalContentSlide 0.3s ease-out forwards; }
+    .slide-enter-active { animation: modalImageZoom 0.3s ease-out forwards; }
+    .slide-exit-active { animation: modalContentSlide 0.3s ease-out forwards; }
   `;
   document.head.appendChild(modalStyle);
 

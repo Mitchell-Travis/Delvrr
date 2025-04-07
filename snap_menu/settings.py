@@ -74,6 +74,7 @@ MIDDLEWARE = [
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
     "allauth.account.middleware.AccountMiddleware",
     "django_user_agents.middleware.UserAgentMiddleware",
+    'menu_dashboard.middleware.CacheControlMiddleware'
 ]
 
 # Templates
