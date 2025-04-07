@@ -3204,6 +3204,17 @@ body {
   }
 }
 
+.special-offer-note {
+  margin-top: 8px;
+  padding: 4px 8px;
+  background-color: #ffeb3b; /* Bright yellow background */
+  color: #333; /* Dark text for contrast */
+  border-radius: 4px;
+  font-size: 14px;
+  font-weight: 500;
+  display: none; /* Hidden by default */
+}
+
 /* Animation for modal */
 @keyframes modalFadeIn {
   from { opacity: 0; transform: scale(0.95); }
@@ -3576,39 +3587,38 @@ button {
       {% for category_products in allProds %}
         {% for product in category_products %}
           <div class="food-item"
-               data-has-variations="{% if product.variations_list %}true{% else %}false{% endif %}"
-               data-category="{{ product.category.name|lower }}"
-               data-product-id="{{ product.id }}"
-               data-name="{{ product.name }}"
-               data-description="{{ product.description }}"
-               data-image="{{ product.product_image.url }}"
-               data-gst="{{ product.gst_note }}"
-               data-price-by-percentage="{% if product.price_by_percentage %}true{% else %}false{% endif %}"
-               
-               {% if product.variations_list %}
-                 {% with default_price=product.variations_list|get_default_price:"S" %}
-                   data-price="{% if default_price %}{{ default_price }}{% else %}{{ product.get_display_price }}{% endif %}"
-                 {% endwith %}
-                 
-                 {% for variation in product.variations_list %}
-                   {% if variation.name == "S" %}
-                     data-price-s="{{ variation.price }}"
-                   {% elif variation.name == "M" %}
-                     data-price-m="{{ variation.price }}"
-                   {% elif variation.name == "L" %}
-                     data-price-l="{{ variation.price }}"
-                   {% elif variation.name == "F" %}
-                     data-price-f="{{ variation.price }}"
-                   {% endif %}
-                 {% endfor %}
-               {% else %}
-                 data-price="{{ product.get_display_price }}"
-                 data-price-s="{{ product.get_display_price }}"
-                 data-price-m="{{ product.get_display_price }}"
-                 data-price-l="{{ product.get_display_price }}"
-                 data-price-f="{{ product.get_display_price }}"
-               {% endif %}
-          >
+         data-has-variations="{% if product.variations_list %}true{% else %}false{% endif %}"
+         data-category="{{ product.category.name|lower }}"
+         data-product-id="{{ product.id }}"
+         data-name="{{ product.name }}"
+         data-description="{{ product.description }}"
+         data-image="{{ product.product_image.url }}"
+         data-gst="{{ product.gst_note }}"
+         data-price-by-percentage="{% if product.price_by_percentage %}true{% else %}false{% endif %}"
+         data-special-offer="{{ product.special_offer|default_if_none:'' }}"
+         {% if product.variations_list %}
+           {% with default_price=product.variations_list|get_default_price:"S" %}
+             data-price="{% if default_price %}{{ default_price }}{% else %}{{ product.get_display_price }}{% endif %}"
+           {% endwith %}
+           {% for variation in product.variations_list %}
+             {% if variation.name == "S" %}
+               data-price-s="{{ variation.price }}"
+             {% elif variation.name == "M" %}
+               data-price-m="{{ variation.price }}"
+             {% elif variation.name == "L" %}
+               data-price-l="{{ variation.price }}"
+             {% elif variation.name == "F" %}
+               data-price-f="{{ variation.price }}"
+             {% endif %}
+           {% endfor %}
+         {% else %}
+           data-price="{{ product.get_display_price }}"
+           data-price-s="{{ product.get_display_price }}"
+           data-price-m="{{ product.get_display_price }}"
+           data-price-l="{{ product.get_display_price }}"
+           data-price-f="{{ product.get_display_price }}"
+         {% endif %}
+    >
             <div class="food-image-container">
               {% if product.status == 'Sale' %}
                 <span class="discount-badge">Sale</span>
@@ -3870,6 +3880,8 @@ button {
             <span id="detailProductPrice" class="current-price">$0</span>
             <span id="detailProductOldPrice" class="old-price">$0</span>
           </div>
+          <div id="specialOfferNote" class="special-offer-note"></div>
+          <!-- Add this line -->
           <div id="modalGSTNote" class="gst-note">
             <small></small>
           </div>
@@ -4557,86 +4569,95 @@ document.addEventListener('DOMContentLoaded', function() {
     sizeSelection.style.display = 'none';
 
     function openProductDetailModal(productElement) {
-        const productName = productElement.dataset.name;
-        const productImage = productElement.dataset.image;
-        const basePrice = productElement.dataset.price;
-        const previousPrice = productElement.dataset.previousPrice;
-        const hasVariations = productElement.dataset.hasVariations === "true";
-        const isPriceByPercentage = productElement.dataset.priceByPercentage === "true";
+      const productName = productElement.dataset.name;
+      const productImage = productElement.dataset.image;
+      const basePrice = productElement.dataset.price;
+      const previousPrice = productElement.dataset.previousPrice;
+      const hasVariations = productElement.dataset.hasVariations === "true";
+      const isPriceByPercentage = productElement.dataset.priceByPercentage === "true";
+      const specialOffer = productElement.dataset.specialOffer; // Add this line
 
-        const priceS = productElement.dataset.priceS || basePrice;
-        const priceM = productElement.dataset.priceM || basePrice;
-        const priceL = productElement.dataset.priceL || basePrice;
-        const priceF = productElement.dataset.priceF || basePrice;
+      const priceS = productElement.dataset.priceS || basePrice;
+      const priceM = productElement.dataset.priceM || basePrice;
+      const priceL = productElement.dataset.priceL || basePrice;
+      const priceF = productElement.dataset.priceF || basePrice;
 
-        modalImage.src = productImage;
-        modalName.textContent = productName;
+      modalImage.src = productImage;
+      modalName.textContent = productName;
 
-        const defaultPrice = hasVariations ? priceS : basePrice;
+      const defaultPrice = hasVariations ? priceS : basePrice;
+      modalPrice.textContent = defaultPrice;
 
-        // Updated: Don't add $ manually, use exact string from data
-        modalPrice.textContent = defaultPrice;
+      if (previousPrice && !isPriceByPercentage) {
+        modalOldPrice.textContent = `$${previousPrice}`;
+        modalOldPrice.style.display = 'inline';
+      } else {
+        modalOldPrice.style.display = 'none';
+      }
 
-        if (previousPrice && !isPriceByPercentage) {
-            modalOldPrice.textContent = `$${previousPrice}`;
-            modalOldPrice.style.display = 'inline';
-        } else {
-            modalOldPrice.style.display = 'none';
-        }
+      // Handle special offer display
+      const specialOfferNote = document.getElementById('specialOfferNote');
+      if (specialOffer) {
+        specialOfferNote.textContent = specialOffer;
+        specialOfferNote.style.display = 'block';
+      } else {
+        specialOfferNote.style.display = 'none';
+      }
 
-        const gstNote = productElement.dataset.gst;
-        const modalGSTNote = document.getElementById('modalGSTNote');
-        if (gstNote) {
-            modalGSTNote.querySelector('small').textContent = gstNote;
-            modalGSTNote.style.display = 'block';
-        } else {
-            modalGSTNote.style.display = 'none';
-        }
+      const gstNote = productElement.dataset.gst;
+      const modalGSTNote = document.getElementById('modalGSTNote');
+      if (gstNote) {
+        modalGSTNote.querySelector('small').textContent = gstNote;
+        modalGSTNote.style.display = 'block';
+      } else {
+        modalGSTNote.style.display = 'none';
+      }
 
-        quantity = 1;
-        quantityDisplay.textContent = quantity;
+      quantity = 1;
+      quantityDisplay.textContent = quantity;
 
-        sizeButtons.forEach(btn => {
-            btn.classList.remove('active');
-            btn.disabled = false;
-            btn.removeAttribute('data-price');
+      // Size selection logic remains unchanged
+      sizeButtons.forEach(btn => {
+        btn.classList.remove('active');
+        btn.disabled = false;
+        btn.removeAttribute('data-price');
+      });
+
+      if (hasVariations) {
+        sizeSelection.classList.remove('d-none');
+        sizeSelection.style.display = 'flex';
+
+        sizeButtons.forEach(button => {
+          const size = button.dataset.size;
+          let price = basePrice;
+
+          if (size === 'S') {
+            price = priceS;
+            button.classList.add('active');
+          } else if (size === 'M') {
+            price = priceM;
+          } else if (size === 'L') {
+            price = priceL;
+          } else if (size === 'F') {
+            price = priceF;
+          }
+
+          button.setAttribute('data-price', price);
+          button.setAttribute('data-price-by-percentage', isPriceByPercentage);
         });
+      } else {
+        sizeSelection.classList.add('d-none');
+        sizeSelection.style.display = 'none';
+      }
 
-        if (hasVariations) {
-            sizeSelection.classList.remove('d-none');
-            sizeSelection.style.display = 'flex';
+      productModal.setAttribute('data-price-by-percentage', isPriceByPercentage);
 
-            sizeButtons.forEach(button => {
-                const size = button.dataset.size;
-                let price = basePrice;
-
-                if (size === 'S') {
-                    price = priceS;
-                    button.classList.add('active');
-                } else if (size === 'M') {
-                    price = priceM;
-                } else if (size === 'L') {
-                    price = priceL;
-                } else if (size === 'F') {
-                    price = priceF;
-                }
-
-                button.setAttribute('data-price', price);
-                button.setAttribute('data-price-by-percentage', isPriceByPercentage);
-            });
-        } else {
-            sizeSelection.classList.add('d-none');
-            sizeSelection.style.display = 'none';
-        }
-
-        productModal.setAttribute('data-price-by-percentage', isPriceByPercentage);
-
-        if (window.jQuery && window.jQuery.fn.modal) {
-            $(productModal).modal('show');
-        } else {
-            const modalInstance = new bootstrap.Modal(productModal);
-            modalInstance.show();
-        }
+      if (window.jQuery && window.jQuery.fn.modal) {
+        $(productModal).modal('show');
+      } else {
+        const modalInstance = new bootstrap.Modal(productModal);
+        modalInstance.show();
+      }
     }
 
     const menuContent = document.getElementById('menuContent');
@@ -4889,11 +4910,9 @@ document.addEventListener('DOMContentLoaded', function() {
 <!-- Search features -->
 <script>
 document.addEventListener('DOMContentLoaded', function() {
-  // ===== 1. Unified Modal Functionality (Slide Navigation & Product Detail) =====
+  // Modal element references
   const productDetailModalElement = document.getElementById('productDetailModal');
   const productDetailModal = new bootstrap.Modal(productDetailModalElement);
-  
-  // Modal element references (make sure these exist in your modal HTML)
   const detailImage = document.getElementById('detailProductImage');
   const detailName = document.getElementById('detailProductName');
   const detailPrice = document.getElementById('detailProductPrice');
@@ -4901,15 +4920,19 @@ document.addEventListener('DOMContentLoaded', function() {
   const quantityDisplay = document.getElementById('quantityDisplay');
   const prevBtn = document.getElementById('prevProduct');
   const nextBtn = document.getElementById('nextProduct');
-  const modalGSTNote = document.getElementById('modalGSTNote'); // GST note element
-  
+  const modalGSTNote = document.getElementById('modalGSTNote');
+  const specialOfferNote = document.getElementById('specialOfferNote');
+
+  // Global state
   let quantity = 2;
   let currentIndex = 0;
-  
-  // Build the initial products array from carousel items (".food-item")
-  // Now we also add variation prices and GST note.
+  let products = [];
+  let modalProducts = [];
+  let lastSelectedCategory = 'featured';
+
+  // Initialize products from carousel items
   const carouselItems = Array.from(document.querySelectorAll('.food-item'));
-  let products = carouselItems.map(card => ({
+  products = carouselItems.map(card => ({
     id: card.dataset.productId,
     name: card.dataset.name || "5 Pepper",
     description: card.dataset.description || "Mixed Pizza",
@@ -4919,131 +4942,109 @@ document.addEventListener('DOMContentLoaded', function() {
     category: card.dataset.category || 'featured',
     status: card.querySelector('.discount-badge') ? 'Sale' : 'Regular',
     hasVariations: card.dataset.hasVariations === "true",
-    priceS: card.dataset.priceS ? card.dataset.priceS : card.dataset.price,
-    priceM: card.dataset.priceM ? card.dataset.priceM : card.dataset.price,
-    priceL: card.dataset.priceL ? card.dataset.priceL : card.dataset.price,
-    priceF: card.dataset.priceF ? card.dataset.priceF : card.dataset.price,
-    gst: card.dataset.gst || ""  // New: GST note for this product
+    priceS: card.dataset.priceS || card.dataset.price,
+    priceM: card.dataset.priceM || card.dataset.price,
+    priceL: card.dataset.priceL || card.dataset.price,
+    priceF: card.dataset.priceF || card.dataset.price,
+    gst: card.dataset.gst || "",
+    specialOffer: card.dataset.specialOffer || "",
+    priceByPercentage: card.dataset.priceByPercentage === "true"
   }));
-  
-  // Function to update modal content with slide animations
+
+  // Update modal content with slide animations
   function updateModalContent(newIndex, direction = 'right') {
-  // Remove any previous enter classes
+  if (!modalProducts.length) return;
+  
+  // Remove enter animations
   detailImage.classList.remove('slide-enter-active');
   detailName.classList.remove('slide-enter-active');
   detailPrice.classList.remove('slide-enter-active');
   detailOldPrice.classList.remove('slide-enter-active');
 
-  // Add exit animation classes
+  // Add exit animations
   detailImage.classList.add('slide-exit-active');
   detailName.classList.add('slide-exit-active');
   detailPrice.classList.add('slide-exit-active');
   detailOldPrice.classList.add('slide-exit-active');
 
   setTimeout(() => {
-    // Update modal content with the new product details
-    const product = products[newIndex];
+    const product = modalProducts[newIndex];
     detailImage.src = product.image;
     detailName.textContent = product.name;
-    
-    // Check if price is percentage-based (properly evaluate it as boolean)
-    const isPricePercentage = product.priceByPercentage === true || product.priceByPercentage === "true";
-    
-    // Format price display correctly
-    if (product.hasVariations) {
-      // Fix for price display
-      if (isPricePercentage) {
-        detailPrice.textContent = product.priceS;
-      } else {
-        // Check if price already starts with $ and only add if needed
-        detailPrice.textContent = product.priceS.toString().startsWith('$') ? product.priceS : `$${product.priceS}`;
-      }
-    } else {
-      // Fix for price display
-      if (isPricePercentage) {
-        detailPrice.textContent = product.price;
-      } else {
-        // Check if price already starts with $ and only add if needed
-        detailPrice.textContent = product.price.toString().startsWith('$') ? product.price : `$${product.price}`;
-      }
-    }
-    
-    // Fix for previous price display
-    if (product.previousPrice) {
-      detailOldPrice.textContent = product.previousPrice.toString().startsWith('$') ? 
-        product.previousPrice : `$${product.previousPrice}`;
-    } else {
+
+    // Handle price and special offer display
+    if (product.specialOffer && product.specialOffer.trim()) {
+      // Hide price and old price when there’s a special offer
+      detailPrice.textContent = '';
       detailOldPrice.textContent = '';
+      // Show special offer text
+      specialOfferNote.style.display = 'block';
+      specialOfferNote.textContent = product.specialOffer;
+    } else {
+      // No special offer, display the price
+      const isPricePercentage = product.priceByPercentage;
+      if (product.hasVariations) {
+        detailPrice.textContent = isPricePercentage ? product.priceS : 
+          (product.priceS.startsWith('$') ? product.priceS : `$${product.priceS}`);
+      } else {
+        detailPrice.textContent = isPricePercentage ? product.price : 
+          (product.price.startsWith('$') ? product.price : `$${product.price}`);
+      }
+      // Show old price if it exists
+      detailOldPrice.textContent = product.previousPrice ? 
+        (product.previousPrice.startsWith('$') ? product.previousPrice : `$${product.previousPrice}`) : '';
+      // Hide special offer note
+      specialOfferNote.style.display = 'none';
     }
 
-    // Reset quantity on navigation
+    // Set quantity
     quantity = 2;
     quantityDisplay.textContent = quantity;
 
-    // Handle size selection based on whether product has variations.
+    // Handle size variations
     const sizeSelection = document.getElementById('sizeSelectionContainer');
-    const sizeButtons = sizeSelection.querySelectorAll('.size-btn');
-    if (product.hasVariations) {
+    const sizeButtons = sizeSelection?.querySelectorAll('.size-btn') || [];
+    if (product.hasVariations && sizeSelection) {
       sizeSelection.style.display = 'flex';
       sizeSelection.classList.remove('d-none');
-      // Update each size button with its corresponding price.
       sizeButtons.forEach(button => {
         const size = button.dataset.size;
         let newPrice;
-        if (size === 'S') {
-          newPrice = product.priceS;
-          button.classList.add('active');
-        } else if (size === 'M') {
-          newPrice = product.priceM;
-          button.classList.remove('active');
-        } else if (size === 'L') {
-          newPrice = product.priceL;
-          button.classList.remove('active');
-        } else if (size === 'F') {
-          newPrice = product.priceF;
-          button.classList.remove('active');
-        }
-        if (!newPrice) newPrice = product.price;
-        button.dataset.price = newPrice;
+        if (size === 'S') newPrice = product.priceS, button.classList.add('active');
+        else if (size === 'M') newPrice = product.priceM, button.classList.remove('active');
+        else if (size === 'L') newPrice = product.priceL, button.classList.remove('active');
+        else if (size === 'F') newPrice = product.priceF, button.classList.remove('active');
+        button.dataset.price = newPrice || product.price;
         button.disabled = false;
-        // Attach click event for size selection (update modal price)
         button.onclick = function() {
           if (!this.disabled) {
             sizeButtons.forEach(btn => btn.classList.remove('active'));
             this.classList.add('active');
-            // Display price differently based on whether it's a percentage
-            if (isPricePercentage) {
-              detailPrice.textContent = this.dataset.price;
-            } else {
-              // Check if price already starts with $ to avoid duplicate $ signs
-              detailPrice.textContent = this.dataset.price.toString().startsWith('$') ? 
-                this.dataset.price : `$${this.dataset.price}`;
+            // Only update price if there’s no special offer
+            if (!product.specialOffer || !product.specialOffer.trim()) {
+              detailPrice.textContent = this.dataset.price.startsWith('$') ? this.dataset.price : `$${this.dataset.price}`;
             }
           }
         };
       });
-    } else {
+    } else if (sizeSelection) {
       sizeSelection.style.display = 'none';
       sizeSelection.classList.add('d-none');
     }
-    
-    // Update GST note in modal
+
+    // Handle GST note
     if (modalGSTNote) {
-      if (product.gst && product.gst.trim()) {
-        modalGSTNote.querySelector('small').textContent = product.gst;
-        modalGSTNote.style.display = 'block';
-      } else {
-        modalGSTNote.style.display = 'none';
-      }
+      modalGSTNote.style.display = product.gst.trim() ? 'block' : 'none';
+      if (product.gst.trim()) modalGSTNote.querySelector('small').textContent = product.gst;
     }
 
-    // Remove exit classes then trigger enter animation
+    // Remove exit animations
     detailImage.classList.remove('slide-exit-active');
     detailName.classList.remove('slide-exit-active');
     detailPrice.classList.remove('slide-exit-active');
     detailOldPrice.classList.remove('slide-exit-active');
 
-    // Force reflow then add enter classes
+    // Trigger reflow and add enter animations
     void detailImage.offsetWidth;
     detailImage.classList.add('slide-enter-active');
     detailName.classList.add('slide-enter-active');
@@ -5052,290 +5053,135 @@ document.addEventListener('DOMContentLoaded', function() {
   }, 400);
 }
 
-
-  
-  // Slide navigation button events
-  prevBtn.addEventListener('click', function() {
-    currentIndex = (currentIndex - 1 + products.length) % products.length;
+  // Slide navigation events
+  prevBtn.addEventListener('click', () => {
+    currentIndex = (currentIndex - 1 + modalProducts.length) % modalProducts.length;
     updateModalContent(currentIndex, 'left');
   });
 
-  nextBtn.addEventListener('click', function() {
-    currentIndex = (currentIndex + 1) % products.length;
+  nextBtn.addEventListener('click', () => {
+    currentIndex = (currentIndex + 1) % modalProducts.length;
     updateModalContent(currentIndex, 'right');
   });
-  
-  // Quantity control events
-  document.getElementById('decrement').addEventListener('click', function() {
-    if (quantity > 1) {
-      quantity--;
-      quantityDisplay.textContent = quantity;
-    }
+
+  // Quantity controls
+  document.getElementById('decrement')?.addEventListener('click', () => {
+    if (quantity > 1) quantityDisplay.textContent = --quantity;
   });
-  document.getElementById('increment').addEventListener('click', function() {
-    quantity++;
-    quantityDisplay.textContent = quantity;
+  document.getElementById('increment')?.addEventListener('click', () => {
+    quantityDisplay.textContent = ++quantity;
   });
-  
-  // Unified function to open modal from any view (carousel or grid)
+
+  // Open modal and set modalProducts based on lastSelectedCategory
   function openProductModal(productId) {
-  const index = products.findIndex(p => p.id === productId);
-  if (index === -1) return;
-  currentIndex = index;
-  const product = products[currentIndex];
-  
-  // Check if price is percentage-based (properly evaluate it as boolean)
-  const isPricePercentage = product.priceByPercentage === true || product.priceByPercentage === "true";
-  
-  // Update modal details
-  detailImage.src = product.image;
-  detailName.textContent = product.name;
-  
-  // Format price display based on whether it's percentage or regular price
-  if (product.hasVariations) {
-    if (isPricePercentage) {
-      detailPrice.textContent = product.priceS;
+    if (lastSelectedCategory === 'featured') {
+      modalProducts = products;
     } else {
-      // Check if price already starts with $ to avoid duplicate $ signs
-      detailPrice.textContent = product.priceS.toString().startsWith('$') ? 
-        product.priceS : `$${product.priceS}`;
+      modalProducts = products.filter(p => p.category.toLowerCase() === lastSelectedCategory);
     }
-  } else {
-    if (isPricePercentage) {
-      detailPrice.textContent = product.price;
-    } else {
-      // Check if price already starts with $ to avoid duplicate $ signs
-      detailPrice.textContent = product.price.toString().startsWith('$') ? 
-        product.price : `$${product.price}`;
-    }
+    currentIndex = modalProducts.findIndex(p => p.id === productId);
+    if (currentIndex === -1) return;
+    updateModalContent(currentIndex);
+    productDetailModal.show();
   }
-  
-  // Fix for previous price display
-  if (product.previousPrice) {
-    detailOldPrice.textContent = product.previousPrice.toString().startsWith('$') ? 
-      product.previousPrice : `$${product.previousPrice}`;
-  } else {
-    detailOldPrice.textContent = '';
-  }
-  
-  quantity = 2;
-  quantityDisplay.textContent = quantity;
-  
-  // Handle size selection
-  const sizeSelection = document.getElementById('sizeSelectionContainer');
-  const sizeButtons = sizeSelection.querySelectorAll('.size-btn');
-  if (product.hasVariations) {
-    sizeSelection.style.display = 'flex';
-    sizeSelection.classList.remove('d-none');
-    sizeButtons.forEach(button => {
-      const size = button.dataset.size;
-      let newPrice;
-      if (size === 'S') {
-        newPrice = product.priceS;
-        button.classList.add('active');
-      } else if (size === 'M') {
-        newPrice = product.priceM;
-        button.classList.remove('active');
-      } else if (size === 'L') {
-        newPrice = product.priceL;
-        button.classList.remove('active');
-      } else if (size === 'F') {
-        newPrice = product.priceF;
-        button.classList.remove('active');
-      }
-      if (!newPrice) newPrice = product.price;
-      button.dataset.price = newPrice;
-      button.disabled = false;
-      button.onclick = function() {
-        if (!this.disabled) {
-          sizeButtons.forEach(btn => btn.classList.remove('active'));
-          this.classList.add('active');
-          // Display price differently based on whether it's a percentage
-          if (isPricePercentage) {
-            detailPrice.textContent = this.dataset.price;
-          } else {
-            // Check if price already starts with $ to avoid duplicate $ signs
-            detailPrice.textContent = this.dataset.price.toString().startsWith('$') ? 
-              this.dataset.price : `$${this.dataset.price}`;
-          }
-        }
-      };
-    });
-  } else {
-    sizeSelection.style.display = 'none';
-    sizeSelection.classList.add('d-none');
-  }
-  
-  // Update GST note for the opened product
-  if (modalGSTNote) {
-    if (product.gst && product.gst.trim()) {
-      modalGSTNote.querySelector('small').textContent = product.gst;
-      modalGSTNote.style.display = 'block';
-    } else {
-      modalGSTNote.style.display = 'none';
-    }
-  }
-  
-  productDetailModal.show();
-}
-  
-  // Attach click handler for carousel items (.food-item)
+
+  // Attach click handlers to carousel items
   carouselItems.forEach(card => {
     const trigger = card.querySelector('.product-image-trigger');
-    if (trigger) {
-      trigger.addEventListener('click', function() {
-        openProductModal(card.dataset.productId);
-      });
-    }
+    if (trigger) trigger.addEventListener('click', () => openProductModal(card.dataset.productId));
   });
-  
-  // ===== 2. Product Grid, Category Filter, and Search Functionality =====
-  
-  // Add keyframe animations for modal (for grid view)
+
+  // Modal animations
   const modalStyle = document.createElement('style');
   modalStyle.textContent = `
-    @keyframes modalImageZoom {
-      from { transform: scale(0.95); opacity: 0; }
-      to { transform: scale(1); opacity: 1; }
-    }
-    @keyframes modalContentSlide {
-      from { transform: translateY(20px); opacity: 0; }
-      to { transform: translateY(0); opacity: 1; }
-    }
-    .modal-image-animate {
-      animation: modalImageZoom 0.3s ease-out forwards;
-    }
-    .modal-content-animate {
-      animation: modalContentSlide 0.3s ease-out forwards;
-    }
+    @keyframes modalImageZoom { from { transform: scale(0.95); opacity: 0; } to { transform: scale(1); opacity: 1; } }
+    @keyframes modalContentSlide { from { transform: translateY(20px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+    .modal-image-animate { animation: modalImageZoom 0.3s ease-out forwards; }
+    .modal-content-animate { animation: modalContentSlide 0.3s ease-out forwards; }
   `;
   document.head.appendChild(modalStyle);
-  
-  // For grid items, we override the default product detail trigger to use our unified function.
-  function showProductDetail(productData) {
-    // We only need the product id since our unified function handles everything.
-    openProductModal(productData.id);
-  }
-  
-  // Grid view creation function
+
+  // Product grid creation
   const productGrid = document.getElementById('productGrid');
   function createGridView(productsList) {
-  productGrid.innerHTML = '';
-  productsList.forEach(product => {
-    const gridItem = document.createElement('div');
-    gridItem.className = 'grid-item';
-    gridItem.dataset.productId = product.id;
-    gridItem.dataset.category = product.category;
-    gridItem.dataset.name = product.name;
-    gridItem.dataset.description = product.description;
-    gridItem.dataset.price = product.price;
-    gridItem.dataset.previousPrice = product.previousPrice;
-    gridItem.dataset.image = product.image;
-    gridItem.dataset.hasVariations = product.hasVariations ? "true" : "false";
-    gridItem.dataset.priceS = product.priceS;
-    gridItem.dataset.priceM = product.priceM;
-    gridItem.dataset.priceL = product.priceL;
-    gridItem.dataset.priceF = product.priceF;
-    gridItem.dataset.gst = product.gst;
-    gridItem.dataset.priceByPercentage = product.priceByPercentage ? "true" : "false";
-    
-    const isOnSale = product.status === 'Sale';
-    
-    // Fix for price display: Check if price already starts with $ and avoid adding another one
-    let priceDisplay;
-    if (product.priceByPercentage === true) {
-      // For percentage, just show the raw value which should include % sign
-      priceDisplay = product.price;
-    } else {
-      // For regular price, check if it already has $ and only add if needed
-      priceDisplay = product.price.toString().startsWith('$') ? product.price : `$${product.price}`;
-    }
-    
-    gridItem.innerHTML = `
-      <div class="grid-image-container">
-        ${isOnSale ? '<span class="discount-badge">Sale</span>' : ''}
-        <img src="${product.image}" alt="${product.name}" class="grid-image">
-      </div>
-      <div class="grid-details">
-        <h3>${product.name}</h3>
-        <div class="rating">
-          <i class="fas fa-star"></i>
-          <span>4.9</span>
-          <span class="review-count">(203)</span>
+    productGrid.innerHTML = '';
+    productsList.forEach(product => {
+      const gridItem = document.createElement('div');
+      gridItem.className = 'grid-item';
+      Object.assign(gridItem.dataset, {
+        productId: product.id, category: product.category, name: product.name, description: product.description,
+        price: product.price, previousPrice: product.previousPrice, image: product.image,
+        hasVariations: product.hasVariations, priceS: product.priceS, priceM: product.priceM,
+        priceL: product.priceL, priceF: product.priceF, gst: product.gst, specialOffer: product.specialOffer,
+        priceByPercentage: product.priceByPercentage
+      });
+
+      const isOnSale = product.status === 'Sale';
+      const priceDisplay = product.priceByPercentage ? product.price : 
+        (product.price.startsWith('$') ? product.price : `$${product.price}`);
+
+      gridItem.innerHTML = `
+        <div class="grid-image-container">
+          ${isOnSale ? '<span class="discount-badge">Sale</span>' : ''}
+          <img src="${product.image}" alt="${product.name}" class="grid-image">
         </div>
-        <div class="price-row">
-          <div class="price">
-            <span>${priceDisplay}</span>
+        <div class="grid-details">
+          <h3>${product.name}</h3>
+          <div class="rating">
+            <i class="fas fa-star"></i> <span>4.9</span> <span class="review-count">(203)</span>
           </div>
-          <button class="add-to-cart" data-product-id="${product.id}" data-name="${product.name}" data-price="${product.price}" data-image="${product.image}">
-            <i class="fas fa-shopping-cart"></i>
-          </button>
+          <div class="price-row">
+            <div class="price"><span>${priceDisplay}</span></div>
+            <button class="add-to-cart" data-product-id="${product.id}" data-name="${product.name}" data-price="${product.price}" data-image="${product.image}">
+              <i class="fas fa-shopping-cart"></i>
+            </button>
+          </div>
         </div>
-      </div>
-    `;
-    
-    productGrid.appendChild(gridItem);
-    
-    // Attach grid item click event to open modal detail.
-    gridItem.addEventListener('click', function(e) {
-      if (e.target.closest('.add-to-cart')) return;
-      openProductModal(product.id);
+      `;
+
+      productGrid.appendChild(gridItem);
+      gridItem.addEventListener('click', e => {
+        if (!e.target.closest('.add-to-cart')) openProductModal(product.id);
+      });
     });
-  });
-}
-  
-  
-  // ===== 3. View Toggle: Carousel to Grid and Back =====
+  }
+
+  // View toggle logic
   const viewAllButton = document.querySelector('.view-all');
   const featuredSection = document.querySelector('.featured-section');
   const productGridContainer = document.getElementById('productGridContainer');
-  
-  // Helper: Extract products from carousel items for grid view.
+
   function extractProductsFromCarousel() {
-  const foodItems = document.querySelectorAll('.food-item');
-  return Array.from(foodItems).map(item => ({
-    id: item.dataset.productId,
-    name: item.dataset.name,
-    description: item.dataset.description || '',
-    price: item.dataset.price,
-    previousPrice: item.dataset.previousPrice ? item.dataset.previousPrice : '169',
-    image: item.dataset.image,
-    status: item.querySelector('.discount-badge') ? 'Sale' : 'Regular',
-    category: item.dataset.category || 'featured',
-    hasVariations: item.dataset.hasVariations === "true",
-    priceS: item.dataset.priceS ? item.dataset.priceS : item.dataset.price,
-    priceM: item.dataset.priceM ? item.dataset.priceM : item.dataset.price,
-    priceL: item.dataset.priceL ? item.dataset.priceL : item.dataset.price,
-    priceF: item.dataset.priceF ? item.dataset.priceF : item.dataset.price,
-    gst: item.dataset.gst || "",
-    // Properly capture priceByPercentage attribute
-    priceByPercentage: item.dataset.priceByPercentage === "true"
-  }));
-}
+    return Array.from(document.querySelectorAll('.food-item')).map(item => ({
+      id: item.dataset.productId, name: item.dataset.name, description: item.dataset.description || '',
+      price: item.dataset.price, previousPrice: item.dataset.previousPrice || '169', image: item.dataset.image,
+      status: item.querySelector('.discount-badge') ? 'Sale' : 'Regular', category: item.dataset.category || 'featured',
+      hasVariations: item.dataset.hasVariations === "true", priceS: item.dataset.priceS || item.dataset.price,
+      priceM: item.dataset.priceM || item.dataset.price, priceL: item.dataset.priceL || item.dataset.price,
+      priceF: item.dataset.priceF || item.dataset.price, gst: item.dataset.gst || "", specialOffer: item.dataset.specialOffer || "",
+      priceByPercentage: item.dataset.priceByPercentage === "true"
+    }));
+  }
+
   if (viewAllButton) {
-    viewAllButton.addEventListener('click', function() {
-      const productsFromCarousel = extractProductsFromCarousel();
-      products = productsFromCarousel;
-      createGridView(productsFromCarousel);
-      
-      // Toggle view: hide carousel, show grid.
+    viewAllButton.addEventListener('click', () => {
+      products = extractProductsFromCarousel();
+      createGridView(products);
       featuredSection.classList.add('fade-out');
       setTimeout(() => {
         featuredSection.style.display = 'none';
         productGridContainer.style.display = 'block';
         productGridContainer.classList.add('fade-in');
         window.scrollTo(0, 0);
-        setTimeout(() => {
-          productGridContainer.classList.remove('fade-in');
-        }, 300);
+        filterItemsByCategory(lastSelectedCategory);
+        setTimeout(() => productGridContainer.classList.remove('fade-in'), 300);
       }, 300);
     });
   }
-  
-  // Toggle back from grid to carousel view.
+
   const backButton = document.querySelector('.back-to-carousel');
   if (backButton) {
-    backButton.addEventListener('click', function() {
+    backButton.addEventListener('click', () => {
       productGridContainer.classList.add('fade-out');
       setTimeout(() => {
         productGridContainer.style.display = 'none';
@@ -5348,291 +5194,156 @@ document.addEventListener('DOMContentLoaded', function() {
       }, 300);
     });
   }
-  
-  // ===== 4. Category Filter and Search Functionality =====
+
+  // Category filter and search
   const categoryButtons = document.querySelectorAll('.category-btn');
   const searchInput = document.querySelector('.search-input');
   const searchDropdown = document.querySelector('.search-results-dropdown');
   const searchResultsContent = document.querySelector('.search-results-content');
-  
-  // Special handling for restaurant ID 9 (if applicable)
   const featuredButton = document.querySelector('[data-category="featured"]');
   const isRestaurantId9 = !featuredButton;
-  let lastSelectedCategory = 'featured';
+
   if (isRestaurantId9) {
     const activeButton = document.querySelector('.category-btn.active');
-    if (activeButton) {
-      lastSelectedCategory = activeButton.dataset.category.toLowerCase();
-    }
+    if (activeButton) lastSelectedCategory = activeButton.dataset.category.toLowerCase();
   }
-  
-  // Filter items based on category selection.
+
   function filterItemsByCategory(categoryName) {
-    const activeItems = featuredSection && featuredSection.style.display !== 'none'
-      ? document.querySelectorAll('.featured-section .food-item')
-      : document.querySelectorAll('.grid-item');
-      
+    const activeItems = featuredSection && featuredSection.style.display !== 'none' ?
+      document.querySelectorAll('.featured-section .food-item') : document.querySelectorAll('.grid-item');
     activeItems.forEach(item => {
       const itemCategory = (item.dataset.category || '').toLowerCase();
-      if (isRestaurantId9) {
-        item.style.display = (itemCategory === categoryName.toLowerCase()) ? '' : 'none';
-      } else {
-        item.style.display = (categoryName === 'featured' || itemCategory === categoryName.toLowerCase()) ? '' : 'none';
-      }
+      item.style.display = isRestaurantId9 ? 
+        (itemCategory === categoryName.toLowerCase() ? '' : 'none') :
+        (categoryName === 'featured' || itemCategory === categoryName.toLowerCase() ? '' : 'none');
     });
   }
-  
-  // Category button click handler.
+
   function handleCategoryClick(button) {
     categoryButtons.forEach(btn => btn.classList.remove('active'));
     button.classList.add('active');
     lastSelectedCategory = button.dataset.category.toLowerCase();
     filterItemsByCategory(lastSelectedCategory);
-    
-    // Scroll the category button into view.
     button.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' });
-    
     if (searchDropdown) searchDropdown.style.display = 'none';
-    
-    // Update filter dropdown indicator.
     updateFilterDropdownIndicator(lastSelectedCategory);
   }
-  
-  categoryButtons.forEach(button => {
-    button.addEventListener('click', () => handleCategoryClick(button));
-  });
-  
-  // Update the indicator in the filter dropdown.
+
+  categoryButtons.forEach(button => button.addEventListener('click', () => handleCategoryClick(button)));
+
   function updateFilterDropdownIndicator(selectedCategory) {
     const dropdownItems = document.querySelectorAll('.filter-dropdown li');
     dropdownItems.forEach(li => {
-      const categoryNameElement = li.querySelector('.category-name');
-      const categoryName = categoryNameElement ? categoryNameElement.textContent.toLowerCase() : '';
-      
-      // Remove any active indicator.
+      const categoryName = li.querySelector('.category-name')?.textContent.toLowerCase() || '';
       const existingIndicator = li.querySelector('.active-indicator');
-      if (existingIndicator) {
-        existingIndicator.remove();
-      }
-      li.style.backgroundColor = '';
-      li.style.fontWeight = '';
-      li.style.color = '';
-      
+      if (existingIndicator) existingIndicator.remove();
+      li.style.backgroundColor = li.style.fontWeight = li.style.color = '';
       if (categoryName === selectedCategory) {
         const activeIndicator = document.createElement('span');
         activeIndicator.className = 'active-indicator';
         activeIndicator.innerHTML = '<i class="fas fa-check"></i>';
-        activeIndicator.style.cssText = `
-          margin-left: auto;
-          color: #4682B4;
-          font-size: 12px;
-        `;
+        activeIndicator.style.cssText = 'margin-left: auto; color: #4682B4; font-size: 12px;';
         li.appendChild(activeIndicator);
         li.style.backgroundColor = 'rgba(70, 130, 255, 0.08)';
         li.style.fontWeight = '500';
         li.style.color = '#4682B4';
         li.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
       }
-      
       li.addEventListener('mouseover', () => {
-        li.style.backgroundColor = categoryName === selectedCategory ?
-          'rgba(70, 130, 255, 0.12)' : 'rgba(0, 0, 0, 0.03)';
+        li.style.backgroundColor = categoryName === selectedCategory ? 'rgba(70, 130, 255, 0.12)' : 'rgba(0, 0, 0, 0.03)';
       });
-      
       li.addEventListener('mouseout', () => {
-        li.style.backgroundColor = categoryName === selectedCategory ?
-          'rgba(70, 130, 255, 0.08)' : '';
+        li.style.backgroundColor = categoryName === selectedCategory ? 'rgba(70, 130, 255, 0.08)' : '';
       });
     });
   }
-  
-  // ===== 5. Filter Dropdown for Categories =====
+
+  // Filter dropdown
   const filterButton = document.querySelector('.filter-button');
   if (filterButton) {
-    filterButton.style.cssText = `
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      width: 36px;
-      height: 36px;
-      border-radius: 50%;
-      background-color: rgba(255, 255, 255, 0.15);
-      backdrop-filter: blur(4px);
-      -webkit-backdrop-filter: blur(4px);
-      transition: all 0.2s ease;
-      border: none;
-      cursor: pointer;
-    `;
-    filterButton.addEventListener('mousedown', () => {
-      filterButton.style.transform = 'scale(0.95)';
+    Object.assign(filterButton.style, {
+      display: 'flex', alignItems: 'center', justifyContent: 'center', width: '36px', height: '36px',
+      borderRadius: '50%', backgroundColor: 'rgba(255, 255, 255, 0.15)', backdropFilter: 'blur(4px)',
+      transition: 'all 0.2s ease', border: 'none', cursor: 'pointer'
     });
-    filterButton.addEventListener('mouseup', () => {
-      filterButton.style.transform = '';
-    });
+    filterButton.addEventListener('mousedown', () => filterButton.style.transform = 'scale(0.95)');
+    filterButton.addEventListener('mouseup', () => filterButton.style.transform = '');
     const filterIcon = filterButton.querySelector('i');
-    if (filterIcon) {
-      filterIcon.style.cssText = `
-        font-size: 16px;
-        color: #fff;
-      `;
-    }
+    if (filterIcon) filterIcon.style.cssText = 'font-size: 16px; color: #fff;';
   }
-  
-  // Create filter dropdown.
-  const existingDropdown = document.querySelector('.filter-dropdown');
-  if (existingDropdown) existingDropdown.remove();
-  
+
   const filterDropdown = document.createElement('div');
   filterDropdown.className = 'filter-dropdown';
-  filterDropdown.style.cssText = `
-    display: none;
-    position: fixed;
-    background-color: rgba(255, 255, 255, 0.95);
-    border: 1px solid rgba(255, 255, 255, 0.18);
-    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.12);
-    border-radius: 16px;
-    padding: 8px 0;
-    z-index: 9999;
-    width: 200px;
-    max-height: 70vh;
-    overflow-y: auto;
-    backdrop-filter: blur(10px);
-    -webkit-backdrop-filter: blur(10px);
-    transform-origin: top center;
-  `;
-  
+  Object.assign(filterDropdown.style, {
+    display: 'none', position: 'fixed', backgroundColor: 'rgb(255, 255, 255)',
+    border: '1px solid rgba(255, 255, 255, 0.18)', boxShadow: '0 10px 25px rgba(0, 0, 0, 0.12)',
+    borderRadius: '16px', padding: '8px 0', zIndex: '9999', width: '200px', maxHeight: '70vh',
+    overflowY: 'auto', backdropFilter: 'blur(10px)', transformOrigin: 'top center'
+  });
+
   const filterList = document.createElement('ul');
-  filterList.style.cssText = `
-    list-style: none;
-    margin: 0;
-    padding: 0;
-  `;
-  
+  filterList.style.cssText = 'list-style: none; margin: 0; padding: 0;';
+
   const filterHeading = document.createElement('div');
   filterHeading.textContent = 'Filter by Category';
-  filterHeading.style.cssText = `
-    padding: 12px 16px;
-    font-weight: 600;
-    font-size: 15px;
-    border-bottom: 1px solid rgba(0, 0, 0, 0.05);
-    margin-bottom: 6px;
-    color: #333;
-    display: flex;
-    align-items: center;
-  `;
-  
+  filterHeading.style.cssText = 'padding: 12px 16px; font-weight: 600; font-size: 15px; border-bottom: 1px solid rgba(0, 0, 0, 0.05); margin-bottom: 6px; color: #333; display: flex; align-items: center;';
   const filterIconSpan = document.createElement('span');
   filterIconSpan.innerHTML = '<i class="fas fa-sliders-h"></i>';
-  filterIconSpan.style.cssText = `
-    margin-right: 8px;
-    color: #4682B4;
-    font-size: 14px;
-  `;
+  filterIconSpan.style.cssText = 'margin-right: 8px; color: #4682B4; font-size: 14px;';
   filterHeading.prepend(filterIconSpan);
   filterDropdown.appendChild(filterHeading);
-  
+
   categoryButtons.forEach(button => {
     const li = document.createElement('li');
     const categoryName = button.dataset.category;
     const categoryEmoji = button.querySelector('.category-icon')?.textContent.trim() || '';
     const isActive = categoryName.toLowerCase() === lastSelectedCategory;
-    
     li.innerHTML = `
       <span class="category-emoji">${categoryEmoji}</span>
       <span class="category-name">${categoryName}</span>
       ${isActive ? '<span class="active-indicator"><i class="fas fa-check"></i></span>' : ''}
     `;
-    
     li.style.cssText = `
-      padding: 12px 16px;
-      cursor: pointer;
-      transition: all 0.2s ease;
-      display: flex;
-      align-items: center;
-      gap: 10px;
-      position: relative;
-      margin: 2px 6px;
-      border-radius: 8px;
+      padding: 12px 16px; cursor: pointer; transition: all 0.2s ease; display: flex; align-items: center; gap: 10px;
+      position: relative; margin: 2px 6px; border-radius: 8px;
       ${isActive ? 'background-color: rgba(70, 130, 255, 0.08); font-weight: 500; color: #4682B4;' : ''}
     `;
-    
+
     li.addEventListener('click', () => {
-      const targetButton = Array.from(categoryButtons).find(
-        btn => btn.dataset.category === categoryName
-      );
-      if (targetButton) {
-        handleCategoryClick(targetButton);
-      }
+      const targetButton = Array.from(categoryButtons).find(btn => btn.dataset.category === categoryName);
+      if (targetButton) handleCategoryClick(targetButton);
       filterDropdown.style.display = 'none';
       filterButton.classList.remove('active');
-      
-      // Ripple effect on click.
       const ripple = document.createElement('span');
       ripple.style.cssText = `
-        position: absolute;
-        top: 50%;
-        left: 50%;
-        width: 5px;
-        height: 5px;
-        background: rgba(70, 130, 255, 0.3);
-        opacity: 0;
-        border-radius: 100%;
-        transform: scale(1, 1) translate(-50%, -50%);
-        transform-origin: 50% 50%;
-        animation: ripple 0.6s ease-out;
+        position: absolute; top: 50%; left: 50%; width: 5px; height: 5px; background: rgba(70, 130, 255, 0.3);
+        opacity: 0; border-radius: 100%; transform: scale(1, 1) translate(-50%, -50%); animation: ripple 0.6s ease-out;
       `;
       li.appendChild(ripple);
       setTimeout(() => ripple.remove(), 600);
     });
-    
-    li.addEventListener('mouseover', () => {
-      li.style.backgroundColor = isActive ? 'rgba(70, 130, 255, 0.12)' : 'rgba(0, 0, 0, 0.03)';
-    });
-    
-    li.addEventListener('mouseout', () => {
-      li.style.backgroundColor = isActive ? 'rgba(70, 130, 255, 0.08)' : '';
-    });
-    
+
     filterList.appendChild(li);
   });
   filterDropdown.appendChild(filterList);
-  
-  if (!document.querySelector('style#ripple-animation')) {
-    const rippleStyle = document.createElement('style');
-    rippleStyle.id = 'ripple-animation';
-    rippleStyle.textContent = `
-      @keyframes ripple {
-        0% {
-          transform: scale(0, 0);
-          opacity: 0.5;
-        }
-        100% {
-          transform: scale(40, 40);
-          opacity: 0;
-        }
-      }
-    `;
-    document.head.appendChild(rippleStyle);
-  }
-  
   document.body.appendChild(filterDropdown);
-  
-  // Position the dropdown relative to the filter button.
+
+  const rippleStyle = document.createElement('style');
+  rippleStyle.id = 'ripple-animation';
+  rippleStyle.textContent = '@keyframes ripple { 0% { transform: scale(0, 0); opacity: 0.5; } 100% { transform: scale(40, 40); opacity: 0; } }';
+  document.head.appendChild(rippleStyle);
+
   function positionDropdown() {
     if (!filterButton) return;
-    const buttonRect = filterButton.getBoundingClientRect();
-    filterDropdown.style.top = `${buttonRect.bottom + window.scrollY + 10}px`;
-    filterDropdown.style.left = `${buttonRect.left + window.scrollX - 5}px`;
-    const dropdownWidth = 200;
-    if (buttonRect.left + dropdownWidth > window.innerWidth) {
-      filterDropdown.style.left = `${buttonRect.right + window.scrollX - dropdownWidth + 5}px`;
-    }
+    const rect = filterButton.getBoundingClientRect();
+    filterDropdown.style.top = `${rect.bottom + window.scrollY + 10}px`;
+    filterDropdown.style.left = Math.min(rect.left + window.scrollX - 5, window.innerWidth - 205 + window.scrollX) + 'px';
   }
-  
+
   if (filterButton) {
-    filterButton.addEventListener('click', (e) => {
+    filterButton.addEventListener('click', e => {
       e.stopPropagation();
-      if (filterDropdown.style.display === 'none' || filterDropdown.style.display === '') {
+      if (filterDropdown.style.display !== 'block') {
         positionDropdown();
         filterDropdown.style.display = 'block';
         filterDropdown.style.opacity = '0';
@@ -5646,80 +5357,65 @@ document.addEventListener('DOMContentLoaded', function() {
       } else {
         filterDropdown.style.opacity = '0';
         filterDropdown.style.transform = 'translateY(-10px) scale(0.98)';
-        setTimeout(() => {
-          filterDropdown.style.display = 'none';
-          filterDropdown.style.transition = '';
-        }, 250);
+        setTimeout(() => filterDropdown.style.display = 'none', 250);
         filterButton.classList.remove('active');
       }
     });
   }
-  
+
   window.addEventListener('resize', () => {
-    if (filterDropdown.style.display !== 'none') {
-      positionDropdown();
-    }
+    if (filterDropdown.style.display === 'block') positionDropdown();
   });
-  
-  document.addEventListener('click', (e) => {
+
+  document.addEventListener('click', e => {
     if (filterButton && !filterButton.contains(e.target) && !filterDropdown.contains(e.target)) {
       filterDropdown.style.display = 'none';
-      filterDropdown.style.transition = '';
       filterButton.classList.remove('active');
     }
   });
-  
-  // ===== 6. Search Functionality =====
+
+  // Search functionality
   function createSearchResultItem(item) {
-    const name = item.dataset.name || '';
-    const category = item.dataset.category || '';
-    const image = item.dataset.image || '';
     const div = document.createElement('div');
     div.className = 'search-result-item';
     div.innerHTML = `
-      <img src="${image}" alt="${name}" class="search-result-image">
+      <img src="${item.dataset.image}" alt="${item.dataset.name}" class="search-result-image">
       <div class="search-result-info">
-        <div class="search-result-name">${name}</div>
-        <div class="search-result-category">${category}</div>
+        <div class="search-result-name">${item.dataset.name}</div>
+        <div class="search-result-category">${item.dataset.category}</div>
       </div>
     `;
     div.addEventListener('click', () => {
-      const searchCategory = category.toLowerCase();
+      const searchCategory = item.dataset.category.toLowerCase();
       if (searchCategory !== lastSelectedCategory) {
-        const targetButton = Array.from(categoryButtons).find(
-          btn => (btn.dataset.category || '').toLowerCase() === searchCategory
-        );
-        if (targetButton) {
-          handleCategoryClick(targetButton);
-        }
+        const targetButton = Array.from(categoryButtons).find(btn => btn.dataset.category.toLowerCase() === searchCategory);
+        if (targetButton) handleCategoryClick(targetButton);
       }
       setTimeout(() => {
         item.scrollIntoView({ behavior: 'smooth', block: 'center' });
         item.style.transition = 'transform 0.3s ease';
         item.style.transform = 'scale(1.02)';
-        setTimeout(() => { item.style.transform = ''; }, 300);
+        setTimeout(() => item.style.transform = '', 300);
       }, 100);
       if (searchDropdown) searchDropdown.style.display = 'none';
       if (searchInput) searchInput.value = '';
     });
     return div;
   }
-  
+
   if (searchInput && searchDropdown && searchResultsContent) {
-    searchInput.addEventListener('input', function(e) {
+    searchInput.addEventListener('input', e => {
       const searchTerm = e.target.value.toLowerCase().trim();
-      if (searchTerm === '') {
+      if (!searchTerm) {
         searchDropdown.style.display = 'none';
         filterItemsByCategory(lastSelectedCategory);
         return;
       }
-      
+
       searchResultsContent.innerHTML = '';
       let matches = 0;
-      const activeItems = featuredSection && featuredSection.style.display !== 'none'
-        ? document.querySelectorAll('.featured-section .food-item')
-        : document.querySelectorAll('.grid-item');
-      
+      const activeItems = featuredSection && featuredSection.style.display !== 'none' ?
+        document.querySelectorAll('.featured-section .food-item') : document.querySelectorAll('.grid-item');
       activeItems.forEach(item => {
         const name = (item.dataset.name || '').toLowerCase();
         const itemCategory = (item.dataset.category || '').toLowerCase();
@@ -5728,79 +5424,17 @@ document.addEventListener('DOMContentLoaded', function() {
           searchResultsContent.appendChild(createSearchResultItem(item));
         }
       });
-      
-      if (matches === 0) {
-        searchResultsContent.innerHTML = `<div class="no-results-message">No results found for "${searchTerm}"</div>`;
-      }
-      
-      searchDropdown.style.display = 'block';
+
+      searchDropdown.style.display = matches ? 'block' : 'block';
+      if (!matches) searchResultsContent.innerHTML = `<div class="no-results-message">No results found for "${searchTerm}"</div>`;
     });
-    
-    document.addEventListener('click', function(e) {
-      if (!searchInput.contains(e.target) && !searchDropdown.contains(e.target)) {
-        searchDropdown.style.display = 'none';
-      }
+
+    document.addEventListener('click', e => {
+      if (!searchInput.contains(e.target) && !searchDropdown.contains(e.target)) searchDropdown.style.display = 'none';
     });
   }
-  
-  // ===== 6. Toggle from Carousel to Grid View =====
-  if (viewAllButton) {
-    viewAllButton.addEventListener('click', function() {
-      const products = extractProductsFromCarousel();
-      createGridView(products);
-      
-      featuredSection.classList.add('fade-out');
-      
-      setTimeout(() => {
-        featuredSection.style.display = 'none';
-        productGridContainer.style.display = 'block';
-        productGridContainer.classList.add('fade-in');
-        
-        // Scroll to top and apply the last category filter in grid view
-        window.scrollTo(0, 0);
-        filterItemsByCategory(lastSelectedCategory);
-        
-        setTimeout(() => {
-          productGridContainer.classList.remove('fade-in');
-        }, 300);
-      }, 300);
-    });
-  }
-  
-  // ===== 7. Toggle Back from Grid to Carousel View =====
-  if (backButton) {
-    backButton.addEventListener('click', function() {
-      productGridContainer.classList.add('fade-out');
-      
-      setTimeout(() => {
-        productGridContainer.style.display = 'none';
-        featuredSection.style.display = 'block';
-        featuredSection.classList.add('fade-in');
-        
-        // Update the active category button in the carousel view
-        const buttonToActivate = Array.from(categoryButtons).find(
-          btn => btn.dataset.category.toLowerCase() === lastSelectedCategory
-        );
-        if (buttonToActivate) {
-          categoryButtons.forEach(btn => btn.classList.remove('active'));
-          buttonToActivate.classList.add('active');
-          
-          // Make sure the active button is visible
-          setTimeout(() => {
-            buttonToActivate.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' });
-            filterItemsByCategory(lastSelectedCategory);
-          }, 100);
-        }
-        
-        setTimeout(() => {
-          featuredSection.classList.remove('fade-in', 'fade-out');
-          productGridContainer.classList.remove('fade-out');
-        }, 300);
-      }, 300);
-    });
-  }
-  
-  // ===== 7. Initialization: Set Default Category Filtering =====
+
+  // Initialization
   if (!isRestaurantId9 && featuredButton) {
     categoryButtons.forEach(btn => btn.classList.remove('active'));
     featuredButton.classList.add('active');
@@ -5810,35 +5444,26 @@ document.addEventListener('DOMContentLoaded', function() {
     if (activeButton) {
       lastSelectedCategory = activeButton.dataset.category.toLowerCase();
       filterItemsByCategory(lastSelectedCategory);
-      setTimeout(() => {
-        activeButton.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' });
-      }, 100);
+      setTimeout(() => activeButton.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' }), 100);
     }
   }
-  
-  setTimeout(() => {
-    updateFilterDropdownIndicator(lastSelectedCategory);
-  }, 200);
-});
-  
-// ===== 8. Handle Add-to-Cart for Grid Items =====
-productGrid.addEventListener('click', function(e) {
-  if (e.target.closest('.add-to-cart')) {
+
+  setTimeout(() => updateFilterDropdownIndicator(lastSelectedCategory), 200);
+
+  // Add-to-cart handler
+  productGrid.addEventListener('click', e => {
     const button = e.target.closest('.add-to-cart');
-    const productId = button.dataset.productId;
-    const productName = button.dataset.name;
-    const productPrice = button.dataset.price;
-    
-    if (typeof addToCart === 'function') {
-      addToCart(productId, productName, productPrice);
-    } else {
-      console.log('Adding to cart:', productName);
-      button.classList.add('added');
-      setTimeout(() => {
-        button.classList.remove('added');
-      }, 300);
+    if (button) {
+      const { productId, name, price } = button.dataset;
+      if (typeof addToCart === 'function') {
+        addToCart(productId, name, price);
+      } else {
+        console.log('Adding to cart:', name);
+        button.classList.add('added');
+        setTimeout(() => button.classList.remove('added'), 300);
+      }
     }
-  }
+  });
 });
 </script>
 
