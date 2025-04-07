@@ -5181,19 +5181,34 @@ document.addEventListener('DOMContentLoaded', function() {
 
   const backButton = document.querySelector('.back-to-carousel');
   if (backButton) {
-    backButton.addEventListener('click', () => {
-      productGridContainer.classList.add('fade-out');
+  backButton.addEventListener('click', () => {
+    // animate grid out
+    productGridContainer.classList.add('fade-out');
+    setTimeout(() => {
+      // hide grid, show carousel
+      productGridContainer.style.display = 'none';
+      featuredSection.style.display = 'block';
+
+      // ─── NEW: re-filter the carousel to the last selected category
+      filterItemsByCategory(lastSelectedCategory);
+
+      // ─── NEW: re‑highlight the correct category button
+      categoryButtons.forEach(btn => {
+        btn.classList.toggle(
+          'active',
+          btn.dataset.category.toLowerCase() === lastSelectedCategory
+        );
+      });
+
+      // animate carousel back in
+      featuredSection.classList.add('fade-in');
       setTimeout(() => {
-        productGridContainer.style.display = 'none';
-        featuredSection.style.display = 'block';
-        featuredSection.classList.add('fade-in');
-        setTimeout(() => {
-          featuredSection.classList.remove('fade-in', 'fade-out');
-          productGridContainer.classList.remove('fade-out');
-        }, 300);
+        featuredSection.classList.remove('fade-in', 'fade-out');
+        productGridContainer.classList.remove('fade-out');
       }, 300);
-    });
-  }
+    }, 300);
+  });
+}
 
   // Category filter and search
   const categoryButtons = document.querySelectorAll('.category-btn');
