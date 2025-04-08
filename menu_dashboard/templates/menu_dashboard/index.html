@@ -52,6 +52,7 @@
     
     <!-- Canonical URL -->
     <link rel="canonical" href="https://delvrr.com/menu">
+    <link rel="preload" as="image" href="{{ allProds.0.0.product_image.url }}">
     
     <!-- Favicon and App Icons -->
     <link rel="icon" type="image/x-icon" href="../../../static/menu_dashboard/images/favicon/favicon.ico">
@@ -3232,6 +3233,15 @@ button {
   touch-action: manipulation;
 }
 
+.product-image-trigger {
+  opacity: 0;
+  transition: opacity 0.3s ease-in;
+}
+
+.product-image-trigger.loaded {
+  opacity: 1;
+}
+
 </style>
 
  
@@ -3577,6 +3587,7 @@ button {
 </div> -->
 
 <!-- Featured Items Section (Sample) -->
+{% load thumbnail %}
 {% load product_extras %}
 
 <div class="main-content" id="menuContent">
@@ -3627,11 +3638,28 @@ button {
               {% endif %}
               <div class="food-image">
                 <div class="food-image-inner">
-                  <img src="{{ product.product_image.url }}"
-                       alt="{{ product.name }}"
-                       class="product-image-trigger"
-                       loading="lazy"
-                       style="width:100%; height:100%; object-fit:cover;">
+                  
+                  {# Create all three thumbnail blocks first #}
+                  {% thumbnail product.product_image "400x400" crop="center" as thumb400 %}
+                    {% thumbnail product.product_image "800x800" crop="center" as thumb800 %}
+                      {% thumbnail product.product_image "1200x1200" crop="center" as thumb1200 %}
+                        
+                        <img src="{{ thumb400.url }}"
+                             srcset="{{ thumb400.url }} 400w,
+                                     {{ thumb800.url }} 800w,
+                                     {{ thumb1200.url }} 1200w"
+                             sizes="(max-width: 600px) 400px,
+                                    (max-width: 1200px) 800px,
+                                    1200px"
+                             alt="{{ product.name }}"
+                             class="product-image-trigger"
+                             loading="{% if forloop.counter <= 3 %}eager{% else %}lazy{% endif %}"
+                             style="width:100%; height:100%; object-fit:cover;">
+                      
+                      {% endthumbnail %}
+                    {% endthumbnail %}
+                  {% endthumbnail %}
+
                 </div>
               </div>
             </div>
@@ -3684,6 +3712,7 @@ button {
     </div>
   </div>
 </div>
+
 
 
 
@@ -4912,6 +4941,7 @@ document.addEventListener('DOMContentLoaded', function() {
     </script>
 
 <!-- Search features -->
+<!-- Place this script in your HTML, ideally before the closing </body> tag -->
 <script>
 document.addEventListener('DOMContentLoaded', function() {
   // Modal element references
@@ -4955,118 +4985,97 @@ document.addEventListener('DOMContentLoaded', function() {
     priceByPercentage: card.dataset.priceByPercentage === "true"
   }));
 
-  // Update modal content with slide animations
-  function updateModalContent(newIndex, direction = 'right') {
+  // Update modal content with fade-in effect
+  function updateModalContent(newIndex) {
     if (!modalProducts.length) return;
     
-    // Remove enter animations
-    detailImage.classList.remove('slide-enter-active');
-    detailName.classList.remove('slide-enter-active');
-    detailPrice.classList.remove('slide-enter-active');
-    detailOldPrice.classList.remove('slide-enter-active');
-
-    // Add exit animations
-    detailImage.classList.add('slide-exit-active');
-    detailName.classList.add('slide-exit-active');
-    detailPrice.classList.add('slide-exit-active');
-    detailOldPrice.classList.add('slide-exit-active');
-
-    setTimeout(() => {
-      const product = modalProducts[newIndex];
-      
-      // Set up a one-time onload event for the new image
-      detailImage.onload = function() {
-        // Remove exit animations
-        detailImage.classList.remove('slide-exit-active');
-        // Trigger enter animations
-        detailImage.classList.add('slide-enter-active');
-        // Clear onload handler to prevent multiple triggers
-        detailImage.onload = null;
-      };
-      
-      // Update image source; lazy loading browser attribute is not needed in modal if already loaded
-      detailImage.src = product.image;
-      detailName.textContent = product.name;
-      
-      // Handle price and special offer display
-      if (product.specialOffer && product.specialOffer.trim()) {
-        detailPrice.textContent = '';
-        detailOldPrice.textContent = '';
-        specialOfferNote.style.display = 'block';
-        specialOfferNote.textContent = product.specialOffer;
+    const product = modalProducts[newIndex];
+    
+    // Hide image initially
+    detailImage.style.opacity = '0';
+    
+    // Set image source immediately
+    detailImage.src = product.image;
+    
+    // Update text content
+    detailName.textContent = product.name;
+    
+    // Handle price and special offer display
+    if (product.specialOffer && product.specialOffer.trim()) {
+      detailPrice.textContent = '';
+      detailOldPrice.textContent = '';
+      specialOfferNote.style.display = 'block';
+      specialOfferNote.textContent = product.specialOffer;
+    } else {
+      const isPricePercentage = product.priceByPercentage;
+      if (product.hasVariations) {
+        detailPrice.textContent = isPricePercentage ? product.priceS : 
+          (product.priceS.startsWith('$') ? product.priceS : `$${product.priceS}`);
       } else {
-        const isPricePercentage = product.priceByPercentage;
-        if (product.hasVariations) {
-          detailPrice.textContent = isPricePercentage ? product.priceS : 
-            (product.priceS.startsWith('$') ? product.priceS : `$${product.priceS}`);
-        } else {
-          detailPrice.textContent = isPricePercentage ? product.price : 
-            (product.price.startsWith('$') ? product.price : `$${product.price}`);
-        }
-        detailOldPrice.textContent = product.previousPrice ? 
-          (product.previousPrice.startsWith('$') ? product.previousPrice : `$${product.previousPrice}`) : '';
-        specialOfferNote.style.display = 'none';
+        detailPrice.textContent = isPricePercentage ? product.price : 
+          (product.price.startsWith('$') ? product.price : `$${product.price}`);
       }
-      
-      // Set quantity
-      quantity = 2;
-      quantityDisplay.textContent = quantity;
+      detailOldPrice.textContent = product.previousPrice ? 
+        (product.previousPrice.startsWith('$') ? product.previousPrice : `$${product.previousPrice}`) : '';
+      specialOfferNote.style.display = 'none';
+    }
+    
+    // Set quantity
+    quantity = 2;
+    quantityDisplay.textContent = quantity;
 
-      // Handle size variations
-      const sizeSelection = document.getElementById('sizeSelectionContainer');
-      const sizeButtons = sizeSelection?.querySelectorAll('.size-btn') || [];
-      if (product.hasVariations && sizeSelection) {
-        sizeSelection.style.display = 'flex';
-        sizeSelection.classList.remove('d-none');
-        sizeButtons.forEach(button => {
-          const size = button.dataset.size;
-          let newPrice;
-          if (size === 'S') newPrice = product.priceS, button.classList.add('active');
-          else if (size === 'M') newPrice = product.priceM, button.classList.remove('active');
-          else if (size === 'L') newPrice = product.priceL, button.classList.remove('active');
-          else if (size === 'F') newPrice = product.priceF, button.classList.remove('active');
-          button.dataset.price = newPrice || product.price;
-          button.disabled = false;
-          button.onclick = function() {
-            if (!this.disabled) {
-              sizeButtons.forEach(btn => btn.classList.remove('active'));
-              this.classList.add('active');
-              if (!product.specialOffer || !product.specialOffer.trim()) {
-                detailPrice.textContent = this.dataset.price.startsWith('$') ? this.dataset.price : `$${this.dataset.price}`;
-              }
+    // Handle size variations
+    const sizeSelection = document.getElementById('sizeSelectionContainer');
+    const sizeButtons = sizeSelection?.querySelectorAll('.size-btn') || [];
+    if (product.hasVariations && sizeSelection) {
+      sizeSelection.style.display = 'flex';
+      sizeSelection.classList.remove('d-none');
+      sizeButtons.forEach(button => {
+        const size = button.dataset.size;
+        let newPrice;
+        if (size === 'S') newPrice = product.priceS, button.classList.add('active');
+        else if (size === 'M') newPrice = product.priceM, button.classList.remove('active');
+        else if (size === 'L') newPrice = product.priceL, button.classList.remove('active');
+        else if (size === 'F') newPrice = product.priceF, button.classList.remove('active');
+        button.dataset.price = newPrice || product.price;
+        button.disabled = false;
+        button.onclick = function() {
+          if (!this.disabled) {
+            sizeButtons.forEach(btn => btn.classList.remove('active'));
+            this.classList.add('active');
+            if (!product.specialOffer || !product.specialOffer.trim()) {
+              detailPrice.textContent = this.dataset.price.startsWith('$') ? this.dataset.price : `$${this.dataset.price}`;
             }
-          };
-        });
-      } else if (sizeSelection) {
-        sizeSelection.style.display = 'none';
-        sizeSelection.classList.add('d-none');
-      }
+          }
+        };
+      });
+    } else if (sizeSelection) {
+      sizeSelection.style.display = 'none';
+      sizeSelection.classList.add('d-none');
+    }
 
-      // Handle GST note
-      if (modalGSTNote) {
-        modalGSTNote.style.display = product.gst.trim() ? 'block' : 'none';
-        if (product.gst.trim()) modalGSTNote.querySelector('small').textContent = product.gst;
-      }
-      
-      // Remove exit animations from text elements and add enter animations
-      detailName.classList.remove('slide-exit-active');
-      detailPrice.classList.remove('slide-exit-active');
-      detailOldPrice.classList.remove('slide-exit-active');
-      detailName.classList.add('slide-enter-active');
-      detailPrice.classList.add('slide-enter-active');
-      detailOldPrice.classList.add('slide-enter-active');
-    }, 400);
+    // Handle GST note
+    if (modalGSTNote) {
+      modalGSTNote.style.display = product.gst.trim() ? 'block' : 'none';
+      if (product.gst.trim()) modalGSTNote.querySelector('small').textContent = product.gst;
+    }
+    
+    // Fade in image once loaded
+    detailImage.onload = function() {
+      detailImage.style.opacity = '1';
+      detailImage.onload = null; // Clear handler
+    };
   }
 
-  // Slide navigation events
+  // Modal navigation
   prevBtn.addEventListener('click', () => {
     currentIndex = (currentIndex - 1 + modalProducts.length) % modalProducts.length;
-    updateModalContent(currentIndex, 'left');
+    updateModalContent(currentIndex);
   });
 
   nextBtn.addEventListener('click', () => {
     currentIndex = (currentIndex + 1) % modalProducts.length;
-    updateModalContent(currentIndex, 'right');
+    updateModalContent(currentIndex);
   });
 
   // Quantity controls
@@ -5077,13 +5086,10 @@ document.addEventListener('DOMContentLoaded', function() {
     quantityDisplay.textContent = ++quantity;
   });
 
-  // Open modal and set modalProducts based on lastSelectedCategory
+  // Open modal
   function openProductModal(productId) {
-    if (lastSelectedCategory === 'featured') {
-      modalProducts = products;
-    } else {
-      modalProducts = products.filter(p => p.category.toLowerCase() === lastSelectedCategory);
-    }
+    modalProducts = lastSelectedCategory === 'featured' ? products : 
+      products.filter(p => p.category.toLowerCase() === lastSelectedCategory);
     currentIndex = modalProducts.findIndex(p => p.id === productId);
     if (currentIndex === -1) return;
     updateModalContent(currentIndex);
@@ -5096,17 +5102,16 @@ document.addEventListener('DOMContentLoaded', function() {
     if (trigger) trigger.addEventListener('click', () => openProductModal(card.dataset.productId));
   });
 
-  // Modal animations styles injected
+  // Add CSS for fade effect
   const modalStyle = document.createElement('style');
   modalStyle.textContent = `
-    @keyframes modalImageZoom { from { transform: scale(0.95); opacity: 0; } to { transform: scale(1); opacity: 1; } }
-    @keyframes modalContentSlide { from { transform: translateY(20px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
-    .slide-enter-active { animation: modalImageZoom 0.3s ease-out forwards; }
-    .slide-exit-active { animation: modalContentSlide 0.3s ease-out forwards; }
+    #detailProductImage {
+      transition: opacity 0.3s ease;
+    }
   `;
   document.head.appendChild(modalStyle);
 
-  // Product grid creation
+  // Create product grid with lazy loading
   const productGrid = document.getElementById('productGrid');
   function createGridView(productsList) {
     productGrid.innerHTML = '';
@@ -5114,10 +5119,20 @@ document.addEventListener('DOMContentLoaded', function() {
       const gridItem = document.createElement('div');
       gridItem.className = 'grid-item';
       Object.assign(gridItem.dataset, {
-        productId: product.id, category: product.category, name: product.name, description: product.description,
-        price: product.price, previousPrice: product.previousPrice, image: product.image,
-        hasVariations: product.hasVariations, priceS: product.priceS, priceM: product.priceM,
-        priceL: product.priceL, priceF: product.priceF, gst: product.gst, specialOffer: product.specialOffer,
+        productId: product.id,
+        category: product.category,
+        name: product.name,
+        description: product.description,
+        price: product.price,
+        previousPrice: product.previousPrice,
+        image: product.image,
+        hasVariations: product.hasVariations,
+        priceS: product.priceS,
+        priceM: product.priceM,
+        priceL: product.priceL,
+        priceF: product.priceF,
+        gst: product.gst,
+        specialOffer: product.specialOffer,
         priceByPercentage: product.priceByPercentage
       });
 
@@ -5128,7 +5143,7 @@ document.addEventListener('DOMContentLoaded', function() {
       gridItem.innerHTML = `
         <div class="grid-image-container">
           ${isOnSale ? '<span class="discount-badge">Sale</span>' : ''}
-          <img src="${product.image}" alt="${product.name}" class="grid-image">
+          <img src="${product.image}" alt="${product.name}" class="grid-image" loading="lazy">
         </div>
         <div class="grid-details">
           <h3>${product.name}</h3>
@@ -5158,12 +5173,21 @@ document.addEventListener('DOMContentLoaded', function() {
 
   function extractProductsFromCarousel() {
     return Array.from(document.querySelectorAll('.food-item')).map(item => ({
-      id: item.dataset.productId, name: item.dataset.name, description: item.dataset.description || '',
-      price: item.dataset.price, previousPrice: item.dataset.previousPrice || '169', image: item.dataset.image,
-      status: item.querySelector('.discount-badge') ? 'Sale' : 'Regular', category: item.dataset.category || 'featured',
-      hasVariations: item.dataset.hasVariations === "true", priceS: item.dataset.priceS || item.dataset.price,
-      priceM: item.dataset.priceM || item.dataset.price, priceL: item.dataset.priceL || item.dataset.price,
-      priceF: item.dataset.priceF || item.dataset.price, gst: item.dataset.gst || "", specialOffer: item.dataset.specialOffer || "",
+      id: item.dataset.productId,
+      name: item.dataset.name,
+      description: item.dataset.description || '',
+      price: item.dataset.price,
+      previousPrice: item.dataset.previousPrice || '169',
+      image: item.dataset.image,
+      status: item.querySelector('.discount-badge') ? 'Sale' : 'Regular',
+      category: item.dataset.category || 'featured',
+      hasVariations: item.dataset.hasVariations === "true",
+      priceS: item.dataset.priceS || item.dataset.price,
+      priceM: item.dataset.priceM || item.dataset.price,
+      priceL: item.dataset.priceL || item.dataset.price,
+      priceF: item.dataset.priceF || item.dataset.price,
+      gst: item.dataset.gst || "",
+      specialOffer: item.dataset.specialOffer || "",
       priceByPercentage: item.dataset.priceByPercentage === "true"
     }));
   }
@@ -5186,34 +5210,23 @@ document.addEventListener('DOMContentLoaded', function() {
 
   const backButton = document.querySelector('.back-to-carousel');
   if (backButton) {
-  backButton.addEventListener('click', () => {
-    // animate grid out
-    productGridContainer.classList.add('fade-out');
-    setTimeout(() => {
-      // hide grid, show carousel
-      productGridContainer.style.display = 'none';
-      featuredSection.style.display = 'block';
-
-      // ─── NEW: re-filter the carousel to the last selected category
-      filterItemsByCategory(lastSelectedCategory);
-
-      // ─── NEW: re‑highlight the correct category button
-      categoryButtons.forEach(btn => {
-        btn.classList.toggle(
-          'active',
-          btn.dataset.category.toLowerCase() === lastSelectedCategory
-        );
-      });
-
-      // animate carousel back in
-      featuredSection.classList.add('fade-in');
+    backButton.addEventListener('click', () => {
+      productGridContainer.classList.add('fade-out');
       setTimeout(() => {
-        featuredSection.classList.remove('fade-in', 'fade-out');
-        productGridContainer.classList.remove('fade-out');
+        productGridContainer.style.display = 'none';
+        featuredSection.style.display = 'block';
+        filterItemsByCategory(lastSelectedCategory);
+        categoryButtons.forEach(btn => {
+          btn.classList.toggle('active', btn.dataset.category.toLowerCase() === lastSelectedCategory);
+        });
+        featuredSection.classList.add('fade-in');
+        setTimeout(() => {
+          featuredSection.classList.remove('fade-in', 'fade-out');
+          productGridContainer.classList.remove('fade-out');
+        }, 300);
       }, 300);
-    }, 300);
-  });
-}
+    });
+  }
 
   // Category filter and search
   const categoryButtons = document.querySelectorAll('.category-btn');
@@ -5691,6 +5704,16 @@ function closeNotification() {
 });
 
 
+</script>
+
+<script>
+  document.querySelectorAll('.product-image-trigger').forEach(img => {
+    if (img.complete) {
+      img.classList.add('loaded');
+    } else {
+      img.addEventListener('load', () => img.classList.add('loaded'));
+    }
+  });
 </script>
 
 

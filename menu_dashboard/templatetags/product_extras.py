@@ -25,3 +25,10 @@ def calculate_percentage(price, discount_percentage):
         return round(float(price) * (1 - discount), 2)
     except (ValueError, TypeError):
         return price  # Return the original price if there's an erro
+
+
+@register.filter
+def thumb_url(image_field, size):
+    width, height = size.split('x')
+    # ... generate a resized version or URL ...
+    return resized_url
