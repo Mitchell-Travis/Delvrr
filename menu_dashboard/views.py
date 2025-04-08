@@ -26,6 +26,7 @@ from django.views.generic import DetailView
 from django.db.models import Prefetch
 from django.core.cache import cache
 from django.db.models import Prefetch, Q, F, Case, When, FloatField
+from django.contrib.sites.shortcuts import get_current_site
 # from celery import shared_task
 
 # from django.db.models import Func, F
@@ -138,12 +139,13 @@ def contact(request):
 from django.utils.timezone import now
 
 def restaurant_menu(request, restaurant_name_slug, hashed_slug):
+    # Fetch the restaurant
     restaurant = get_object_or_404(Restaurant, hashed_slug=hashed_slug)
 
-    # Log menu visit (could also be async via Celery if high traffic)
+    # Log menu visit
     ip_address = request.META.get('REMOTE_ADDR')
     user_agent_str = request.META.get('HTTP_USER_AGENT', '')
-    parsed_user_agent = request.user_agent
+    parsed_user_agent = getattr(request, 'user_agent', None)
     device = parsed_user_agent.device.family if parsed_user_agent and hasattr(parsed_user_agent, 'device') else "Unknown Device"
     MenuVisit.objects.create(
         restaurant=restaurant,
@@ -152,73 +154,80 @@ def restaurant_menu(request, restaurant_name_slug, hashed_slug):
         device=device
     )
 
-    # Use caching for categories if they don't change frequently.
+    # Cache categories + products
     cache_key = f"restaurant_{restaurant.id}_categories"
     categories = cache.get(cache_key)
     if not categories:
-        # Prefetch related products with their variations in one go.
         product_queryset = Product.objects.filter(restaurant=restaurant).prefetch_related('variations')
         categories = list(
-            Category.objects.filter(products__restaurant=restaurant)
-            .distinct()
-            .order_by('order')
-            .prefetch_related(Prefetch('products', queryset=product_queryset))
+            Category.objects
+                .filter(products__restaurant=restaurant)
+                .distinct()
+                .order_by('order')
+                .prefetch_related(Prefetch('products', queryset=product_queryset))
         )
-        cache.set(cache_key, categories, 300)  # cache for 5 minutes
+        cache.set(cache_key, categories, 300)  # 5 minutes
 
-    # Get current weekday (0 = Monday, 1 = Tuesday, ..., 6 = Sunday)
-    today = datetime.today().weekday()
-    
+    # Build categorized_products
+    today = datetime.today().weekday()  # 0 = Monday, …, 6 = Sunday
     categorized_products = []
-    # Process categorized products
     for category in categories:
-        # Use the pre-fetched products (from the Prefetch above)
-        category_products = category.products.all()
-
-        # Process each product in Python (or use annotations for simple conditions)
+        category_products = list(category.products.all())
         for product in category_products:
-            # Pre-calculate variations if available
+            # variations
             product.variations_list = list(product.variations.all()) if product.variations.exists() else None
             default_variation = product.variations.filter(name='S').first() or product.variations.first()
             product.display_price = default_variation.price if default_variation else product.get_display_price()
-            
-            # Apply discount logic: discount wings on Wednesday
-            product.is_discounted = today == 2 and 'wings' in product.name.lower()
+            # Wednesday wings discount example
+            product.is_discounted = (today == 2 and 'wings' in product.name.lower())
             if product.is_discounted and product.display_price and not product.price_by_percentage:
                 product.display_price /= 2
-
-            # Add GST note if applicable
             product.gst_note = "10% GST will be added" if product.charge_gst else ""
+        if category_products:
+            categorized_products.append(category_products)
 
-        if category_products.exists():
-            categorized_products.append(list(category_products))
-
-    # Process uncategorized products similarly using a cached query if desired.
-    uncategorized_products = Product.objects.filter(restaurant=restaurant, category__isnull=True).prefetch_related('variations')
+    # Uncategorized products
+    uncategorized_products = list(
+        Product.objects
+            .filter(restaurant=restaurant, category__isnull=True)
+            .prefetch_related('variations')
+    )
     for product in uncategorized_products:
         product.variations_list = list(product.variations.all()) if product.variations.exists() else None
         default_variation = product.variations.filter(name='S').first() or product.variations.first()
         product.display_price = default_variation.price if default_variation else product.get_display_price()
-        product.is_discounted = today == 2 and 'wings' in product.name.lower()
+        product.is_discounted = (today == 2 and 'wings' in product.name.lower())
         if product.is_discounted and product.display_price and not product.price_by_percentage:
             product.display_price /= 2
         product.gst_note = "10% GST will be added" if product.charge_gst else ""
+    if uncategorized_products:
+        categorized_products.append(uncategorized_products)
 
-    if uncategorized_products.exists():
-        categorized_products.append(list(uncategorized_products))
     if not categorized_products:
         categorized_products = [[]]
 
-    # If user is authenticated, assign restaurant to customer (could also be done asynchronously)
+    # Assign restaurant to customer if logged in
     if request.user.is_authenticated:
         customer, _ = Customer.objects.get_or_create(user=request.user)
         customer.assign_restaurant(restaurant)
+    else:
+        messages.info(request, "To place an order, please log in or continue as a guest.")
 
-    # Cache brand colors if needed
+    # --- Dynamic Open Graph / Twitter Card metadata ---
+    if restaurant.logo_pic:
+        logo_url = request.build_absolute_uri(restaurant.logo_pic.url)
+    else:
+        logo_url = request.build_absolute_uri('/static/images/default_restaurant.png')
+
+    canonical_url   = request.build_absolute_uri()
+    og_title        = restaurant.restaurant_name or "Delvrr - QR Code Digital Menu"
+    og_description  = restaurant.address or "Scan the QR code to access the digital menu."
+
+    # Brand colors
     brand_colors = restaurant.brand_colors.all()
-    primary_brand_color = brand_colors.first().color if brand_colors.exists() else "#f7c028"
-    secondary_brand_color = brand_colors[1].color if brand_colors.count() >= 2 else "#000000"
-    third_brand_color = brand_colors[2].color if brand_colors.count() >= 3 else "#ffffff"
+    primary_brand_color   = brand_colors[0].color if brand_colors.count() > 0 else "#f7c028"
+    secondary_brand_color = brand_colors[1].color if brand_colors.count() > 1 else "#000000"
+    third_brand_color     = brand_colors[2].color if brand_colors.count() > 2 else "#ffffff"
 
     context = {
         'restaurant': restaurant,
@@ -227,11 +236,13 @@ def restaurant_menu(request, restaurant_name_slug, hashed_slug):
         'primary_brand_color': primary_brand_color,
         'secondary_brand_color': secondary_brand_color,
         'third_brand_color': third_brand_color,
-        'hide_all_category': restaurant.id == 9,  # Hide "All" button for restaurant ID 9
+        'hide_all_category': restaurant.id == 9,
+        # OG/Twitter context:
+        'logo_url': logo_url,
+        'canonical_url': canonical_url,
+        'og_title': og_title,
+        'og_description': og_description,
     }
-
-    if not request.user.is_authenticated:
-        messages.info(request, "To place an order, please log in or continue as a guest.")
 
     return render(request, 'menu_dashboard/index.html', context)
 

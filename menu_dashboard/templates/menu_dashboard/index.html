@@ -10,56 +10,64 @@
     <meta name="theme-color" content="#FFC107">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    
-    <!-- SEO Meta Tags -->
-    <meta name="description" content="Scan the QR code to access the digital menu of your favorite restaurant. Browse dishes, place orders, and enjoy a seamless dining experience with Delvrr.">
-    <meta name="keywords" content="QR code menu, digital menu, restaurant ordering, contactless dining, online food menu, mobile ordering, food delivery">
-    <meta name="robots" content="index, follow">
-    
-    <!-- Open Graph / Facebook -->
-    <!-- Open Graph / Facebook -->
-    <meta property="og:type" content="website">
-    <meta property="og:site_name" content="Delvrr">
-    <meta property="og:title" content="Delvrr - QR Code Digital Menu">
-    <meta property="og:description" content="Scan and browse the restaurant's digital menu instantly. A seamless way to order your favorite dishes.">
-    <meta property="og:image" content="https://delvrr.com/media/preview.jpg">
-    <meta property="og:image:alt" content="Delvrr Digital Menu">
 
-<!-- Dynamically set the correct URL -->
-<meta property="og:url" content="{{ request.build_absolute_uri }}">
-    
-    <meta property="og:locale" content="en_US">
-    
+    <!-- SEO Meta Tags -->
+    <meta name="description"
+          content="{{ og_description|default:'Scan the QR code to access the digital menu of your favorite restaurant. Browse dishes, place orders, and enjoy a seamless dining experience with Delvrr.' }}">
+    <meta name="keywords"
+          content="QR code menu, digital menu, restaurant ordering, contactless dining, online food menu, mobile ordering, food delivery">
+    <meta name="robots" content="index, follow">
+
+    <!-- Open Graph / Facebook -->
+    <meta property="og:type"        content="website">
+    <meta property="og:site_name"   content="Delvrr">
+    <meta property="og:title"       content="{{ og_title|default:'Delvrr - QR Code Digital Menu' }}">
+    <meta property="og:description" content="{{ og_description|default:'Scan and browse the restaurant’s digital menu instantly. A seamless way to order your favorite dishes.' }}">
+    <meta property="og:image"       content="{{ logo_url }}">
+    <meta property="og:image:alt"   content="{{ og_title|default:'Restaurant logo' }}">
+    <meta property="og:url"         content="{{ canonical_url }}">
+    <meta property="og:locale"      content="en_US">
+
     <!-- Twitter -->
-    <meta name="twitter:card" content="summary_large_image">
-    <meta name="twitter:site" content="@delvrrapp">
-    <meta name="twitter:creator" content="@delvrrapp">
-    <meta name="twitter:title" content="Delvrr - QR Code Digital Menu">
-    <meta name="twitter:description" content="Scan and browse the restaurant's digital menu instantly. A seamless way to order your favorite dishes.">
-    <meta name="twitter:image" content="https://delvrr.com/media/preview.jpg">
-    <meta name="twitter:image:alt" content="Delvrr Digital Menu Preview">
-    
+    <meta name="twitter:card"        content="summary_large_image">
+    <meta name="twitter:site"        content="@delvrrapp">
+    <meta name="twitter:creator"     content="@delvrrapp">
+    <meta name="twitter:title"       content="{{ og_title|default:'Delvrr - QR Code Digital Menu' }}">
+    <meta name="twitter:description" content="{{ og_description|default:'Scan and browse the restaurant’s digital menu instantly.' }}">
+    <meta name="twitter:image"       content="{{ logo_url }}">
+    <meta name="twitter:image:alt"   content="{{ og_title|default:'Restaurant logo' }}">
+
     <!-- Pinterest -->
     <meta name="pinterest-rich-pin" content="true">
-    
+
     <!-- LinkedIn -->
     <meta property="linkedin:owner" content="Delvrr">
-    
+
     <!-- WhatsApp / SMS Preview -->
     <meta property="og:site_name" content="Delvrr">
-    
-    <title>Delvrr - QR Code Digital Menu</title>
-    
+
+    <title>{{ og_title|default:'Delvrr - QR Code Digital Menu' }}</title>
+
     <!-- Canonical URL -->
-    <link rel="canonical" href="https://delvrr.com/menu">
+    <link rel="canonical" href="{{ canonical_url }}">
+
+    <!-- Preload first product image if available -->
+    {% if allProds.0.0.product_image %}
     <link rel="preload" as="image" href="{{ allProds.0.0.product_image.url }}">
-    
+    {% endif %}
+
     <!-- Favicon and App Icons -->
-    <link rel="icon" type="image/x-icon" href="../../../static/menu_dashboard/images/favicon/favicon.ico">
-    <link rel="apple-touch-icon" sizes="180x180" href="../../../static/menu_dashboard/images/favicon/apple-touch-icon.png">
-    <link rel="icon" type="image/png" sizes="32x32" href="../../../static/menu_dashboard/images/favicon/favicon-32x32.png">
-    <link rel="icon" type="image/png" sizes="16x16" href="../../../static/menu_dashboard/images/favicon/favicon-16x16.png">
-    <link rel="manifest" href="../../../static/menu_dashboard/images/favicon/site.webmanifest">
+    <link rel="icon" type="image/x-icon"
+          href="{% static 'menu_dashboard/images/favicon/favicon.ico' %}">
+    <link rel="apple-touch-icon" sizes="180x180"
+          href="{% static 'menu_dashboard/images/favicon/apple-touch-icon.png' %}">
+    <link rel="icon" type="image/png" sizes="32x32"
+          href="{% static 'menu_dashboard/images/favicon/favicon-32x32.png' %}">
+    <link rel="icon" type="image/png" sizes="16x16"
+          href="{% static 'menu_dashboard/images/favicon/favicon-16x16.png' %}">
+    <link rel="manifest"
+          href="{% static 'menu_dashboard/images/favicon/site.webmanifest' %}">
+
     
     <!-- CSS Dependencies -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
