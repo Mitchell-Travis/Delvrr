@@ -178,11 +178,18 @@ def restaurant_menu(request, restaurant_name_slug, hashed_slug):
             product.variations_list = list(product.variations.all()) if product.variations.exists() else None
             default_variation = product.variations.filter(name='S').first() or product.variations.first()
             product.display_price = default_variation.price if default_variation else product.get_display_price()
+
             # Wednesday wings discount example
             product.is_discounted = (today == 2 and 'wings' in product.name.lower())
             if product.is_discounted and product.display_price and not product.price_by_percentage:
-                product.display_price /= 2
-            product.gst_note = "10% GST will be added" if product.charge_gst else ""
+                # ── START PATCH: coerce to float before dividing
+                try:
+                    price = float(product.display_price)
+                except (TypeError, ValueError):
+                    price = 0.0
+                product.display_price = price / 2
+                # ── END PATCH
+            product.gst_note = "12% GST will be added" if product.charge_gst else ""
         if category_products:
             categorized_products.append(category_products)
 
@@ -196,10 +203,17 @@ def restaurant_menu(request, restaurant_name_slug, hashed_slug):
         product.variations_list = list(product.variations.all()) if product.variations.exists() else None
         default_variation = product.variations.filter(name='S').first() or product.variations.first()
         product.display_price = default_variation.price if default_variation else product.get_display_price()
+
         product.is_discounted = (today == 2 and 'wings' in product.name.lower())
         if product.is_discounted and product.display_price and not product.price_by_percentage:
-            product.display_price /= 2
-        product.gst_note = "10% GST will be added" if product.charge_gst else ""
+            # ── START PATCH: coerce to float before dividing
+            try:
+                price = float(product.display_price)
+            except (TypeError, ValueError):
+                price = 0.0
+            product.display_price = price / 2
+            # ── END PATCH
+        product.gst_note = "12% GST will be added" if product.charge_gst else ""
     if uncategorized_products:
         categorized_products.append(uncategorized_products)
 

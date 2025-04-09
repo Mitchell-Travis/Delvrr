@@ -189,7 +189,7 @@ class Product(models.Model):
     promo_discription = models.CharField(max_length=200, null=True, blank=True)
     has_variations = models.BooleanField(default=False)
     charge_gst = models.BooleanField(default=False,
-                                     help_text="If True, 10% GST will be added.")
+                                     help_text="If True, 12% GST will be added.")
     
     # New Fields
     special_offer = models.CharField(

@@ -5725,6 +5725,506 @@ function closeNotification() {
 </script>
 
 
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+  // Create and inject CSS styles
+  const styleEl = document.createElement('style');
+  styleEl.textContent = `
+    .coach-mark-container {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      z-index: 2000; /* Set very high z-index to be above everything */
+      pointer-events: none;
+    }
+
+    .coach-mark {
+      position: absolute;
+      background: #3366ff;
+      color: white;
+      padding: 8px 12px;
+      border-radius: 6px;
+      box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15);
+      max-width: 180px;
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+      z-index: 2001; /* Higher than container to ensure visibility */
+      pointer-events: auto;
+    }
+
+    .coach-mark-intro {
+      position: fixed;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      background: #3366ff;
+      color: white;
+      padding: 16px;
+      border-radius: 8px;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+      max-width: 280px;
+      text-align: center;
+      z-index: 2002;
+      pointer-events: auto;
+    }
+
+    .coach-mark-intro-title {
+      font-size: 16px;
+      font-weight: 600;
+      margin-bottom: 8px;
+    }
+
+    .coach-mark-intro-content {
+      font-size: 14px;
+      margin-bottom: 16px;
+      line-height: 1.4;
+    }
+
+    .coach-mark-intro-buttons {
+      display: flex;
+      justify-content: space-between;
+      gap: 10px;
+    }
+
+    .coach-mark-content {
+      font-size: 12px;
+      font-weight: 500;
+      margin-bottom: 8px;
+      line-height: 1.3;
+    }
+
+    .coach-mark-buttons {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .coach-mark-button, .coach-mark-skip {
+      background: white;
+      color: #3366ff;
+      border: none;
+      border-radius: 4px;
+      padding: 3px 10px;
+      font-size: 11px;
+      font-weight: 600;
+      cursor: pointer;
+      box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+    }
+
+    /* Skip button is slightly less prominent */
+    .coach-mark-skip {
+      background: rgba(255, 255, 255, 0.85);
+    }
+
+    .coach-mark-button:hover, .coach-mark-skip:hover {
+      background-color: #f0f0f0;
+    }
+
+    .coach-mark-arrow {
+      position: absolute;
+      width: 0;
+      height: 0;
+      border: 4px solid transparent;
+    }
+
+    .coach-mark-arrow.top {
+      top: -8px;
+      border-bottom-color: #3366ff;
+    }
+
+    .coach-mark-arrow.bottom {
+      bottom: -8px;
+      border-top-color: #3366ff;
+    }
+
+    .coach-mark-arrow.left {
+      left: -8px;
+      border-right-color: #3366ff;
+    }
+
+    .coach-mark-arrow.right {
+      right: -8px;
+      border-left-color: #3366ff;
+    }
+
+    .highlight-ring {
+      position: absolute;
+      border: 2px solid #3366ff;
+      border-radius: 4px;
+      box-shadow: 0 0 0 2px rgba(51, 102, 255, 0.2);
+      pointer-events: none;
+      z-index: 1999;
+    }
+
+    .fade-element {
+      opacity: 0.3;
+      transition: opacity 0.3s ease;
+    }
+
+    .focused-element {
+      opacity: 1;
+      transition: opacity 0.3s ease;
+    }
+
+    @media (max-width: 600px) {
+      .coach-mark-intro {
+        max-width: 240px;
+        padding: 12px;
+      }
+      .coach-mark-intro-title {
+        font-size: 14px;
+      }
+      .coach-mark-intro-content {
+        font-size: 12px;
+      }
+      .coach-mark {
+        max-width: 150px;
+      }
+      .coach-mark-content {
+        font-size: 11px;
+      }
+    }
+  `;
+  document.head.appendChild(styleEl);
+
+  // Define coach marks with concise messages and target elements
+  const coachMarks = [
+    {
+      target: '.filter-button',
+      text: 'Filter menu items',
+      arrow: 'right',
+      position: 'right'
+    },
+    {
+      target: '.search-container',
+      text: 'Search for dishes',
+      arrow: 'bottom',
+      position: 'above' // Special positioning above search
+    },
+    {
+      target: '.category-btn:first-child',
+      text: 'Browse food categories',
+      arrow: 'left'
+    },
+    {
+      target: '.view-all',
+      text: 'See full menu',
+      arrow: 'top', // Arrow points downward to the See All button
+      position: 'top' // Position above the "See All" button
+    },
+    {
+      target: '.items-carousel .food-item:first-child',
+      text: 'Swipe for featured items',
+      arrow: 'bottom'
+    },
+    {
+      target: '.food-item:first-child',
+      text: 'Tap for item details',
+      arrow: 'top'
+    }
+  ];
+
+  let currentCoachMarkIndex = 0;
+  let container, highlightRing;
+  let currentHighlightedElement = null;
+  let tourStarted = false;
+
+  // Create container for coach marks
+  function createContainer() {
+    // Remove any existing container
+    const existingContainer = document.querySelector('.coach-mark-container');
+    if (existingContainer) existingContainer.remove();
+    
+    container = document.createElement('div');
+    container.className = 'coach-mark-container';
+    
+    highlightRing = document.createElement('div');
+    highlightRing.className = 'highlight-ring';
+    container.appendChild(highlightRing);
+    
+    document.body.appendChild(container);
+  }
+
+  // Remove fading from all elements
+  function resetAllElementsOpacity() {
+    document.querySelectorAll('.fade-element, .focused-element').forEach(el => {
+      el.classList.remove('fade-element', 'focused-element');
+      el.style.opacity = '';
+    });
+  }
+
+  // End the tour completely
+  function endTour() {
+    resetAllElementsOpacity();
+    const container = document.querySelector('.coach-mark-container');
+    if (container) container.remove();
+    window.removeEventListener('resize', handleResize);
+  }
+
+  // Show introduction screen
+  function showIntroScreen() {
+    createContainer();
+    
+    const introScreen = document.createElement('div');
+    introScreen.className = 'coach-mark-intro';
+    
+    introScreen.innerHTML = `
+      <div class="coach-mark-intro-title">Welcome to Our Menu</div>
+      <div class="coach-mark-intro-content">Let's take a quick tour to help you navigate our food ordering experience.</div>
+      <div class="coach-mark-intro-buttons">
+        <button class="coach-mark-skip">Skip Tour</button>
+        <button class="coach-mark-button">Start Tour</button>
+      </div>
+    `;
+    
+    container.appendChild(introScreen);
+    
+    // Button handlers
+    introScreen.querySelector('.coach-mark-button').addEventListener('click', () => {
+      introScreen.remove();
+      tourStarted = true;
+      showNextCoachMark();
+    });
+    
+    introScreen.querySelector('.coach-mark-skip').addEventListener('click', () => {
+      endTour();
+    });
+  }
+
+  // Show the next coach mark in sequence
+  function showNextCoachMark() {
+    // Remove any existing coach mark
+    const existingCoachMark = document.querySelector('.coach-mark');
+    if (existingCoachMark) {
+      existingCoachMark.remove();
+    }
+    
+    // Reset previous highlighted element
+    if (currentHighlightedElement) {
+      currentHighlightedElement.classList.remove('focused-element');
+      currentHighlightedElement.classList.remove('fade-element');
+      currentHighlightedElement.style.opacity = '';
+    }
+    
+    // Check if we're done
+    if (currentCoachMarkIndex >= coachMarks.length) {
+      endTour();
+      return;
+    }
+    
+    const coachMark = coachMarks[currentCoachMarkIndex];
+    const targetElement = document.querySelector(coachMark.target);
+    
+    // Skip if target not found
+    if (!targetElement) {
+      console.warn('Target not found:', coachMark.target);
+      currentCoachMarkIndex++;
+      showNextCoachMark();
+      return;
+    }
+    
+    // Fade all elements except the current one
+    document.querySelectorAll('.filter-button, .search-container, .category-btn, .view-all, .items-carousel, .food-item').forEach(el => {
+      el.classList.add('fade-element');
+    });
+    
+    // Highlight current element
+    targetElement.classList.remove('fade-element');
+    targetElement.classList.add('focused-element');
+    currentHighlightedElement = targetElement;
+    
+    // Create highlight effect on the target element
+    const targetRect = targetElement.getBoundingClientRect();
+    const padding = 2; // smaller padding around the element
+    
+    highlightRing.style.top = `${targetRect.top - padding}px`;
+    highlightRing.style.left = `${targetRect.left - padding}px`;
+    highlightRing.style.width = `${targetRect.width + padding * 2}px`;
+    highlightRing.style.height = `${targetRect.height + padding * 2}px`;
+    
+    // Create coach mark HTML
+    const coachMarkDiv = document.createElement('div');
+    coachMarkDiv.className = 'coach-mark';
+    
+    // Button text changes to "Done" on last item
+    const buttonText = currentCoachMarkIndex === coachMarks.length - 1 ? 'Done' : 'Next';
+    
+    coachMarkDiv.innerHTML = `
+      <div class="coach-mark-arrow ${coachMark.arrow}"></div>
+      <div class="coach-mark-content">${coachMark.text}</div>
+      <div class="coach-mark-buttons">
+        <button class="coach-mark-skip">Skip</button>
+        <button class="coach-mark-button">${buttonText}</button>
+      </div>
+    `;
+    
+    // Add to container and make sure it stays at the top
+    container.appendChild(coachMarkDiv);
+    
+    // Position it relative to the target
+    positionCoachMark(coachMarkDiv, targetElement, coachMark);
+    
+    // Next button functionality
+    coachMarkDiv.querySelector('.coach-mark-button').addEventListener('click', (e) => {
+      e.stopPropagation();
+      currentCoachMarkIndex++;
+      showNextCoachMark();
+    });
+    
+    // Skip button functionality
+    coachMarkDiv.querySelector('.coach-mark-skip').addEventListener('click', (e) => {
+      e.stopPropagation();
+      endTour();
+    });
+    
+    // Allow target element to be clicked
+    targetElement.addEventListener('click', function(e) {
+      setTimeout(() => {
+        currentCoachMarkIndex++;
+        showNextCoachMark();
+      }, 300);
+    }, { once: true });
+  }
+  
+  // Position coach mark based on target and custom positions
+  function positionCoachMark(coachMarkDiv, targetElement, coachMark) {
+    const targetRect = targetElement.getBoundingClientRect();
+    
+    // Wait for the coach mark to be in the DOM to get dimensions
+    setTimeout(() => {
+      const coachMarkRect = coachMarkDiv.getBoundingClientRect();
+      let top, left;
+      const margin = 6; // Reduced space between target and coach mark
+      
+      // Special handling for search bar
+      if (coachMark.position === 'above' && coachMark.target === '.search-container') {
+        // Position ABOVE search bar with extra z-index to ensure visibility
+        top = targetRect.top - coachMarkRect.height - margin;
+        left = targetRect.left + (targetRect.width / 2) - (coachMarkRect.width / 2);
+        coachMarkDiv.style.zIndex = '9999'; // Extra high z-index for search
+      } else if (coachMark.position === 'top' && coachMark.target === '.view-all') {
+        // Position above "See All" button with arrow pointing down to it
+        top = targetRect.top - coachMarkRect.height - margin;
+        left = targetRect.left + (targetRect.width / 2) - (coachMarkRect.width / 2);
+      } else if (coachMark.position === 'right' && coachMark.target === '.filter-button') {
+        // Position to the right of filter button
+        top = targetRect.top;
+        left = targetRect.right + margin;
+      } else {
+        // Position based on arrow direction
+        switch (coachMark.arrow) {
+          case 'top':
+            top = targetRect.bottom + margin;
+            left = targetRect.left + targetRect.width / 2 - coachMarkRect.width / 2;
+            break;
+          case 'bottom':
+            top = targetRect.top - coachMarkRect.height - margin;
+            left = targetRect.left + targetRect.width / 2 - coachMarkRect.width / 2;
+            break;
+          case 'left':
+            top = targetRect.top + targetRect.height / 2 - coachMarkRect.height / 2;
+            left = targetRect.right + margin;
+            break;
+          case 'right':
+            top = targetRect.top + targetRect.height / 2 - coachMarkRect.height / 2;
+            left = targetRect.left - coachMarkRect.width - margin;
+            break;
+        }
+      }
+      
+      // Position the arrow
+      const arrow = coachMarkDiv.querySelector('.coach-mark-arrow');
+      switch (coachMark.arrow) {
+        case 'top':
+          arrow.style.left = `${coachMarkRect.width / 2 - 4}px`;
+          break;
+        case 'bottom':
+          arrow.style.left = `${coachMarkRect.width / 2 - 4}px`;
+          break;
+        case 'left':
+          arrow.style.top = `${coachMarkRect.height / 2 - 4}px`;
+          break;
+        case 'right':
+          arrow.style.top = `${coachMarkRect.height / 2 - 4}px`;
+          break;
+      }
+      
+      // Keep within screen bounds
+      if (left < 6) left = 6;
+      if (left + coachMarkRect.width > window.innerWidth - 6) left = window.innerWidth - coachMarkRect.width - 6;
+      if (top < 6) top = 6;
+      if (top + coachMarkRect.height > window.innerHeight - 6) top = window.innerHeight - coachMarkRect.height - 6;
+      
+      coachMarkDiv.style.top = `${top}px`;
+      coachMarkDiv.style.left = `${left}px`;
+    }, 0);
+  }
+  
+  // Handle window resize
+  function handleResize() {
+    if (!tourStarted) {
+      // Reposition intro screen if visible
+      const introScreen = document.querySelector('.coach-mark-intro');
+      if (introScreen) {
+        introScreen.style.top = '50%';
+        introScreen.style.left = '50%';
+        introScreen.style.transform = 'translate(-50%, -50%)';
+      }
+      return;
+    }
+    
+    const coachMarkDiv = document.querySelector('.coach-mark');
+    if (coachMarkDiv) {
+      const currentCoachMark = coachMarks[currentCoachMarkIndex - 1];
+      const targetElement = document.querySelector(currentCoachMark.target);
+      if (targetElement) {
+        // Update highlight ring position
+        const targetRect = targetElement.getBoundingClientRect();
+        const padding = 2;
+        
+        highlightRing.style.top = `${targetRect.top - padding}px`;
+        highlightRing.style.left = `${targetRect.left - padding}px`;
+        highlightRing.style.width = `${targetRect.width + padding * 2}px`;
+        highlightRing.style.height = `${targetRect.height + padding * 2}px`;
+        
+        // Update coach mark position
+        positionCoachMark(coachMarkDiv, targetElement, currentCoachMark);
+      }
+    }
+  }
+  
+  // Start coach marks
+  function startCoachMarks() {
+    showIntroScreen();
+    window.addEventListener('resize', handleResize);
+  }
+  
+  // Start with a slight delay to ensure page is fully loaded
+  setTimeout(startCoachMarks, 500);
+  
+  // Add keyboard navigation support
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape') {
+      // Close coach marks when ESC key is pressed
+      endTour();
+    } else if (e.key === 'Enter' || e.key === ' ' || e.key === 'ArrowRight') {
+      if (!tourStarted) {
+        // Start tour if intro is showing
+        const startButton = document.querySelector('.coach-mark-intro .coach-mark-button');
+        if (startButton) startButton.click();
+      } else {
+        // Advance to next coach mark
+        const coachMarkButton = document.querySelector('.coach-mark .coach-mark-button');
+        if (coachMarkButton) coachMarkButton.click();
+      }
+    }
+  });
+});
+</script>
+
+
 
 
  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
