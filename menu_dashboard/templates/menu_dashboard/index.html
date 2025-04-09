@@ -5727,502 +5727,541 @@ function closeNotification() {
 
 <script>
 document.addEventListener('DOMContentLoaded', () => {
-  // Create and inject CSS styles
-  const styleEl = document.createElement('style');
-  styleEl.textContent = `
-    .coach-mark-container {
-      position: fixed;
-      top: 0;
-      left: 0;
-      width: 100%;
-      height: 100%;
-      z-index: 2000; /* Set very high z-index to be above everything */
-      pointer-events: none;
+  // --- CoachMarkTour Class Definition ---
+  class CoachMarkTour {
+    constructor(steps, options = {}) {
+      this.steps = steps;
+      this.options = {
+        initialDelay: 500, // Delay before starting
+        zIndexBase: 2000,
+        messageSpacing: 20, // Space between target and message/arrow
+        ...options,
+      };
+      this.currentIndex = 0;
+      this.container = null;
+      this.spotlight = null;
+      this.circle = null;
+      this.arrowEl = null;
+      this.currentMark = null;
+      this.currentOverlay = null;
+      this.tourStarted = false;
+      this.currentStep = null;
+      this.currentTargetRect = null;
+      // For carousel step re-positioning
+      this._carouselElement = null;
+      this._carouselScrollListener = null;
+
+      // Bind methods
+      this._showNext = this._showNext.bind(this);
+      this.endTour = this.endTour.bind(this);
+      this._handleResize = this._handleResize.bind(this);
+      this._handleKeydown = this._handleKeydown.bind(this);
+
+      this._injectStyles();
     }
 
-    .coach-mark {
-      position: absolute;
-      background: #3366ff;
-      color: white;
-      padding: 8px 12px;
-      border-radius: 6px;
-      box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15);
-      max-width: 180px;
-      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
-      z-index: 2001; /* Higher than container to ensure visibility */
-      pointer-events: auto;
-    }
-
-    .coach-mark-intro {
-      position: fixed;
-      top: 50%;
-      left: 50%;
-      transform: translate(-50%, -50%);
-      background: #3366ff;
-      color: white;
-      padding: 16px;
-      border-radius: 8px;
-      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
-      max-width: 280px;
-      text-align: center;
-      z-index: 2002;
-      pointer-events: auto;
-    }
-
-    .coach-mark-intro-title {
-      font-size: 16px;
-      font-weight: 600;
-      margin-bottom: 8px;
-    }
-
-    .coach-mark-intro-content {
-      font-size: 14px;
-      margin-bottom: 16px;
-      line-height: 1.4;
-    }
-
-    .coach-mark-intro-buttons {
-      display: flex;
-      justify-content: space-between;
-      gap: 10px;
-    }
-
-    .coach-mark-content {
-      font-size: 12px;
-      font-weight: 500;
-      margin-bottom: 8px;
-      line-height: 1.3;
-    }
-
-    .coach-mark-buttons {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      gap: 8px;
-    }
-
-    .coach-mark-button, .coach-mark-skip {
-      background: white;
-      color: #3366ff;
-      border: none;
-      border-radius: 4px;
-      padding: 3px 10px;
-      font-size: 11px;
-      font-weight: 600;
-      cursor: pointer;
-      box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
-    }
-
-    /* Skip button is slightly less prominent */
-    .coach-mark-skip {
-      background: rgba(255, 255, 255, 0.85);
-    }
-
-    .coach-mark-button:hover, .coach-mark-skip:hover {
-      background-color: #f0f0f0;
-    }
-
-    .coach-mark-arrow {
-      position: absolute;
-      width: 0;
-      height: 0;
-      border: 4px solid transparent;
-    }
-
-    .coach-mark-arrow.top {
-      top: -8px;
-      border-bottom-color: #3366ff;
-    }
-
-    .coach-mark-arrow.bottom {
-      bottom: -8px;
-      border-top-color: #3366ff;
-    }
-
-    .coach-mark-arrow.left {
-      left: -8px;
-      border-right-color: #3366ff;
-    }
-
-    .coach-mark-arrow.right {
-      right: -8px;
-      border-left-color: #3366ff;
-    }
-
-    .highlight-ring {
-      position: absolute;
-      border: 2px solid #3366ff;
-      border-radius: 4px;
-      box-shadow: 0 0 0 2px rgba(51, 102, 255, 0.2);
-      pointer-events: none;
-      z-index: 1999;
-    }
-
-    .fade-element {
-      opacity: 0.3;
-      transition: opacity 0.3s ease;
-    }
-
-    .focused-element {
-      opacity: 1;
-      transition: opacity 0.3s ease;
-    }
-
-    @media (max-width: 600px) {
-      .coach-mark-intro {
-        max-width: 240px;
-        padding: 12px;
-      }
-      .coach-mark-intro-title {
-        font-size: 14px;
-      }
-      .coach-mark-intro-content {
-        font-size: 12px;
-      }
-      .coach-mark {
-        max-width: 150px;
-      }
-      .coach-mark-content {
-        font-size: 11px;
-      }
-    }
-  `;
-  document.head.appendChild(styleEl);
-
-  // Define coach marks with concise messages and target elements
-  const coachMarks = [
-    {
-      target: '.filter-button',
-      text: 'Filter menu items',
-      arrow: 'right',
-      position: 'right'
-    },
-    {
-      target: '.search-container',
-      text: 'Search for dishes',
-      arrow: 'bottom',
-      position: 'above' // Special positioning above search
-    },
-    {
-      target: '.category-btn:first-child',
-      text: 'Browse food categories',
-      arrow: 'left'
-    },
-    {
-      target: '.view-all',
-      text: 'See full menu',
-      arrow: 'top', // Arrow points downward to the See All button
-      position: 'top' // Position above the "See All" button
-    },
-    {
-      target: '.items-carousel .food-item:first-child',
-      text: 'Swipe for featured items',
-      arrow: 'bottom'
-    },
-    {
-      target: '.food-item:first-child',
-      text: 'Tap for item details',
-      arrow: 'top'
-    }
-  ];
-
-  let currentCoachMarkIndex = 0;
-  let container, highlightRing;
-  let currentHighlightedElement = null;
-  let tourStarted = false;
-
-  // Create container for coach marks
-  function createContainer() {
-    // Remove any existing container
-    const existingContainer = document.querySelector('.coach-mark-container');
-    if (existingContainer) existingContainer.remove();
-    
-    container = document.createElement('div');
-    container.className = 'coach-mark-container';
-    
-    highlightRing = document.createElement('div');
-    highlightRing.className = 'highlight-ring';
-    container.appendChild(highlightRing);
-    
-    document.body.appendChild(container);
-  }
-
-  // Remove fading from all elements
-  function resetAllElementsOpacity() {
-    document.querySelectorAll('.fade-element, .focused-element').forEach(el => {
-      el.classList.remove('fade-element', 'focused-element');
-      el.style.opacity = '';
-    });
-  }
-
-  // End the tour completely
-  function endTour() {
-    resetAllElementsOpacity();
-    const container = document.querySelector('.coach-mark-container');
-    if (container) container.remove();
-    window.removeEventListener('resize', handleResize);
-  }
-
-  // Show introduction screen
-  function showIntroScreen() {
-    createContainer();
-    
-    const introScreen = document.createElement('div');
-    introScreen.className = 'coach-mark-intro';
-    
-    introScreen.innerHTML = `
-      <div class="coach-mark-intro-title">Welcome to Our Menu</div>
-      <div class="coach-mark-intro-content">Let's take a quick tour to help you navigate our food ordering experience.</div>
-      <div class="coach-mark-intro-buttons">
-        <button class="coach-mark-skip">Skip Tour</button>
-        <button class="coach-mark-button">Start Tour</button>
-      </div>
-    `;
-    
-    container.appendChild(introScreen);
-    
-    // Button handlers
-    introScreen.querySelector('.coach-mark-button').addEventListener('click', () => {
-      introScreen.remove();
-      tourStarted = true;
-      showNextCoachMark();
-    });
-    
-    introScreen.querySelector('.coach-mark-skip').addEventListener('click', () => {
-      endTour();
-    });
-  }
-
-  // Show the next coach mark in sequence
-  function showNextCoachMark() {
-    // Remove any existing coach mark
-    const existingCoachMark = document.querySelector('.coach-mark');
-    if (existingCoachMark) {
-      existingCoachMark.remove();
-    }
-    
-    // Reset previous highlighted element
-    if (currentHighlightedElement) {
-      currentHighlightedElement.classList.remove('focused-element');
-      currentHighlightedElement.classList.remove('fade-element');
-      currentHighlightedElement.style.opacity = '';
-    }
-    
-    // Check if we're done
-    if (currentCoachMarkIndex >= coachMarks.length) {
-      endTour();
-      return;
-    }
-    
-    const coachMark = coachMarks[currentCoachMarkIndex];
-    const targetElement = document.querySelector(coachMark.target);
-    
-    // Skip if target not found
-    if (!targetElement) {
-      console.warn('Target not found:', coachMark.target);
-      currentCoachMarkIndex++;
-      showNextCoachMark();
-      return;
-    }
-    
-    // Fade all elements except the current one
-    document.querySelectorAll('.filter-button, .search-container, .category-btn, .view-all, .items-carousel, .food-item').forEach(el => {
-      el.classList.add('fade-element');
-    });
-    
-    // Highlight current element
-    targetElement.classList.remove('fade-element');
-    targetElement.classList.add('focused-element');
-    currentHighlightedElement = targetElement;
-    
-    // Create highlight effect on the target element
-    const targetRect = targetElement.getBoundingClientRect();
-    const padding = 2; // smaller padding around the element
-    
-    highlightRing.style.top = `${targetRect.top - padding}px`;
-    highlightRing.style.left = `${targetRect.left - padding}px`;
-    highlightRing.style.width = `${targetRect.width + padding * 2}px`;
-    highlightRing.style.height = `${targetRect.height + padding * 2}px`;
-    
-    // Create coach mark HTML
-    const coachMarkDiv = document.createElement('div');
-    coachMarkDiv.className = 'coach-mark';
-    
-    // Button text changes to "Done" on last item
-    const buttonText = currentCoachMarkIndex === coachMarks.length - 1 ? 'Done' : 'Next';
-    
-    coachMarkDiv.innerHTML = `
-      <div class="coach-mark-arrow ${coachMark.arrow}"></div>
-      <div class="coach-mark-content">${coachMark.text}</div>
-      <div class="coach-mark-buttons">
-        <button class="coach-mark-skip">Skip</button>
-        <button class="coach-mark-button">${buttonText}</button>
-      </div>
-    `;
-    
-    // Add to container and make sure it stays at the top
-    container.appendChild(coachMarkDiv);
-    
-    // Position it relative to the target
-    positionCoachMark(coachMarkDiv, targetElement, coachMark);
-    
-    // Next button functionality
-    coachMarkDiv.querySelector('.coach-mark-button').addEventListener('click', (e) => {
-      e.stopPropagation();
-      currentCoachMarkIndex++;
-      showNextCoachMark();
-    });
-    
-    // Skip button functionality
-    coachMarkDiv.querySelector('.coach-mark-skip').addEventListener('click', (e) => {
-      e.stopPropagation();
-      endTour();
-    });
-    
-    // Allow target element to be clicked
-    targetElement.addEventListener('click', function(e) {
-      setTimeout(() => {
-        currentCoachMarkIndex++;
-        showNextCoachMark();
-      }, 300);
-    }, { once: true });
-  }
-  
-  // Position coach mark based on target and custom positions
-  function positionCoachMark(coachMarkDiv, targetElement, coachMark) {
-    const targetRect = targetElement.getBoundingClientRect();
-    
-    // Wait for the coach mark to be in the DOM to get dimensions
-    setTimeout(() => {
-      const coachMarkRect = coachMarkDiv.getBoundingClientRect();
-      let top, left;
-      const margin = 6; // Reduced space between target and coach mark
+    _injectStyles() {
+      const styleId = 'coach-mark-styles';
+      if (document.getElementById(styleId)) return;
       
-      // Special handling for search bar
-      if (coachMark.position === 'above' && coachMark.target === '.search-container') {
-        // Position ABOVE search bar with extra z-index to ensure visibility
-        top = targetRect.top - coachMarkRect.height - margin;
-        left = targetRect.left + (targetRect.width / 2) - (coachMarkRect.width / 2);
-        coachMarkDiv.style.zIndex = '9999'; // Extra high z-index for search
-      } else if (coachMark.position === 'top' && coachMark.target === '.view-all') {
-        // Position above "See All" button with arrow pointing down to it
-        top = targetRect.top - coachMarkRect.height - margin;
-        left = targetRect.left + (targetRect.width / 2) - (coachMarkRect.width / 2);
-      } else if (coachMark.position === 'right' && coachMark.target === '.filter-button') {
-        // Position to the right of filter button
-        top = targetRect.top;
-        left = targetRect.right + margin;
-      } else {
-        // Position based on arrow direction
-        switch (coachMark.arrow) {
-          case 'top':
-            top = targetRect.bottom + margin;
-            left = targetRect.left + targetRect.width / 2 - coachMarkRect.width / 2;
-            break;
-          case 'bottom':
-            top = targetRect.top - coachMarkRect.height - margin;
-            left = targetRect.left + targetRect.width / 2 - coachMarkRect.width / 2;
-            break;
-          case 'left':
-            top = targetRect.top + targetRect.height / 2 - coachMarkRect.height / 2;
-            left = targetRect.right + margin;
-            break;
-          case 'right':
-            top = targetRect.top + targetRect.height / 2 - coachMarkRect.height / 2;
-            left = targetRect.left - coachMarkRect.width - margin;
-            break;
+      const styleEl = document.createElement('style');
+      styleEl.id = styleId;
+      styleEl.textContent = `
+        .coach-mark-container {
+          position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+          z-index: ${this.options.zIndexBase};
+          pointer-events: none;
+          background: transparent;
+          transition: background 0.3s ease-in-out;
         }
+        .coach-mark-container.active {
+          background: rgba(0, 0, 0, 0.5);
+        }
+        .coach-mark, .coach-mark-intro {
+          position: absolute; background: #333;
+          color: #fff; padding: 10px 15px; border-radius: 8px;
+          max-width: 240px; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+          z-index: ${this.options.zIndexBase + 2};
+          pointer-events: auto; text-align: center;
+          box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+          opacity: 0; transform: scale(0.95);
+          transition: opacity 0.3s ease, transform 0.3s ease;
+        }
+        .coach-mark-intro {
+          position: fixed; top: 50%; left: 50%;
+          transform: translate(-50%, -50%) scale(0.95);
+          padding: 15px 20px;
+        }
+        .coach-mark.visible, .coach-mark-intro.visible {
+          opacity: 1; transform: scale(1);
+        }
+        .coach-mark-intro.positioned { transform: translate(-50%, -50%) scale(1); }
+        .coach-mark-intro-title { font-size: 18px; font-weight: 600; margin-bottom: 10px; }
+        .coach-mark-intro-content { font-size: 14px; margin-bottom: 18px; line-height: 1.4; }
+        .coach-mark-content { font-size: 14px; font-weight: 400; margin-bottom: 15px; line-height: 1.4; }
+        .coach-mark-buttons {
+          display: flex; justify-content: space-between; align-items: center; gap: 10px;
+        }
+        .coach-mark-button {
+          background: #007aff; color: #fff; border: none;
+          border-radius: 5px; padding: 8px 16px; font-size: 14px; font-weight: 500;
+          cursor: pointer; flex-grow: 1;
+          transition: background-color 0.2s ease;
+        }
+        .coach-mark-button:hover { background-color: #005ecb; }
+        .coach-mark-skip {
+          background: transparent; color: rgba(255,255,255,0.8); border: 1px solid rgba(255,255,255,0.5);
+          border-radius: 5px; padding: 7px 12px; font-size: 13px; font-weight: 400; cursor: pointer;
+          transition: background-color 0.2s ease, color 0.2s ease;
+        }
+        .coach-mark-skip:hover { background-color: rgba(255,255,255,0.1); color: #fff; }
+        .highlight-spotlight {
+          position: absolute; border-radius: 50%;
+          box-shadow: 0 0 0 9999px rgba(0,0,0,0.5);
+          pointer-events: none; z-index: ${this.options.zIndexBase - 1};
+          transition: top 0.3s ease, left 0.3s ease, width 0.3s ease, height 0.3s ease;
+        }
+        .highlight-circle {
+          position: absolute; border: 2px dashed #fff;
+          border-radius: 50%; pointer-events: none; z-index: ${this.options.zIndexBase - 1};
+          animation: pulse 1.8s infinite ease-in-out;
+          transition: top 0.3s ease, left 0.3s ease, width 0.3s ease, height 0.3s ease;
+        }
+        .coach-mark-arrow {
+          position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+          z-index: ${this.options.zIndexBase + 1};
+          pointer-events: none;
+          opacity: 0;
+          transition: opacity 0.3s ease 0.1s;
+        }
+        .coach-mark-arrow.visible { opacity: 1; }
+        .coach-mark-arrow path { stroke-dashoffset: 1000; animation: draw 1s ease forwards 0.2s; }
+        @keyframes pulse { 
+          0% { opacity:0.5; transform: scale(1); } 
+          50% { opacity:1; transform: scale(1.05); } 
+          100% { opacity:0.5; transform: scale(1); } 
+        }
+        @keyframes draw { to { stroke-dashoffset: 0; } }
+        @media (max-width:600px){
+          .coach-mark-intro { max-width: 90vw; padding:12px 15px; }
+          .coach-mark { max-width: 90vw; }
+          .coach-mark-intro-title { font-size: 16px; }
+          .coach-mark-content, .coach-mark-intro-content { font-size: 13px; }
+          .coach-mark-button { padding: 7px 14px; font-size: 13px; }
+          .coach-mark-skip { padding: 6px 10px; font-size: 12px; }
+        }
+        .prevent-click-overlay {
+          position: absolute; background: transparent;
+          z-index: ${this.options.zIndexBase + 1};
+        }
+      `;
+      document.head.appendChild(styleEl);
+    }
+
+    _createContainer() {
+      if (this.container) this.container.remove();
+      this.container = document.createElement('div');
+      this.container.className = 'coach-mark-container';
+      this.container.setAttribute('role', 'dialog');
+      this.container.setAttribute('aria-modal', 'true');
+      this.spotlight = document.createElement('div');
+      this.spotlight.className = 'highlight-spotlight';
+      this.circle = document.createElement('div');
+      this.circle.className = 'highlight-circle';
+      this.arrowEl = document.createElement('div');
+      this.arrowEl.className = 'coach-mark-arrow';
+      this.container.append(this.spotlight, this.circle, this.arrowEl);
+      document.body.appendChild(this.container);
+    }
+
+    start() {
+      setTimeout(() => {
+        this._showIntro();
+        window.addEventListener('resize', this._handleResize);
+        document.addEventListener('keydown', this._handleKeydown);
+      }, this.options.initialDelay);
+    }
+
+    endTour() {
+      this.tourStarted = false;
+      if (this._carouselElement && this._carouselScrollListener) {
+        // Remove carousel scroll listener if set
+        this._carouselElement.removeEventListener('scroll', this._carouselScrollListener);
+        this._carouselElement = null;
+        this._carouselScrollListener = null;
+      }
+      if (this.container) {
+        this.container.style.opacity = '0';
+        this.container.addEventListener('transitionend', () => {
+          if (this.container) this.container.remove();
+          this.container = null;
+        }, { once: true });
+      }
+      setTimeout(() => { if (this.container) this.container.remove(); }, 350);
+      this._cleanupCurrentStep();
+      window.removeEventListener('resize', this._handleResize);
+      document.removeEventListener('keydown', this._handleKeydown);
+      console.log("Tour Ended.");
+    }
+
+    _showIntro() {
+      this._createContainer();
+      this.container.classList.add('active');
+      const introId = 'coach-mark-intro-title';
+      const contentId = 'coach-mark-intro-content';
+      const intro = document.createElement('div');
+      intro.className = 'coach-mark-intro';
+      intro.setAttribute('aria-labelledby', introId);
+      intro.setAttribute('aria-describedby', contentId);
+      intro.innerHTML = `
+        <div class="coach-mark-intro-title" id="${introId}">Welcome to our Menu!</div>
+        <div class="coach-mark-intro-content" id="${contentId}">New here? Take a quick tour of the menu.</div>
+        <div class="coach-mark-buttons">
+          <button class="coach-mark-skip">Skip</button>
+          <button class="coach-mark-button">Start</button>
+        </div>`;
+      this.container.appendChild(intro);
+      this.currentMark = intro;
+      requestAnimationFrame(() => {
+        intro.classList.add('visible', 'positioned');
+      });
+      intro.querySelector('.coach-mark-button').onclick = () => {
+        intro.remove();
+        this.currentMark = null;
+        this.tourStarted = true;
+        this._showNext();
+      };
+      intro.querySelector('.coach-mark-skip').onclick = this.endTour;
+    }
+
+    _cleanupCurrentStep() {
+      if (this.currentMark) {
+        this.currentMark.remove();
+        this.currentMark = null;
+      }
+      if (this.currentOverlay) {
+        this.currentOverlay.remove();
+        this.currentOverlay = null;
+      }
+      if (this.arrowEl) {
+        this.arrowEl.innerHTML = '';
+        this.arrowEl.classList.remove('visible');
+      }
+      // Remove any carousel scroll listener if set.
+      if (this._carouselElement && this._carouselScrollListener) {
+        this._carouselElement.removeEventListener('scroll', this._carouselScrollListener);
+        this._carouselElement = null;
+        this._carouselScrollListener = null;
+      }
+    }
+
+    _showNext() {
+      this._cleanupCurrentStep();
+      if (this.currentIndex >= this.steps.length) {
+        return this.endTour();
+      }
+      this.currentStep = this.steps[this.currentIndex];
+      const targetElement = document.querySelector(this.currentStep.target);
+      if (!targetElement || !this._isElementVisible(targetElement)) {
+        console.warn(`Target not found: ${this.currentStep.target}. Skipping.`);
+        this.currentIndex++;
+        requestAnimationFrame(this._showNext);
+        return;
+      }
+      if (!this.container || !document.body.contains(this.container)) {
+        this._createContainer();
+        this.container.classList.add('active');
+      } else {
+        this.container.classList.add('active');
+      }
+      this.currentTargetRect = targetElement.getBoundingClientRect();
+      
+      // For non–carousel steps, scroll the target into view.
+      if (!this.currentStep.carouselItem) {
+        targetElement.scrollIntoView({ behavior: 'smooth', block: 'center', inline: 'center' });
       }
       
-      // Position the arrow
-      const arrow = coachMarkDiv.querySelector('.coach-mark-arrow');
-      switch (coachMark.arrow) {
-        case 'top':
-          arrow.style.left = `${coachMarkRect.width / 2 - 4}px`;
+      this._positionHighlight(this.currentTargetRect);
+      
+      // For carousel steps, add a scroll listener to reposition on swipe.
+      if (this.currentStep.carouselItem) {
+        this._carouselElement = targetElement;
+        this._carouselScrollListener = () => {
+          this.currentTargetRect = targetElement.getBoundingClientRect();
+          this._positionHighlight(this.currentTargetRect);
+          this._positionMark(this.currentMark, this.currentTargetRect, this.currentStep);
+          if (this.currentStep.showArrow) {
+            this._positionArrow(this.currentMark, this.currentTargetRect);
+          }
+        };
+        this._carouselElement.addEventListener('scroll', this._carouselScrollListener);
+      }
+      
+      // For carousel steps, do not auto-scroll.
+      
+      if (this.currentStep.carouselItem) {
+        // Add an overlay to block clicks on the target if needed.
+        this.currentOverlay = document.createElement('div');
+        this.currentOverlay.className = 'prevent-click-overlay';
+        this._positionOverlay(this.currentTargetRect);
+        this.container.appendChild(this.currentOverlay);
+        this.currentOverlay.addEventListener('click', e => { e.stopPropagation(); e.preventDefault(); });
+      }
+      
+      // Determine the button text – "Done" for the final step.
+      const isFinalStep = this.currentIndex === this.steps.length - 1;
+      const nextButtonText = isFinalStep ? 'Done' : 'Next';
+      
+      const markId = `coach-mark-content-${this.currentIndex}`;
+      const mark = document.createElement('div');
+      mark.className = 'coach-mark';
+      mark.setAttribute('role', 'tooltip');
+      mark.setAttribute('aria-describedby', markId);
+      mark.innerHTML = `
+        <div class="coach-mark-content" id="${markId}">${this.currentStep.text}</div>
+        <div class="coach-mark-buttons">
+          <button class="coach-mark-skip">Skip</button>
+          <button class="coach-mark-button">${nextButtonText}</button>
+        </div>`;
+      this.container.appendChild(mark);
+      this.currentMark = mark;
+      
+      requestAnimationFrame(() => {
+        this._positionMark(mark, this.currentTargetRect, this.currentStep);
+        mark.classList.add('visible');
+        if (this.currentStep.showArrow) {
+          this._positionArrow(mark, this.currentTargetRect);
+          this.arrowEl.classList.add('visible');
+        } else {
+          this.arrowEl.innerHTML = '';
+          this.arrowEl.classList.remove('visible');
+        }
+      });
+      
+      mark.querySelector('.coach-mark-button').onclick = (e) => {
+        e.stopPropagation();
+        e.preventDefault();
+        this.currentIndex++;
+        this._showNext();
+      };
+      mark.querySelector('.coach-mark-skip').onclick = (e) => {
+        e.stopPropagation();
+        e.preventDefault();
+        this.endTour();
+      };
+    }
+
+    _positionHighlight(rect) {
+      const padding = 5;
+      const radius = Math.max(rect.width, rect.height) / 2 + padding;
+      const centerX = rect.left + rect.width / 2;
+      const centerY = rect.top + rect.height / 2;
+      this.spotlight.style.cssText = `
+        top: ${centerY - radius}px;
+        left: ${centerX - radius}px;
+        width: ${radius * 2}px;
+        height: ${radius * 2}px;
+      `;
+      const borderPadding = 4;
+      this.circle.style.cssText = `
+        top: ${centerY - radius - borderPadding}px;
+        left: ${centerX - radius - borderPadding}px;
+        width: ${radius * 2 + borderPadding * 2}px;
+        height: ${radius * 2 + borderPadding * 2}px;
+      `;
+    }
+
+    _positionOverlay(rect) {
+      if (!this.currentOverlay) return;
+      this.currentOverlay.style.cssText = `
+        top: ${rect.top}px;
+        left: ${rect.left}px;
+        width: ${rect.width}px;
+        height: ${rect.height}px;
+      `;
+    }
+
+    _positionMark(mark, targetRect, step) {
+      if (!mark) return;
+      const markRect = mark.getBoundingClientRect();
+      let top, left;
+      const spacing = this.options.messageSpacing;
+      const targetCenterX = targetRect.left + targetRect.width / 2;
+      const targetCenterY = targetRect.top + targetRect.height / 2;
+      switch (step.position) {
+        case 'above':
+          top = targetRect.top - markRect.height - spacing;
+          left = targetCenterX - markRect.width / 2;
           break;
-        case 'bottom':
-          arrow.style.left = `${coachMarkRect.width / 2 - 4}px`;
+        case 'below':
+          top = targetRect.bottom + spacing;
+          left = targetCenterX - markRect.width / 2;
           break;
         case 'left':
-          arrow.style.top = `${coachMarkRect.height / 2 - 4}px`;
+          top = targetCenterY - markRect.height / 2;
+          left = targetRect.left - markRect.width - spacing;
           break;
         case 'right':
-          arrow.style.top = `${coachMarkRect.height / 2 - 4}px`;
+          top = targetCenterY - markRect.height / 2;
+          left = targetRect.right + spacing;
+          break;
+        case 'center':
+          top = (window.innerHeight - markRect.height) / 2;
+          left = (window.innerWidth - markRect.width) / 2;
+          break;
+        default:
+          console.warn(`Invalid position "${step.position}", defaulting to 'below'.`);
+          top = targetRect.bottom + spacing;
+          left = targetCenterX - markRect.width / 2;
           break;
       }
-      
-      // Keep within screen bounds
-      if (left < 6) left = 6;
-      if (left + coachMarkRect.width > window.innerWidth - 6) left = window.innerWidth - coachMarkRect.width - 6;
-      if (top < 6) top = 6;
-      if (top + coachMarkRect.height > window.innerHeight - 6) top = window.innerHeight - coachMarkRect.height - 6;
-      
-      coachMarkDiv.style.top = `${top}px`;
-      coachMarkDiv.style.left = `${left}px`;
-    }, 0);
-  }
-  
-  // Handle window resize
-  function handleResize() {
-    if (!tourStarted) {
-      // Reposition intro screen if visible
-      const introScreen = document.querySelector('.coach-mark-intro');
-      if (introScreen) {
-        introScreen.style.top = '50%';
-        introScreen.style.left = '50%';
-        introScreen.style.transform = 'translate(-50%, -50%)';
-      }
-      return;
+      // Apply an extra vertical offset if provided (e.g., for "View All" step)
+      if (step.offsetY) { top += step.offsetY; }
+      const margin = 10;
+      top = Math.max(margin, Math.min(top, window.innerHeight - markRect.height - margin));
+      left = Math.max(margin, Math.min(left, window.innerWidth - markRect.width - margin));
+      mark.style.top = `${top}px`;
+      mark.style.left = `${left}px`;
     }
-    
-    const coachMarkDiv = document.querySelector('.coach-mark');
-    if (coachMarkDiv) {
-      const currentCoachMark = coachMarks[currentCoachMarkIndex - 1];
-      const targetElement = document.querySelector(currentCoachMark.target);
-      if (targetElement) {
-        // Update highlight ring position
-        const targetRect = targetElement.getBoundingClientRect();
-        const padding = 2;
-        
-        highlightRing.style.top = `${targetRect.top - padding}px`;
-        highlightRing.style.left = `${targetRect.left - padding}px`;
-        highlightRing.style.width = `${targetRect.width + padding * 2}px`;
-        highlightRing.style.height = `${targetRect.height + padding * 2}px`;
-        
-        // Update coach mark position
-        positionCoachMark(coachMarkDiv, targetElement, currentCoachMark);
+
+    _positionArrow(mark, targetRect) {
+      if (!this.arrowEl || !mark) return;
+      requestAnimationFrame(() => {
+        const markRect = mark.getBoundingClientRect();
+        const fromX = markRect.left + markRect.width / 2;
+        const fromY = markRect.top + markRect.height / 2;
+        const toX = targetRect.left + targetRect.width / 2;
+        const toY = targetRect.top + targetRect.height / 2;
+        const svg = this._createArrowSVG(fromX, fromY, toX, toY);
+        this.arrowEl.innerHTML = '';
+        this.arrowEl.appendChild(svg);
+      });
+    }
+
+    _createArrowSVG(x1, y1, x2, y2) {
+      const ns = "http://www.w3.org/2000/svg";
+      const svg = document.createElementNS(ns, "svg");
+      svg.setAttribute("viewBox", `0 0 ${window.innerWidth} ${window.innerHeight}`);
+      svg.style.position = "absolute";
+      svg.style.top = "0";
+      svg.style.left = "0";
+      svg.style.width = "100%";
+      svg.style.height = "100%";
+      const defs = document.createElementNS(ns, "defs");
+      const marker = document.createElementNS(ns, "marker");
+      marker.setAttribute("id", "arrowhead");
+      marker.setAttribute("markerWidth", "10");
+      marker.setAttribute("markerHeight", "7");
+      marker.setAttribute("refX", "9");
+      marker.setAttribute("refY", "3.5");
+      marker.setAttribute("orient", "auto");
+      const polygon = document.createElementNS(ns, "polygon");
+      polygon.setAttribute("points", "0 0, 10 3.5, 0 7");
+      polygon.setAttribute("fill", "white");
+      marker.appendChild(polygon);
+      defs.appendChild(marker);
+      svg.appendChild(defs);
+      const path = document.createElementNS(ns, "path");
+      const dx = x2 - x1, dy = y2 - y1;
+      const controlX = x1 + dx / 2 + dy * 0.1;
+      const controlY = y1 + dy / 2 - dx * 0.1;
+      path.setAttribute("d", `M ${x1} ${y1} Q ${controlX} ${controlY}, ${x2} ${y2}`);
+      path.setAttribute("stroke", "white");
+      path.setAttribute("stroke-width", "2");
+      path.setAttribute("fill", "none");
+      path.setAttribute("stroke-dasharray", "6, 6");
+      const pathLength = path.getTotalLength ? path.getTotalLength() : 1000;
+      path.style.strokeDashoffset = pathLength;
+      path.setAttribute("marker-end", "url(#arrowhead)");
+      svg.appendChild(path);
+      return svg;
+    }
+
+    _handleResize() {
+      if (!this.tourStarted || !this.currentStep || !this.currentMark || !this.container) return;
+      const targetElement = document.querySelector(this.currentStep.target);
+      if (!targetElement || !this._isElementVisible(targetElement)) {
+        console.warn("Target lost during resize:", this.currentStep.target);
+        this.endTour();
+        return;
+      }
+      this.currentTargetRect = targetElement.getBoundingClientRect();
+      requestAnimationFrame(() => {
+        this._positionHighlight(this.currentTargetRect);
+        this._positionMark(this.currentMark, this.currentTargetRect, this.currentStep);
+        if(this.currentOverlay) this._positionOverlay(this.currentTargetRect);
+        if (this.currentStep.showArrow) {
+          this._positionArrow(this.currentMark, this.currentTargetRect);
+        }
+      });
+    }
+
+    _handleKeydown(event) {
+      if (!this.container) return;
+      if (event.key === 'Escape') {
+        event.preventDefault();
+        this.endTour();
+      } else if (event.key === 'Enter' || event.key === ' ') {
+        event.preventDefault();
+        const buttonSelector = this.tourStarted
+          ? '.coach-mark .coach-mark-button'
+          : '.coach-mark-intro .coach-mark-button';
+        const button = this.container.querySelector(buttonSelector);
+        if (button) { button.click(); }
+      } else if (event.key === 'ArrowRight' && this.tourStarted) {
+        event.preventDefault();
+        const nextButton = this.container.querySelector('.coach-mark .coach-mark-button');
+        if(nextButton) nextButton.click();
       }
     }
-  }
-  
-  // Start coach marks
-  function startCoachMarks() {
-    showIntroScreen();
-    window.addEventListener('resize', handleResize);
-  }
-  
-  // Start with a slight delay to ensure page is fully loaded
-  setTimeout(startCoachMarks, 500);
-  
-  // Add keyboard navigation support
-  document.addEventListener('keydown', (e) => {
-    if (e.key === 'Escape') {
-      // Close coach marks when ESC key is pressed
-      endTour();
-    } else if (e.key === 'Enter' || e.key === ' ' || e.key === 'ArrowRight') {
-      if (!tourStarted) {
-        // Start tour if intro is showing
-        const startButton = document.querySelector('.coach-mark-intro .coach-mark-button');
-        if (startButton) startButton.click();
-      } else {
-        // Advance to next coach mark
-        const coachMarkButton = document.querySelector('.coach-mark .coach-mark-button');
-        if (coachMarkButton) coachMarkButton.click();
-      }
+
+    _isElementVisible(el) {
+      if (!el) return false;
+      const rect = el.getBoundingClientRect();
+      return (
+        rect.top < window.innerHeight &&
+        rect.bottom > 0 &&
+        rect.left < window.innerWidth &&
+        rect.right > 0 &&
+        el.offsetParent !== null
+      );
     }
-  });
+  }
+
+  // --- Configuration and Initialization ---
+  // Steps 1-4 remain the same. Step 5 (swipe) and Step 6 (final product) both use carouselItem
+  const tourSteps = [
+    { target: '.filter-button', text: 'Filter meals.', position: 'below', showArrow: true },
+    { target: '.search-container', text: 'Search here.', position: 'below', showArrow: true },
+    { target: '.category-btn:nth-child(2)', text: 'Pick this.', position: 'below', showArrow: true },
+    { target: '.view-all', text: 'See all.', position: 'above', showArrow: true, offsetY: -10 },
+    { target: '.items-carousel', text: 'Swipe  →', position: 'center', showArrow: false, carouselItem: true },
+    { target: '.items-carousel .food-item:first-child', text: 'Tap for details.', position: 'above', showArrow: true, carouselItem: true }
+  ];
+
+  const menuTour = new CoachMarkTour(tourSteps, { initialDelay: 700 });
+  menuTour.start();
+
+  // --- Example HTML Structure (for testing) ---
+  /*
+    <button class="filter-button">Filter</button>
+    <div class="search-container"><input type="search" placeholder="Search..."></div>
+    <div>
+      <button class="category-btn">Cat 1</button>
+      <button class="category-btn">Cat 2</button>
+    </div>
+    <a href="#" class="view-all">View All</a>
+    <div class="items-carousel" style="overflow-x: scroll; white-space: nowrap; background: #eee; padding: 10px;">
+      <div class="food-item" style="display: inline-block; border: 1px solid #ccc; padding: 10px; margin: 5px; width: 120px; height: 100px; background: #fff;">Item 1</div>
+      <div class="food-item" style="display: inline-block; border: 1px solid #ccc; padding: 10px; margin: 5px; width: 120px; height: 100px; background: #fff;">Item 2</div>
+    </div>
+    <div class="food-item" style="border: 1px solid #ccc; padding: 10px; margin: 10px; width: 150px; height: 120px; background: #fff;">Regular 1</div>
+    <div class="food-item" style="border: 1px solid #ccc; padding: 10px; margin: 10px; width: 150px; height: 120px; background: #fff;">Regular 2</div>
+  */
 });
 </script>
+
+
 
 
 
