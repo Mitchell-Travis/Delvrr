@@ -12,11 +12,13 @@ urlpatterns = [
     path("menu/", include("menu_dashboard.urls")),
 ]
 
-# Serve media files correctly in production
+# Serve static files in production using WhiteNoise
 if not settings.DEBUG:
-    urlpatterns += [
-        re_path(r"^media/(?P<path>.*)$", serve, {"document_root": settings.MEDIA_ROOT}),
-    ]
+    # Serve media files from Cloudinary CDN, no need for a local serve
+    # Media is automatically served from Cloudinary using MEDIA_URL
+
+    # Serve static files using WhiteNoise for production
+    urlpatterns += static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)
 
 # Serve static and media files in development
 if settings.DEBUG:

@@ -27,6 +27,7 @@ from django.db.models import Prefetch
 from django.core.cache import cache
 from django.db.models import Prefetch, Q, F, Case, When, FloatField
 from django.contrib.sites.shortcuts import get_current_site
+from django.views.decorators.cache import cache_control
 # from celery import shared_task
 
 # from django.db.models import Func, F
@@ -138,6 +139,7 @@ def contact(request):
 
 from django.utils.timezone import now
 
+@cache_control(max_age=3600)  # Cache for 1 hour
 def restaurant_menu(request, restaurant_name_slug, hashed_slug):
     # Fetch the restaurant
     restaurant = get_object_or_404(Restaurant, hashed_slug=hashed_slug)
@@ -178,6 +180,7 @@ def restaurant_menu(request, restaurant_name_slug, hashed_slug):
             product.variations_list = list(product.variations.all()) if product.variations.exists() else None
             default_variation = product.variations.filter(name='S').first() or product.variations.first()
             product.display_price = default_variation.price if default_variation else product.get_display_price()
+            product.has_description = bool(product.description and product.description.strip())
 
             # Wednesday wings discount example
             product.is_discounted = (today == 2 and 'wings' in product.name.lower())

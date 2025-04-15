@@ -1,5 +1,8 @@
 from django import template
+
+import base64
 register = template.Library()
+
 
 @register.filter
 def get_default_price(variations, size="S"):
@@ -32,3 +35,11 @@ def thumb_url(image_field, size):
     width, height = size.split('x')
     # ... generate a resized version or URL ...
     return resized_url
+
+
+@register.filter
+def base64_encode(value):
+    return base64.b64encode(value).decode('utf-8')
+
+
+    

@@ -22,6 +22,15 @@ SECRET_KEY = config("SECRET_KEY", default="your-default-secret-key")
 # Debug Mode - Set to False in Production
 DEBUG = True
 
+
+THUMBNAIL_ALIASES = {
+    '': {
+        'tiny': {'size': (20, 20), 'crop': True},
+        '400': {'size': (400, 400), 'crop': True},
+        '800': {'size': (800, 800), 'crop': True},
+    },
+}
+
 # Allowed Hosts
 ALLOWED_HOSTS = [
     "localhost",
