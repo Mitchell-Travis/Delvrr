@@ -5700,63 +5700,70 @@ function updateModalContent(newIndex) {
     quantity = 1; // Reset to 1 when content changes
     if (quantityDisplay) quantityDisplay.textContent = quantity;
 
-    // --- Variations (Size Buttons) ---
     const sizeSelection = document.getElementById('sizeSelectionContainer');
-    const sizeButtons = sizeSelection?.querySelectorAll('.size-btn') || [];
-    if (sizeSelection) { // Check if the container exists
-        if (product.hasVariations) {
-            sizeSelection.style.display = 'flex';
-            sizeSelection.classList.remove('d-none');
+const sizeButtons = sizeSelection?.querySelectorAll('.size-btn') || [];
+if (sizeSelection) {
+    if (product.hasVariations) {
+        sizeSelection.style.display = 'flex';
+        sizeSelection.classList.remove('d-none');
 
-            sizeButtons.forEach(button => {
-                const size = button.dataset.size;
-                let priceForSize = '';
-                let isActive = false;
+        sizeButtons.forEach(button => {
+            const size = button.dataset.size;
+            let priceForSize = '';
+            let isActive = false;
 
-                // Assign price based on size
-                switch (size) {
-                    case 'S': priceForSize = product.priceS; isActive = true; break; // Default active
-                    case 'M': priceForSize = product.priceM; break;
-                    case 'L': priceForSize = product.priceL; break;
-                    case 'F': priceForSize = product.priceF; break;
+            // Assign price based on size
+            switch (size) {
+                case 'S': priceForSize = product.priceS; isActive = true; break; // Default active
+                case 'M': priceForSize = product.priceM; break;
+                case 'L': priceForSize = product.priceL; break;
+                case 'F': priceForSize = product.priceF; break;
+            }
+            priceForSize = priceForSize || product.price; // Fallback to base price if size price missing
+
+            // Update button state
+            button.disabled = !priceForSize;
+            button.dataset.price = priceForSize;
+            button.classList.toggle('active', isActive);
+
+            // Click handler updates price
+            button.onclick = function() {
+                if (!this.disabled) {
+                    sizeButtons.forEach(btn => btn.classList.remove('active'));
+                    this.classList.add('active');
+                    if (detailPrice && !(product.specialOffer && product.specialOffer.trim())) {
+                        let displayPrice = this.dataset.price;
+                        if (!product.priceByPercentage && displayPrice && !displayPrice.startsWith('$')) {
+                            displayPrice = `$${displayPrice}`;
+                        }
+                        detailPrice.textContent = displayPrice || '';
+                    }
                 }
-                priceForSize = priceForSize || product.price; // Fallback to base price if size price missing
+            };
+        });
 
-                 // Update button state
-                 button.disabled = !priceForSize; // Disable if no price for this size
-                 button.dataset.price = priceForSize; // Store the price
-                 button.classList.toggle('active', isActive); // Set active class
-
-                // Re-attach or ensure click handler updates price correctly
-                 button.onclick = function() { // Keep existing assignment or adapt
-                     if (!this.disabled) {
-                         sizeButtons.forEach(btn => btn.classList.remove('active'));
-                         this.classList.add('active');
-                         // Only update price if NOT a special offer overrides it
-                         if (detailPrice && !(product.specialOffer && product.specialOffer.trim())) {
-                              let displayPrice = this.dataset.price;
-                              if (!product.priceByPercentage && displayPrice && !displayPrice.startsWith('$')) {
-                                   displayPrice = `$${displayPrice}`;
-                              }
-                              detailPrice.textContent = displayPrice || '';
-                         }
-                     }
-                 };
-            });
-             // Ensure the initially displayed price matches the default active size (S)
-             if (detailPrice && !(product.specialOffer && product.specialOffer.trim())) {
-                  let initialDisplayPrice = product.priceS || product.price;
-                   if (!product.priceByPercentage && initialDisplayPrice && !initialDisplayPrice.startsWith('$')) {
-                        initialDisplayPrice = `$${initialDisplayPrice}`;
-                   }
-                   detailPrice.textContent = initialDisplayPrice || '';
-             }
-
-        } else {
-            sizeSelection.style.display = 'none';
-            sizeSelection.classList.add('d-none');
+        // Initially display default (S) price
+        if (detailPrice && !(product.specialOffer && product.specialOffer.trim())) {
+            let initialDisplayPrice = product.priceS || product.price;
+            if (!product.priceByPercentage && initialDisplayPrice && !initialDisplayPrice.startsWith('$')) {
+                initialDisplayPrice = `$${initialDisplayPrice}`;
+            }
+            detailPrice.textContent = initialDisplayPrice || '';
         }
+
+    } else {
+        sizeSelection.style.display = 'none';
+        sizeSelection.classList.add('d-none');
     }
+
+    // --- Fallback price for products WITHOUT variations ---
+    // Always reset the price text when no size variations exist
+    if (!product.hasVariations) {
+        detailPrice.textContent = product.price.startsWith('$')
+            ? product.price
+            : `$${product.price}`;
+    }
+}
 
     // --- GST Note ---
     if (modalGSTNote) {
@@ -5773,6 +5780,8 @@ function updateModalContent(newIndex) {
       detailImage.onload = null;
     };
 }
+
+
 
   // Modal navigation
   prevBtn.addEventListener('click', () => {
