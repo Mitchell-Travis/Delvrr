@@ -16,6 +16,7 @@ from django.conf import settings
 from io import BytesIO
 from django.core.files.uploadedfile import InMemoryUploadedFile
 import sys
+from django.core.files.base import ContentFile
 
 
 from datetime import datetime
@@ -219,8 +220,37 @@ class Product(models.Model):
         super().save(*args, **kwargs)
     
     def resize_image(self, max_width=800, max_height=800, quality=85):
-        # … your existing resize logic unchanged …
-        pass
+        from PIL import Image
+        from io import BytesIO
+        from django.core.files.base import ContentFile
+        import os
+    
+        # Open the image
+        img = Image.open(self.product_image)
+    
+        # Check if resizing is needed
+        if img.width > max_width or img.height > max_height:
+        # Calculate the resize ratio to maintain aspect ratio
+            ratio = min(max_width/img.width, max_height/img.height)
+            new_width = int(img.width * ratio)
+            new_height = int(img.height * ratio)
+        
+            # Resize the image
+            img = img.resize((new_width, new_height), Image.LANCZOS)
+        
+            # Save the resized image
+            output = BytesIO()
+            # Preserve format
+            format = os.path.splitext(self.product_image.name)[1][1:].upper()
+            if format == 'JPG':
+                
+                format = 'JPEG'
+        
+            img.save(output, format=format, quality=quality)
+            output.seek(0)
+        
+            # Replace the image with resized version
+            self.product_image = ContentFile(output.read(), name=self.product_image.name)
     
     def get_display_price(self) -> str:
         """

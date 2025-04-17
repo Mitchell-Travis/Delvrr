@@ -28,6 +28,7 @@ from django.core.cache import cache
 from django.db.models import Prefetch, Q, F, Case, When, FloatField
 from django.contrib.sites.shortcuts import get_current_site
 from django.views.decorators.cache import cache_control
+from django.views.decorators.cache import cache_page  # server-side cache
 # from celery import shared_task
 
 # from django.db.models import Func, F

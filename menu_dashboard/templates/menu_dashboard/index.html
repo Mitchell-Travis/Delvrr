@@ -5568,51 +5568,50 @@ document.head.appendChild(imageStyles);
   let lastSelectedCategory = 'featured';
 
   // Initialize products from carousel items
-  const carouselItems = Array.from(document.querySelectorAll('.food-item'));
-  products = carouselItems.map(card => ({
-    id: card.dataset.productId,
-    name: card.dataset.name || "5 Pepper",
-    description: card.dataset.description || "Mixed Pizza",
-    price: card.dataset.price || "$129",
-    previousPrice: card.dataset.previousPrice || "$169",
-    image: card.dataset.image || "/api/placeholder/400/400",
-    category: card.dataset.category || 'featured',
-    status: card.querySelector('.discount-badge') ? 'Sale' : 'Regular',
-    hasVariations: card.dataset.hasVariations === "true",
-    priceS: card.dataset.priceS || card.dataset.price,
-    priceM: card.dataset.priceM || card.dataset.price,
-    priceL: card.dataset.priceL || card.dataset.price,
-    priceF: card.dataset.priceF || card.dataset.price,
-    gst: card.dataset.gst || "",
-    specialOffer: card.dataset.specialOffer || "",
-    priceByPercentage: card.dataset.priceByPercentage === "true"
-  }));
+   const carouselItems = Array.from(document.querySelectorAll('.food-item'));
+    products = carouselItems.map(card => ({
+      id: card.dataset.productId,
+      name: card.dataset.name,
+      description: card.dataset.description || '',
+      price: card.dataset.price,
+      previousPrice: card.dataset.previousPrice || '',
+      image: card.dataset.image,         // should be 400×400 thumbnail URL
+      category: card.dataset.category || 'featured',
+      status: card.querySelector('.discount-badge') ? 'Sale' : 'Regular',
+      hasVariations: card.dataset.hasVariations === 'true',
+      priceS: card.dataset.priceS,
+      priceM: card.dataset.priceM,
+      priceL: card.dataset.priceL,
+      priceF: card.dataset.priceF,
+      gst: card.dataset.gst || '',
+      specialOffer: card.dataset.specialOffer || '',
+      priceByPercentage: card.dataset.priceByPercentage === 'true'
+    }));
 
   // Helper: get whichever items are currently visible
   function getVisibleProducts() {
-    const containerItems = (document.querySelector('.featured-section')?.style.display !== 'none')
-      ? Array.from(document.querySelectorAll('.featured-section .food-item'))
-      : Array.from(document.querySelectorAll('.grid-item'));
-
-    return containerItems.map(item => ({
-      id: item.dataset.productId,
-      name: item.dataset.name,
-      description: item.dataset.description || '', // ◀◀ UPDATED
-      price: item.dataset.price,
-      previousPrice: item.dataset.previousPrice || '',
-      image: item.dataset.image,
-      category: item.dataset.category || 'featured',
-      status: item.querySelector('.discount-badge') ? 'Sale' : 'Regular',
-      hasVariations: item.dataset.hasVariations === "true",
-      priceS: item.dataset.priceS || item.dataset.price,
-      priceM: item.dataset.priceM || item.dataset.price,
-      priceL: item.dataset.priceL || item.dataset.price,
-      priceF: item.dataset.priceF || item.dataset.price,
-      gst: item.dataset.gst || "",
-      specialOffer: item.dataset.specialOffer || "",
-      priceByPercentage: item.dataset.priceByPercentage === "true"
-    }));
-  }
+      const container = document.querySelector('.featured-section').style.display !== 'none'
+        ? '.featured-section .food-item'
+        : '.grid-item';
+      return Array.from(document.querySelectorAll(container)).map(item => ({
+        id: item.dataset.productId,
+        name: item.dataset.name,
+        description: item.dataset.description || '',
+        price: item.dataset.price,
+        previousPrice: item.dataset.previousPrice || '',
+        image: item.dataset.image,
+        category: item.dataset.category || 'featured',
+        status: item.querySelector('.discount-badge') ? 'Sale' : 'Regular',
+        hasVariations: item.dataset.hasVariations === 'true',
+        priceS: item.dataset.priceS,
+        priceM: item.dataset.priceM,
+        priceL: item.dataset.priceL,
+        priceF: item.dataset.priceF,
+        gst: item.dataset.gst || '',
+        specialOffer: item.dataset.specialOffer || '',
+        priceByPercentage: item.dataset.priceByPercentage === 'true'
+      }));
+    }
 
   // Update modal content with fade-in effect
   // Find this function in your code and replace it with this fixed version:
@@ -5784,37 +5783,35 @@ if (sizeSelection) {
 
 
   // Modal navigation
-  prevBtn.addEventListener('click', () => {
-    currentIndex = (currentIndex - 1 + modalProducts.length) % modalProducts.length;
-    updateModalContent(currentIndex);
-  });
-  nextBtn.addEventListener('click', () => {
-    currentIndex = (currentIndex + 1) % modalProducts.length;
-    updateModalContent(currentIndex);
-  });
+    prevBtn.addEventListener('click', () => {
+      currentIndex = (currentIndex - 1 + modalProducts.length) % modalProducts.length;
+      updateModalContent(currentIndex);
+    });
+    nextBtn.addEventListener('click', () => {
+      currentIndex = (currentIndex + 1) % modalProducts.length;
+      updateModalContent(currentIndex);
+    });
 
-  // Quantity controls
-  document.getElementById('decrement')?.addEventListener('click', () => {
-    if (quantity > 1) quantityDisplay.textContent = --quantity;
-  });
-  document.getElementById('increment')?.addEventListener('click', () => {
-    quantityDisplay.textContent = ++quantity;
-  });
+    document.getElementById('decrement')?.addEventListener('click', () => {
+      if (quantity > 1) quantityDisplay.textContent = --quantity;
+    });
+    document.getElementById('increment')?.addEventListener('click', () => {
+      quantityDisplay.textContent = ++quantity;
+    });
 
-  // Open modal
-  function openProductModal(productId) {
-    modalProducts = getVisibleProducts();
-    currentIndex = modalProducts.findIndex(p => p.id === productId);
-    if (currentIndex === -1) return;
-    updateModalContent(currentIndex);
-    productDetailModal.show();
-  }
+    function openProductModal(productId) {
+      modalProducts = getVisibleProducts();
+      currentIndex = modalProducts.findIndex(p => p.id === productId);
+      if (currentIndex < 0) return;
+      updateModalContent(currentIndex);
+      productDetailModal.show();
+    }
 
-  // Attach carousel triggers
-  carouselItems.forEach(card => {
-    const trigger = card.querySelector('.product-image-trigger');
-    if (trigger) trigger.addEventListener('click', () => openProductModal(card.dataset.productId));
-  });
+    carouselItems.forEach(card => {
+      const trigger = card.querySelector('.product-image-trigger');
+      if (trigger) trigger.addEventListener('click', () => openProductModal(card.dataset.productId));
+    });
+
 
   // Image loading optimization function
     function optimizeImageLoading() {
@@ -5882,69 +5879,73 @@ if (sizeSelection) {
   const productGrid = document.getElementById('productGrid');
   // Find the createGridView function and replace it with this improved version:
 function createGridView(productsList) {
-  productGrid.innerHTML = '';
-  productsList.forEach(product => {
-    const gridItem = document.createElement('div');
-    gridItem.className = 'grid-item';
-    Object.assign(gridItem.dataset, {
-      productId: product.id,
-      category: product.category,
-      name: product.name,
-      description: product.description,
-      price: product.price,
-      previousPrice: product.previousPrice,
-      image: product.image,
-      hasVariations: product.hasVariations,
-      priceS: product.priceS,
-      priceM: product.priceM,
-      priceL: product.priceL,
-      priceF: product.priceF,
-      gst: product.gst,
-      specialOffer: product.specialOffer,
-      priceByPercentage: product.priceByPercentage
-    });
+      productGrid.innerHTML = '';
+      productsList.forEach(product => {
+        const gridItem = document.createElement('div');
+        gridItem.className = 'grid-item';
+        Object.assign(gridItem.dataset, {
+          productId: product.id,
+          name: product.name,
+          description: product.description,
+          price: product.price,
+          previousPrice: product.previousPrice,
+          image: product.image,
+          category: product.category,
+          hasVariations: product.hasVariations,
+          priceS: product.priceS,
+          priceM: product.priceM,
+          priceL: product.priceL,
+          priceF: product.priceF,
+          gst: product.gst,
+          specialOffer: product.specialOffer,
+          priceByPercentage: product.priceByPercentage
+        });
 
-    const isOnSale = product.status === 'Sale';
-    const priceDisplay = product.priceByPercentage
-      ? product.price
-      : (product.price.startsWith('$') ? product.price : `$${product.price}`);
+        const isOnSale = product.status === 'Sale';
+        const priceDisplay = product.priceByPercentage
+          ? product.price
+          : (product.price.startsWith('$') ? product.price : `$${product.price}`);
 
-    gridItem.innerHTML = `
-      <div class="grid-image-container">
-        ${isOnSale ? '<span class="discount-badge">Sale</span>' : ''}
-        <div class="image-placeholder">
-          <div class="loading-spinner"></div>
-        </div>
-        <img data-src="${product.image}" alt="${product.name}" class="grid-image loading">
-      </div>
-      <div class="grid-details">
-        <h3>${product.name}</h3>
-        <div class="rating">
-          <i class="fas fa-star"></i> <span>4.9</span> <span class="review-count">(203)</span>
-        </div>
-        <div class="price-row">
-          <div class="price"><span>${priceDisplay}</span></div>
-          <button class="add-to-cart" data-product-id="${product.id}" data-name="${product.name}" data-price="${product.price}" data-image="${product.image}">
-            <i class="fas fa-shopping-cart"></i>
-          </button>
-        </div>
-      </div>
-    `;
-    productGrid.appendChild(gridItem);
-  });
+        gridItem.innerHTML = `
+          <div class="grid-image-container">
+            ${isOnSale ? '<span class="discount-badge">Sale</span>' : ''}
+            <img
+              src="${product.image}"
+              alt="${product.name}"
+              loading="lazy"
+              class="grid-image" />
+          </div>
+          <div class="grid-details">
+            <h3>${product.name}</h3>
+            <div class="rating">
+              <i class="fas fa-star"></i> <span>4.9</span> <span class="review-count">(203)</span>
+            </div>
+            <div class="price-row">
+              <div class="price"><span>${priceDisplay}</span></div>
+              <button class="add-to-cart" data-product-id="${product.id}" data-name="${product.name}" data-price="${product.price}" data-image="${product.image}">
+                <i class="fas fa-shopping-cart"></i>
+              </button>
+            </div>
+          </div>
+        `;
+        productGrid.appendChild(gridItem);
+      });
 
-  // Attach modal trigger to grid items
-  document.querySelectorAll('.grid-item').forEach(gridItem => {
-    gridItem.addEventListener('click', e => {
-      if (!e.target.closest('.add-to-cart')) {
-        openProductModal(gridItem.dataset.productId);
-      }
-    });
-  });
-  
-  // Initialize image loading optimization - explicitly call it here
-  optimizeImageLoading();
-}
+      // Re‑attach modal trigger events
+      document.querySelectorAll('.grid-item').forEach(item => {
+        item.addEventListener('click', e => {
+          if (!e.target.closest('.add-to-cart')) {
+            openProductModal(item.dataset.productId);
+          }
+        });
+      });
+    }
+
+    // Stub out the old optimization function
+    function optimizeImageLoading() {
+      // no-op: relying on native <img loading="lazy">
+    }
+
 
   // View toggle logic
   const viewAllButton = document.querySelector('.view-all');
