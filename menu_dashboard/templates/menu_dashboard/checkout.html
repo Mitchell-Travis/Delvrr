@@ -574,375 +574,488 @@
             font-size: 16px !important;
             line-height: 1.4;
         }
+        .toast-container {
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    z-index: 9999;
+}
+
+.toast {
+    background-color: #333;
+    color: white;
+    padding: 10px;
+    margin: 5px 0;
+    border-radius: 5px;
+    font-size: 14px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    display: none;
+}
+
+.toast.show {
+    display: block;
+    animation: fadeIn 1s, fadeOut 2s 3s forwards;
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(-20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+@keyframes fadeOut {
+    from {
+        opacity: 1;
+    }
+    to {
+        opacity: 0;
+    }
+}
+
     </style>
 </head>
 <body>
     <div class="app-container">
-    <header class="header">
-        <button class="back-button" onclick="window.history.back()">
-            <i class="fas fa-arrow-left"></i>
-        </button>
-        <h1>Checkout</h1>
-        <div></div>
-    </header>
-
-    <!-- Auto Delivery Info Based on Location -->
-    <section class="delivery-options">
-        <h2 class="delivery-options-title">Delivery</h2>
-        <!-- The switcher is removed — display will depend on JS logic -->
-    </section>
-
-    <div class="delivery-details">
-        <!-- At Restaurant Delivery Info -->
-        <div class="delivery-details-restaurant" style="display: none;">
-            <div class="table-info">
-                <i class="fas fa-chair"></i>
-                Your food will be delivered to <strong>Table 1</strong>.
-            </div>
-        </div>
-
-        <!-- Home Delivery Info -->
-        <div class="delivery-details-home" style="display: none;">
-            <button class="delivery-address-button" id="openAddressModal">
-                <i class="fas fa-map-marker-alt"></i>
-                Delivery Address
+        <header class="header">
+            <button class="back-button" onclick="window.history.back()">
+                <i class="fas fa-arrow-left"></i>
             </button>
-            <p class="estimated-delivery"><i class="far fa-clock"></i> ~14 mins</p>
+            <h1>Checkout</h1>
+            <div></div>
+        </header>
+
+        <section class="delivery-options">
+            <h2 class="delivery-options-title">Delivery</h2>
+            <div class="delivery-switch-container">
+                <div class="delivery-switch-label active" data-delivery-type="restaurant">At Restaurant</div>
+                <div class="delivery-switch-label" data-delivery-type="home">Home</div>
+            </div>
+        </section>
+
+        <div class="delivery-details">
+            <div class="delivery-details-restaurant">
+                <div class="table-info">
+                    <i class="fas fa-chair"></i>
+                    Your food will be delivered to **Table 1**.
+                </div>
+            </div>
+            <div class="delivery-details-home">
+                <button class="delivery-address-button" id="openAddressModal">
+                    <i class="fas fa-map-marker-alt"></i>
+                    Delivery Address
+                </button>
+                <p class="estimated-delivery"><i class="far fa-clock"></i> ~14 mins</p>
+            </div>
+        </div>
+
+        <section class="order-section">
+            <h2 class="section-title">Your Order</h2>
+            <div id="orderDetailsList">
+                <div class="empty-cart">
+                    <i class="fas fa-shopping-bag"></i>
+                    <p>Your cart is empty.</p>
+                </div>
+            </div>
+        </section>
+
+        <section class="payment-methods">
+            <h2 class="payment-methods-title">Payment</h2>
+            <div class="payment-option restaurant-only" data-method="Cash on Delivery">
+                <div class="payment-icon">
+                    <i class="fas fa-money-bill-alt"></i>
+                </div>
+                <div class="payment-details">
+                    <h3>Cash on Delivery</h3>
+                    <p>Pay in cash when your food arrives</p>
+                </div>
+            </div>
+            <div class="payment-option home-only" data-method="Cash on Delivery">
+                <div class="payment-icon">
+                    <i class="fas fa-money-bill-alt"></i>
+                </div>
+                <div class="payment-details">
+                    <h3>Pay Cash to Rider</h3>
+                    <p>Pay cash upon delivery</p>
+                </div>
+            </div>
+            <div class="payment-option home-only" data-method="Mobile Money">
+                <div class="payment-icon">
+                    <i class="fas fa-mobile-alt"></i>
+                </div>
+                <div class="payment-details">
+                    <h3>Mobile Money</h3>
+                    <p>Pay via mobile money upon delivery</p>
+                </div>
+            </div>
+        </section>
+
+        <div class="checkout-bar">
+            <div class="total-amount">
+                <p>Item total</p>
+                <span id="itemTotal">$0.00</span>
+            </div>
+            <div class="total-amount">
+                <p>To Pay</p>
+                <span id="cartTotal" style="font-size: 1.1rem; font-weight: 600;">$0.00</span>
+            </div>
+            <button
+                id="checkoutButton"
+                class="checkout-button"
+                data-restaurant-slug="{{ restaurant.slug }}"
+                data-hashed-slug="{{ restaurant.hashed_slug }}"
+                data-restaurant-lat="{{ restaurant_lat }}"
+                data-restaurant-lon="{{ restaurant_lon }}"
+                disabled
+            >
+                <i class="fas fa-check-circle"></i>
+                Place Order
+            </button>
+        </div>
+
+        <div class="loading-overlay" id="loading-overlay">
+            <div class="loading-spinner"></div>
+        </div>
+
+        <div class="address-modal" id="addressModal">
+            <div class="address-modal-content">
+                <div class="address-modal-header">
+                    <h2>Enter Delivery Address</h2>
+                    <button class="close-button" id="closeAddressModal">×</button>
+                </div>
+                <form class="address-form" id="deliveryAddressForm">
+                    <div>
+                        <label for="full-name">Full Name:</label>
+                        <input type="text" id="modal-full-name" placeholder="Your Full Name">
+                    </div>
+                    <div>
+                        <label for="phone-number">Phone Number:</label>
+                        <input type="tel" id="modal-phone-number" placeholder="Your Phone Number">
+                    </div>
+                    <div>
+                        <label for="address">Address:</label>
+                        <input type="text" id="modal-address" placeholder="Your Street Address">
+                    </div>
+                    <div class="address-actions">
+                        <button type="button" class="cancel-address" id="cancelAddress">Cancel</button>
+                        <button type="button" class="save-address" id="saveAddress">Save Address</button>
+                    </div>
+                </form>
+            </div>
         </div>
     </div>
 
-    <section class="order-section">
-        <h2 class="section-title">Your Order</h2>
-        <div id="orderDetailsList">
-            <div class="empty-cart">
-                <i class="fas fa-shopping-bag"></i>
-                <p>Your cart is empty.</p>
-            </div>
-        </div>
-    </section>
-
-    <section class="payment-methods">
-        <h2 class="payment-methods-title">Payment</h2>
-
-        <!-- Only show if at restaurant -->
-        <div class="payment-option restaurant-only" style="display: none;" data-method="Cash on Delivery">
-            <div class="payment-icon">
-                <i class="fas fa-money-bill-alt"></i>
-            </div>
-            <div class="payment-details">
-                <h3>Cash on Delivery</h3>
-                <p>Pay in cash when your food arrives</p>
-            </div>
-        </div>
-
-        <!-- Only show for home delivery -->
-        <div class="payment-option home-only" style="display: none;" data-method="Cash on Delivery">
-            <div class="payment-icon">
-                <i class="fas fa-money-bill-alt"></i>
-            </div>
-            <div class="payment-details">
-                <h3>Pay Cash to Rider</h3>
-                <p>Pay cash upon delivery</p>
-            </div>
-        </div>
-        <div class="payment-option home-only" style="display: none;" data-method="Mobile Money">
-            <div class="payment-icon">
-                <i class="fas fa-mobile-alt"></i>
-            </div>
-            <div class="payment-details">
-                <h3>Mobile Money</h3>
-                <p>Pay via mobile money upon delivery</p>
-            </div>
-        </div>
-    </section>
-
-    <div class="checkout-bar">
-        <div class="total-amount">
-            <p>Item total</p>
-            <span id="itemTotal">$0.00</span>
-        </div>
-        <div class="total-amount">
-            <p>To Pay</p>
-            <span id="cartTotal" style="font-size: 1.1rem; font-weight: 600;">$0.00</span>
-        </div>
-        <button
-            id="checkoutButton"
-            class="checkout-button"
-            data-restaurant-slug="{{ restaurant.slug }}"
-            data-hashed-slug="{{ restaurant.hashed_slug }}"
-            data-restaurant-lat="{{ restaurant_lat }}"
-            data-restaurant-lon="{{ restaurant_lon }}"
-            disabled
-        >
-            <i class="fas fa-check-circle"></i>
-            Place Order
-        </button>
-    </div>
-
-    <div class="loading-overlay" id="loading-overlay">
-        <div class="loading-spinner"></div>
-    </div>
-
-    <!-- Address Modal -->
-    <div class="address-modal" id="addressModal">
-        <div class="address-modal-content">
-            <div class="address-modal-header">
-                <h2>Enter Delivery Address</h2>
-                <button class="close-button" id="closeAddressModal">×</button>
-            </div>
-            <form class="address-form" id="deliveryAddressForm">
-                <div>
-                    <label for="full-name">Full Name:</label>
-                    <input type="text" id="modal-full-name" placeholder="Your Full Name">
-                </div>
-                <div>
-                    <label for="phone-number">Phone Number:</label>
-                    <input type="tel" id="modal-phone-number" placeholder="Your Phone Number">
-                </div>
-                <div>
-                    <label for="address">Address:</label>
-                    <input type="text" id="modal-address" placeholder="Your Street Address">
-                </div>
-                <div class="address-actions">
-                    <button type="button" class="cancel-address" id="cancelAddress">Cancel</button>
-                    <button type="button" class="save-address" id="saveAddress">Save Address</button>
-                </div>
-            </form>
-        </div>
-    </div>
-</div>
-
+    <div id="toast-container" class="toast-container"></div>
 
     <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
     <script type="text/javascript">
-$(document).ready(function () {
+       $(document).ready(function () {
     const SERVICE_FEE = 0.51;
+    const DELIVERY_FEE = 0.00;
     const THRESHOLD_DISTANCE = 100; // meters
-
     let selectedPaymentMethod = 'Cash on Delivery';
-    let deliveryType = 'restaurant';
+    let deliveryType = 'restaurant'; // Default is restaurant
     const tableNumber = '1';
     let homeDeliveryAddress = {};
 
-    // Cache selectors
-    const $restaurantDetails = $('.delivery-details-restaurant');
-    const $homeDetails = $('.delivery-details-home');
-    const $paymentRestaurant = $('.payment-option.restaurant-only');
-    const $paymentHome = $('.payment-option.home-only');
-    const $checkoutButton = $('#checkoutButton');
-    const $loadingOverlay = $('#loading-overlay');
-
-    // ADDRESS MODAL ELEMENTS
+    const openAddressModalButton = $('#openAddressModal');
     const addressModal = $('#addressModal');
+    const closeAddressModalButton = $('#closeAddressModal');
+    const saveAddressButton = $('#saveAddress');
+    const cancelAddressButton = $('#cancelAddress');
+    const loadingOverlay = $('#loading-overlay');
+
     const modalFullNameInput = $('#modal-full-name');
-    const modalPhoneInput    = $('#modal-phone-number');
-    const modalAddressInput  = $('#modal-address');
+    const modalPhoneNumberInput = $('#modal-phone-number');
+    const modalAddressInput = $('#modal-address');
 
-    // OPEN/CLOSE ADDRESS MODAL
-    $('#openAddressModal').on('click', () => addressModal.addClass('active'));
-    $('#closeAddressModal, #cancelAddress').on('click', () => addressModal.removeClass('active'));
+    // Mapbox setup
+    mapboxgl.accessToken = 'pk.eyJ1IjoibWl0Y2hlbGwyMzEiLCJhIjoiY205dGF0YXprMGFoajJrc2I5cDVvNnprZSJ9.LiQvQKUCOIe5fW0QYSOSFQ';
 
-    $('#saveAddress').on('click', () => {
-        const fullName = modalFullNameInput.val().trim();
-        const phone    = modalPhoneInput.val().trim();
-        const address  = modalAddressInput.val().trim();
-        if (!fullName || !phone || !address) {
-            return alert('Please fill in all address fields.');
-        }
-        homeDeliveryAddress = { full_name: fullName, phone_number: phone, address };
-        addressModal.removeClass('active');
-        updateCheckoutButtonState();
-    });
-
-    // GET USER LOCATION
     function getUserLocation() {
         return new Promise((resolve, reject) => {
-            if (!navigator.geolocation) {
-                return reject(new Error('Geolocation not supported.'));
+            if (navigator.geolocation) {
+                navigator.geolocation.getCurrentPosition(
+                    position => resolve([position.coords.longitude, position.coords.latitude]),
+                    error => reject(error)
+                );
+            } else {
+                reject(new Error('Geolocation is not supported by this browser.'));
             }
-            navigator.geolocation.getCurrentPosition(
-                pos => resolve([pos.coords.longitude, pos.coords.latitude]),
-                err => reject(err),
-                { enableHighAccuracy: true, timeout: 10000 }
-            );
         });
     }
 
-    // CALCULATE DISTANCE (meters) VIA Turf.js
-    function calculateDistance(userLoc, restLoc) {
-        const userPt = turf.point(userLoc);
-        const restPt = turf.point(restLoc);
-        return turf.distance(userPt, restPt, { units: 'meters' });
+    async function calculateDistance(userLocation, restaurantLocation) {
+        const userPoint = turf.point(userLocation);
+        const restaurantPoint = turf.point(restaurantLocation);
+        const distance = turf.distance(userPoint, restaurantPoint, { units: 'meters' });
+        return distance;
     }
 
-    // AUTO-SELECT DELIVERY TYPE BASED ON DISTANCE
     async function setDeliveryType() {
         try {
-            const userLoc = await getUserLocation();
-            const restLon = parseFloat($checkoutButton.data('restaurant-lon'));
-            const restLat = parseFloat($checkoutButton.data('restaurant-lat'));
-            const dist = await calculateDistance(userLoc, [restLon, restLat]);
+            const userLocation = await getUserLocation();
+            const restaurantLon = parseFloat($('#checkoutButton').data('restaurant-lon'));
+            const restaurantLat = parseFloat($('#checkoutButton').data('restaurant-lat'));
+            const restaurantLocation = [restaurantLon, restaurantLat];
+            const distance = await calculateDistance(userLocation, restaurantLocation);
 
-            if (dist <= THRESHOLD_DISTANCE) {
+            if (distance < THRESHOLD_DISTANCE) {
                 deliveryType = 'restaurant';
-                $restaurantDetails.show();
-                $homeDetails.hide();
+                $('.delivery-switch-label[data-delivery-type="restaurant"]').addClass('active');
+                $('.delivery-switch-label[data-delivery-type="home"]').removeClass('active');
+                $('.delivery-details-restaurant').show();
+                $('.delivery-details-home').hide();
             } else {
                 deliveryType = 'home';
-                $homeDetails.show();
-                $restaurantDetails.hide();
+                $('.delivery-switch-label[data-delivery-type="home"]').addClass('active');
+                $('.delivery-switch-label[data-delivery-type="restaurant"]').removeClass('active');
+                $('.delivery-details-home').show();
+                $('.delivery-details-restaurant').hide();
             }
-        } catch (err) {
-            console.warn('Location error, defaulting to home delivery:', err);
+        } catch (error) {
+            console.error('Error getting location:', error);
             deliveryType = 'home';
-            $homeDetails.show();
-            $restaurantDetails.hide();
+            $('.delivery-switch-label[data-delivery-type="home"]').addClass('active');
+            $('.delivery-switch-label[data-delivery-type="restaurant"]').removeClass('active');
+            $('.delivery-details-home').show();
+            $('.delivery-details-restaurant').hide();
         }
         updatePaymentOptions();
         updateOrderDetails();
         updateCheckoutButtonState();
     }
 
-    // SHOW/HIDE PAYMENT OPTIONS BASED ON DELIVERY TYPE
+    // Remove ability to switch delivery types
+    $('.delivery-switch-label').off('click').on('click', function () {
+        // Don't allow switching when the delivery type is set
+        if (deliveryType === 'restaurant' || deliveryType === 'home') return;
+    });
+
+    openAddressModalButton.on('click', function () {
+        addressModal.addClass('active');
+    });
+
+    closeAddressModalButton.on('click', function () {
+        addressModal.removeClass('active');
+    });
+
+    cancelAddressButton.on('click', function () {
+        addressModal.removeClass('active');
+    });
+
+    saveAddressButton.on('click', function () {
+        const fullName = modalFullNameInput.val().trim();
+        const phoneNumber = modalPhoneNumberInput.val().trim();
+        const address = modalAddressInput.val().trim();
+
+        if (fullName === '' || phoneNumber === '' || address === '') {
+            alert('Please enter your full name, phone number, and address.');
+            return;
+        }
+
+        homeDeliveryAddress = {
+            full_name: fullName,
+            phone_number: phoneNumber,
+            address: address
+        };
+        addressModal.removeClass('active');
+        updateCheckoutButtonState();
+    });
+
     function updatePaymentOptions() {
         if (deliveryType === 'restaurant') {
-            $paymentRestaurant.show();
-            $paymentHome.hide();
+            $('.payment-option.restaurant-only').addClass('active');
+            $('.payment-option.home-only').removeClass('active');
+            const codOption = $('.payment-option[data-method="Cash on Delivery"].restaurant-only');
+            codOption.addClass('selected');
             selectedPaymentMethod = 'Cash on Delivery';
         } else {
-            $paymentHome.show();
-            $paymentRestaurant.hide();
+            $('.payment-option.home-only').addClass('active');
+            $('.payment-option.restaurant-only').removeClass('active');
+            $('.payment-option').removeClass('selected');
             selectedPaymentMethod = '';
         }
     }
 
-    // RENDER CART & CALCULATE TOTALS
     function updateOrderDetails() {
         const cart = JSON.parse(localStorage.getItem('cart') || '{}');
-        const $list = $('#orderDetailsList');
-        let html = '';
+        const orderDetailsList = $('#orderDetailsList');
+        let orderHtml = '';
         let subtotal = 0;
 
-        if (!Object.keys(cart).length) {
-            $list.html(`<div class="empty-cart"><i class="fas fa-shopping-bag"></i><p>Your cart is empty.</p></div>`);
-            $('#itemTotal').text('$0.00');
-            $('#cartTotal').text('$0.00');
+        if (Object.keys(cart).length === 0) {
+            orderDetailsList.html(`
+                <div class="empty-cart">
+                    <i class="fas fa-shopping-bag"></i>
+                    <p>Your cart is empty.</p>
+                </div>
+            `);
+            $('#checkoutButton').prop('disabled', true);
+            $('#cartTotal').text(`$0.00`);
+            $('#itemTotal').text(`$0.00`);
             return;
         }
 
-        Object.entries(cart).forEach(([id, [qty, name, price, img]]) => {
-            price = parseFloat(price);
-            const itemTotal = qty * price;
+        Object.entries(cart).forEach(([id, item]) => {
+            const quantity = item[0];
+            const name = item[1];
+            const price = parseFloat(item[2]);
+            const imageUrl = item[3];
+            const itemTotal = quantity * price;
             subtotal += itemTotal;
-            html += `
+
+            orderHtml += `
                 <div class="order-item" data-item-id="${id}">
-                  <img src="${img}" alt="${name}">
-                  <div class="item-details"><h3>${name}</h3><p>$${price.toFixed(2)}</p></div>
-                  <div class="item-quantity-controls">
-                    <button class="quantity-button decrement-item">-</button>
-                    <span class="item-quantity">${qty}</span>
-                    <button class="quantity-button increment-item">+</button>
-                  </div>
-                  <button class="delete-item"><i class="fas fa-trash-alt"></i></button>
-                  <div class="item-price">$${itemTotal.toFixed(2)}</div>
-                </div>`;
+                    <img src="${imageUrl}" alt="${name}">
+                    <div class="item-details">
+                        <h3>${name}</h3>
+                        <p>$${price.toFixed(2)}</p>
+                    </div>
+                    <div class="item-quantity-controls">
+                        <button class="quantity-button decrement-item">-</button>
+                        <span class="item-quantity">${quantity}</span>
+                        <button class="quantity-button increment-item">+</button>
+                    </div>
+                    <button class="delete-item"><i class="fas fa-trash-alt"></i></button>
+                    <div class="item-price">$${itemTotal.toFixed(2)}</div>
+                </div>
+            `;
         });
 
-        $list.html(html);
-        const total = subtotal + SERVICE_FEE;
-        $('#itemTotal').text(`$${subtotal.toFixed(2)}`);
+        orderDetailsList.html(orderHtml);
+        const total = subtotal + DELIVERY_FEE + SERVICE_FEE;
         $('#cartTotal').text(`$${total.toFixed(2)}`);
-
-        // Bind quantity/delete handlers
-        $('.increment-item').off().on('click', () => changeQty($(event.target).closest('.order-item').data('item-id'), +1));
-        $('.decrement-item').off().on('click', () => changeQty($(event.target).closest('.order-item').data('item-id'), -1));
-        $('.delete-item').off().on('click', () => deleteItem($(event.target).closest('.order-item').data('item-id')));
-    }
-
-    function changeQty(itemId, delta) {
-        let cart = JSON.parse(localStorage.getItem('cart') || '{}');
-        if (!cart[itemId]) return;
-        cart[itemId][0] += delta;
-        if (cart[itemId][0] < 1) delete cart[itemId];
-        localStorage.setItem('cart', JSON.stringify(cart));
-        updateOrderDetails();
+        $('#itemTotal').text(`$${subtotal.toFixed(2)}`);
         updateCheckoutButtonState();
-    }
 
-    function deleteItem(itemId) {
-        let cart = JSON.parse(localStorage.getItem('cart') || '{}');
-        delete cart[itemId];
-        localStorage.setItem('cart', JSON.stringify(cart));
-        updateOrderDetails();
-        updateCheckoutButtonState();
-    }
-
-    // ENABLE/DISABLE CHECKOUT BUTTON
-    function updateCheckoutButtonState() {
-        const cart = JSON.parse(localStorage.getItem('cart') || '{}');
-        const empty = !Object.keys(cart).length;
-        let ready = !empty;
-
-        if (deliveryType === 'home') {
-            const d = homeDeliveryAddress;
-            ready = ready && d.full_name && d.phone_number && d.address && selectedPaymentMethod;
-        }
-        $checkoutButton.prop('disabled', !ready);
-    }
-
-    // PLACE ORDER AJAX
-    $checkoutButton.on('click', function (e) {
-        e.preventDefault();
-        $loadingOverlay.addClass('active');
-
-        const rawCart = localStorage.getItem('cart') || '{}';
-        const cart    = JSON.parse(rawCart);
-
-        if (!Object.keys(cart).length) {
-            alert('Your cart is empty.');
-            return $loadingOverlay.removeClass('active');
-        }
-        if (!selectedPaymentMethod) {
-            alert('Please select a payment method.');
-            return $loadingOverlay.removeClass('active');
-        }
-
-        const formData = new FormData();
-        formData.append('cart', rawCart);
-        formData.append('payment_method', selectedPaymentMethod);
-        formData.append('delivery_type', deliveryType);
-        formData.append('delivery_details', JSON.stringify(deliveryType === 'home' ? { address: homeDeliveryAddress.address } : { table_number: tableNumber }));
-        formData.append('customer_details', JSON.stringify(deliveryType === 'home' ? {
-            full_name: homeDeliveryAddress.full_name,
-            phone_number: homeDeliveryAddress.phone_number
-        } : {}));
-
-        const csrftoken = $('[name=csrfmiddlewaretoken]').val() ||
-            document.cookie.split('; ').find(r => r.startsWith('csrftoken=')).split('=')[1];
-
-        $.ajax({
-            url: window.location.href,
-            type: 'POST',
-            data: formData,
-            processData: false,
-            contentType: false,
-            headers: { 'X-CSRFToken': csrftoken },
-            success: resp => {
-                localStorage.removeItem('cart');
-                window.location.href = `/menu/${$checkoutButton.data('restaurant-slug')}/${$checkoutButton.data('hashed-slug')}/${resp.order_id}/order_success/`;
-            },
-            error: xhr => {
-                alert(`Error: ${JSON.parse(xhr.responseText).message || 'Unable to place order.'}`);
-            },
-            complete: () => $loadingOverlay.removeClass('active')
+        $('.increment-item').off('click').on('click', function () {
+            const itemId = $(this).closest('.order-item').data('item-id');
+            updateCart(itemId, 1);
         });
+
+        $('.decrement-item').off('click').on('click', function () {
+            const itemId = $(this).closest('.order-item').data('item-id');
+            updateCart(itemId, -1);
+        });
+
+        $('.delete-item').off('click').on('click', function () {
+            const itemId = $(this).closest('.order-item').data('item-id');
+            deleteCartItem(itemId);
+        });
+    }
+
+    function updateCart(itemId, change) {
+        let cart = JSON.parse(localStorage.getItem('cart') || '{}');
+        if (cart[itemId]) {
+            cart[itemId][0] += change;
+            if (cart[itemId][0] <= 0) {
+                delete cart[itemId];
+            }
+            localStorage.setItem('cart', JSON.stringify(cart));
+            updateOrderDetails();
+        }
+    }
+
+    function deleteCartItem(itemId) {
+        let cart = JSON.parse(localStorage.getItem('cart') || '{}');
+        if (cart[itemId]) {
+            delete cart[itemId];
+            localStorage.setItem('cart', JSON.stringify(cart));
+            updateOrderDetails();
+        }
+    }
+
+    $('.payment-option').on('click', function () {
+        if ($(this).hasClass('active')) {
+            $('.payment-option').removeClass('selected');
+            $(this).addClass('selected');
+            selectedPaymentMethod = $(this).data('method');
+            updateCheckoutButtonState();
+            if ('vibrate' in navigator) navigator.vibrate(50);
+        }
     });
 
-    // INITIALIZE
+    function updateCheckoutButtonState() {
+        const cartEmpty = Object.keys(JSON.parse(localStorage.getItem('cart') || '{}')).length === 0;
+        const isPaymentSelected = selectedPaymentMethod !== '';
+        let isDeliveryInfoFilled = false;
+
+        if (deliveryType === 'home') {
+            isDeliveryInfoFilled = Object.keys(homeDeliveryAddress).length > 0 &&
+                homeDeliveryAddress.address !== '' &&
+                homeDeliveryAddress.full_name !== '' &&
+                homeDeliveryAddress.phone_number !== '';
+            $('#checkoutButton').prop('disabled', cartEmpty || !isPaymentSelected || !isDeliveryInfoFilled);
+        } else {
+            isDeliveryInfoFilled = true;
+            $('#checkoutButton').prop('disabled', cartEmpty);
+        }
+    }
+
+    $('#checkoutButton').on('click', function (e) {
+        e.preventDefault();
+        loadingOverlay.addClass('active');
+
+        const rawCart = localStorage.getItem('cart');
+        const cart = rawCart ? JSON.parse(rawCart) : {};
+
+        if (Object.keys(cart).length === 0) {
+            alert("Your cart is empty.");
+            loadingOverlay.removeClass('active');
+            return;
+        }
+
+        if (selectedPaymentMethod === '') {
+            alert("Please select a payment method.");
+            loadingOverlay.removeClass('active');
+            return;
+        }
+
+        let deliveryDetails = {};
+        let customerDetails = {};
+
+        if (deliveryType === 'home') {
+            if (!homeDeliveryAddress.address || !homeDeliveryAddress.full_name || !homeDeliveryAddress.phone_number) {
+                alert("Please complete your address information.");
+                loadingOverlay.removeClass('active');
+                return;
+            }
+
+            deliveryDetails = { address: homeDeliveryAddress.address };
+            customerDetails = {
+                full_name: homeDeliveryAddress.full_name,
+                phone_number: homeDeliveryAddress.phone_number
+            };
+        }
+
+        // TODO: Send the order via AJAX or form submission here
+
+        console.log({
+            delivery_type: deliveryType,
+            payment_method: selectedPaymentMethod,
+            cart: cart,
+            delivery_details: deliveryDetails,
+            customer_details: customerDetails,
+            table_number: tableNumber
+        });
+
+        // Simulate success response
+        setTimeout(() => {
+            localStorage.removeItem('cart');
+            window.location.href = '/order-success/';
+        }, 1500);
+    });
+
+    // Initialize
     setDeliveryType();
     updateOrderDetails();
-    updateCheckoutButtonState();
 });
-</script>
+
+    </script>
 </body>
 </html>
