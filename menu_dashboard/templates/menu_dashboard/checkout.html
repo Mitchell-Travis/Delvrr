@@ -574,47 +574,74 @@
             font-size: 16px !important;
             line-height: 1.4;
         }
-        .toast-container {
-    position: fixed;
-    top: 20px;
-    right: 20px;
-    z-index: 9999;
+        /* Add these styles to your existing CSS */
+#map-container {
+    height: 0;
+    overflow: hidden;
+    transition: height 0.3s ease;
+    margin-top: 10px;
+    border-radius: var(--radius-md);
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
 }
 
-.toast {
-    background-color: #333;
-    color: white;
+#map-container.active {
+    height: 200px;
+    margin-bottom: 15px;
+}
+
+#map {
+    width: 100%;
+    height: 100%;
+}
+
+.map-toggle {
+    background: none;
+    border: none;
+    color: var(--accent);
+    font-size: 0.85rem;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    padding: 5px 0;
+    margin-top: 5px;
+    cursor: pointer;
+}
+
+.distance-indicator {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    margin: 10px 0;
     padding: 10px;
-    margin: 5px 0;
-    border-radius: 5px;
-    font-size: 14px;
-    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-    display: none;
+    background-color: #f0f7f2;
+    border-radius: var(--radius-sm);
+    font-size: 0.85rem;
 }
 
-.toast.show {
-    display: block;
-    animation: fadeIn 1s, fadeOut 2s 3s forwards;
+.distance-indicator i {
+    color: var(--accent);
 }
 
-@keyframes fadeIn {
-    from {
-        opacity: 0;
-        transform: translateY(-20px);
-    }
-    to {
-        opacity: 1;
-        transform: translateY(0);
-    }
+.distance-status {
+    font-weight: 500;
 }
 
-@keyframes fadeOut {
-    from {
-        opacity: 1;
-    }
-    to {
-        opacity: 0;
-    }
+.distance-status.nearby {
+    color: #2e7d32;
+}
+
+.distance-status.far {
+    color: #ff6f00;
+}
+
+.mapboxgl-popup {
+    max-width: 200px;
+}
+
+.mapboxgl-popup-content {
+    text-align: center;
+    padding: 10px;
+    font-family: 'Poppins', sans-serif;
 }
 
     </style>
@@ -643,6 +670,21 @@
                     <i class="fas fa-chair"></i>
                     Your food will be delivered to **Table 1**.
                 </div>
+                <!-- New location feedback elements -->
+                <div class="distance-indicator" id="distanceIndicator">
+                    <i class="fas fa-map-marker-alt"></i>
+                    <div>
+                        <span class="distance-value">Detecting your location...</span>
+                        <div class="distance-status" id="distanceStatus"></div>
+                    </div>
+                </div>
+                <button class="map-toggle" id="toggleMap">
+                    <i class="fas fa-map"></i> Show map
+                </button>
+                <div id="map-container">
+                    <div id="map"></div>
+                </div>
+                <!-- End of new elements -->
             </div>
             <div class="delivery-details-home">
                 <button class="delivery-address-button" id="openAddressModal">
@@ -752,59 +794,178 @@
     <div id="toast-container" class="toast-container"></div>
 
     <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
-    <script type="text/javascript">
-       $(document).ready(function () {
+    <script>
+$(document).ready(function () {
+    // --- Constants & State ---
     const SERVICE_FEE = 0.51;
     const DELIVERY_FEE = 0.00;
     const THRESHOLD_DISTANCE = 100; // meters
+
     let selectedPaymentMethod = 'Cash on Delivery';
-    let deliveryType = 'restaurant'; // Default is restaurant
+    let deliveryType = 'restaurant'; // 'restaurant' or 'home'
     const tableNumber = '1';
     let homeDeliveryAddress = {};
 
-    const openAddressModalButton = $('#openAddressModal');
-    const addressModal = $('#addressModal');
-    const closeAddressModalButton = $('#closeAddressModal');
-    const saveAddressButton = $('#saveAddress');
-    const cancelAddressButton = $('#cancelAddress');
-    const loadingOverlay = $('#loading-overlay');
+    // --- Elements ---
+    const $openAddressModal   = $('#openAddressModal');
+    const $addressModal       = $('#addressModal');
+    const $closeAddressModal  = $('#closeAddressModal');
+    const $saveAddress        = $('#saveAddress');
+    const $cancelAddress      = $('#cancelAddress');
+    const $loadingOverlay     = $('#loading-overlay');
 
-    const modalFullNameInput = $('#modal-full-name');
-    const modalPhoneNumberInput = $('#modal-phone-number');
-    const modalAddressInput = $('#modal-address');
+    const $modalFullName      = $('#modal-full-name');
+    const $modalPhoneNumber   = $('#modal-phone-number');
+    const $modalAddress       = $('#modal-address');
 
-    // Mapbox setup
+    const mapContainer        = document.getElementById('map-container');
+    const toggleMapButton     = document.getElementById('toggleMap');
+    const $distanceValue      = $('.distance-value');
+    const $distanceStatus     = $('#distanceStatus');
+
+    const restaurantLat = parseFloat($('#checkoutButton').data('restaurant-lat'));
+    const restaurantLon = parseFloat($('#checkoutButton').data('restaurant-lon'));
+
+    let map, userMarker, restaurantMarker;
+    let isMapInitialized = false;
+
+    // --- Mapbox Token ---
     mapboxgl.accessToken = 'pk.eyJ1IjoibWl0Y2hlbGwyMzEiLCJhIjoiY205dGF0YXprMGFoajJrc2I5cDVvNnprZSJ9.LiQvQKUCOIe5fW0QYSOSFQ';
 
-    function getUserLocation() {
-        return new Promise((resolve, reject) => {
-            if (navigator.geolocation) {
-                navigator.geolocation.getCurrentPosition(
-                    position => resolve([position.coords.longitude, position.coords.latitude]),
-                    error => reject(error)
-                );
-            } else {
-                reject(new Error('Geolocation is not supported by this browser.'));
-            }
+    // --- Map Toggle Handler ---
+    toggleMapButton.addEventListener('click', () => {
+        mapContainer.classList.toggle('active');
+        toggleMapButton.innerHTML = mapContainer.classList.contains('active')
+            ? '<i class="fas fa-map"></i> Hide map'
+            : '<i class="fas fa-map"></i> Show map';
+
+        if (mapContainer.classList.contains('active') && !isMapInitialized) {
+            initializeMap();
+        }
+    });
+
+    // --- Initialize Map & Markers ---
+    function initializeMap() {
+        map = new mapboxgl.Map({
+            container: 'map',
+            style: 'mapbox://styles/mapbox/streets-v11',
+            center: [restaurantLon, restaurantLat],
+            zoom: 14
+        });
+
+        map.on('load', () => {
+            // Restaurant marker
+            restaurantMarker = new mapboxgl.Marker({ color: '#2e7d32' })
+                .setLngLat([restaurantLon, restaurantLat])
+                .setPopup(new mapboxgl.Popup().setHTML('<strong>Restaurant</strong>'))
+                .addTo(map);
+
+            getUserLocationForMap();
+            isMapInitialized = true;
         });
     }
 
-    async function calculateDistance(userLocation, restaurantLocation) {
-        const userPoint = turf.point(userLocation);
-        const restaurantPoint = turf.point(restaurantLocation);
-        const distance = turf.distance(userPoint, restaurantPoint, { units: 'meters' });
-        return distance;
+    // --- Get & Mark User Location on Map ---
+    function getUserLocationForMap() {
+        if (!navigator.geolocation) {
+            $distanceValue.text('Geolocation not supported');
+            return;
+        }
+        navigator.geolocation.getCurrentPosition(pos => {
+            const userLng = pos.coords.longitude;
+            const userLat = pos.coords.latitude;
+
+            // user marker
+            if (userMarker) userMarker.remove();
+            userMarker = new mapboxgl.Marker({ color: '#03a9f4' })
+                .setLngLat([userLng, userLat])
+                .setPopup(new mapboxgl.Popup().setHTML('<strong>Your Location</strong>'))
+                .addTo(map);
+
+            // fit both markers
+            const bounds = new mapboxgl.LngLatBounds()
+                .extend([userLng, userLat])
+                .extend([restaurantLon, restaurantLat]);
+            map.fitBounds(bounds, { padding: 70 });
+
+            // draw route line
+            if (map.getLayer('route')) {
+                map.removeLayer('route');
+                map.removeSource('route');
+            }
+            map.addSource('route', {
+                type: 'geojson',
+                data: {
+                    type: 'Feature',
+                    geometry: {
+                        type: 'LineString',
+                        coordinates: [
+                            [userLng, userLat],
+                            [restaurantLon, restaurantLat]
+                        ]
+                    }
+                }
+            });
+            map.addLayer({
+                id: 'route',
+                type: 'line',
+                source: 'route',
+                layout: { 'line-join': 'round', 'line-cap': 'round' },
+                paint: { 'line-color': '#03a9f4', 'line-width': 3, 'line-dasharray': [2,1] }
+            });
+
+            updateDistanceDisplay(userLng, userLat, restaurantLon, restaurantLat);
+        }, err => {
+            console.error('Geo error', err);
+            $distanceValue.text('Could not determine your location');
+        });
     }
 
+    // --- Distance Calculation & UI ---
+    function updateDistanceDisplay(userLng, userLat, restLng, restLat) {
+        const from = turf.point([userLng, userLat]);
+        const to   = turf.point([restLng, restLat]);
+        const dist = turf.distance(from, to, { units: 'meters' });
+
+        if (dist < 1000) {
+            $distanceValue.text(`${Math.round(dist)} meters away`);
+        } else {
+            $distanceValue.text(`${(dist/1000).toFixed(1)} km away`);
+        }
+
+        if (dist <= THRESHOLD_DISTANCE) {
+            $distanceStatus.text("You're at the restaurant!").addClass('nearby').removeClass('far');
+        } else {
+            $distanceStatus.text("Delivery recommended").addClass('far').removeClass('nearby');
+        }
+    }
+
+    // --- Helper to get current position as Promise ---
+    function getUserLocation() {
+        return new Promise((resolve, reject) => {
+            if (!navigator.geolocation) return reject('No geo');
+            navigator.geolocation.getCurrentPosition(
+                p => resolve([p.coords.longitude, p.coords.latitude]),
+                e => reject(e)
+            );
+        });
+    }
+
+    // --- Calculate straight-line distance in meters ---
+    async function calculateDistance(userLoc, restLoc) {
+        const userPt = turf.point(userLoc);
+        const restPt = turf.point(restLoc);
+        return turf.distance(userPt, restPt, { units: 'meters' });
+    }
+
+    // --- Decide Delivery Type on Load ---
     async function setDeliveryType() {
         try {
-            const userLocation = await getUserLocation();
-            const restaurantLon = parseFloat($('#checkoutButton').data('restaurant-lon'));
-            const restaurantLat = parseFloat($('#checkoutButton').data('restaurant-lat'));
-            const restaurantLocation = [restaurantLon, restaurantLat];
-            const distance = await calculateDistance(userLocation, restaurantLocation);
+            const userLoc = await getUserLocation();
+            const restLoc = [restaurantLon, restaurantLat];
+            const dist    = await calculateDistance(userLoc, restLoc);
 
-            if (distance < THRESHOLD_DISTANCE) {
+            if (dist < THRESHOLD_DISTANCE) {
                 deliveryType = 'restaurant';
                 $('.delivery-switch-label[data-delivery-type="restaurant"]').addClass('active');
                 $('.delivery-switch-label[data-delivery-type="home"]').removeClass('active');
@@ -817,8 +978,8 @@
                 $('.delivery-details-home').show();
                 $('.delivery-details-restaurant').hide();
             }
-        } catch (error) {
-            console.error('Error getting location:', error);
+        } catch (e) {
+            console.error('Location fail, default to home', e);
             deliveryType = 'home';
             $('.delivery-switch-label[data-delivery-type="home"]').addClass('active');
             $('.delivery-switch-label[data-delivery-type="restaurant"]').removeClass('active');
@@ -830,49 +991,33 @@
         updateCheckoutButtonState();
     }
 
-    // Remove ability to switch delivery types
-    $('.delivery-switch-label').off('click').on('click', function () {
-        // Don't allow switching when the delivery type is set
-        if (deliveryType === 'restaurant' || deliveryType === 'home') return;
-    });
+    // --- Prevent manual switch once set ---
+    $('.delivery-switch-label').on('click', () => false);
 
-    openAddressModalButton.on('click', function () {
-        addressModal.addClass('active');
-    });
+    // --- Address Modal ---
+    $openAddressModal .on('click', () => $addressModal.addClass('active'));
+    $closeAddressModal.on('click', () => $addressModal.removeClass('active'));
+    $cancelAddress     .on('click', () => $addressModal.removeClass('active'));
 
-    closeAddressModalButton.on('click', function () {
-        addressModal.removeClass('active');
-    });
-
-    cancelAddressButton.on('click', function () {
-        addressModal.removeClass('active');
-    });
-
-    saveAddressButton.on('click', function () {
-        const fullName = modalFullNameInput.val().trim();
-        const phoneNumber = modalPhoneNumberInput.val().trim();
-        const address = modalAddressInput.val().trim();
-
-        if (fullName === '' || phoneNumber === '' || address === '') {
-            alert('Please enter your full name, phone number, and address.');
-            return;
+    $saveAddress.on('click', () => {
+        const full  = $modalFullName.val().trim();
+        const phone = $modalPhoneNumber.val().trim();
+        const addr  = $modalAddress.val().trim();
+        if (!full || !phone || !addr) {
+            return alert('Please fill in all fields');
         }
-
-        homeDeliveryAddress = {
-            full_name: fullName,
-            phone_number: phoneNumber,
-            address: address
-        };
-        addressModal.removeClass('active');
+        homeDeliveryAddress = { full_name: full, phone_number: phone, address: addr };
+        $addressModal.removeClass('active');
         updateCheckoutButtonState();
     });
 
+    // --- Payment Options ---
     function updatePaymentOptions() {
         if (deliveryType === 'restaurant') {
             $('.payment-option.restaurant-only').addClass('active');
             $('.payment-option.home-only').removeClass('active');
-            const codOption = $('.payment-option[data-method="Cash on Delivery"].restaurant-only');
-            codOption.addClass('selected');
+            $('.payment-option[data-method="Cash on Delivery"].restaurant-only')
+                .addClass('selected');
             selectedPaymentMethod = 'Cash on Delivery';
         } else {
             $('.payment-option.home-only').addClass('active');
@@ -881,181 +1026,142 @@
             selectedPaymentMethod = '';
         }
     }
-
-    function updateOrderDetails() {
-        const cart = JSON.parse(localStorage.getItem('cart') || '{}');
-        const orderDetailsList = $('#orderDetailsList');
-        let orderHtml = '';
-        let subtotal = 0;
-
-        if (Object.keys(cart).length === 0) {
-            orderDetailsList.html(`
-                <div class="empty-cart">
-                    <i class="fas fa-shopping-bag"></i>
-                    <p>Your cart is empty.</p>
-                </div>
-            `);
-            $('#checkoutButton').prop('disabled', true);
-            $('#cartTotal').text(`$0.00`);
-            $('#itemTotal').text(`$0.00`);
-            return;
-        }
-
-        Object.entries(cart).forEach(([id, item]) => {
-            const quantity = item[0];
-            const name = item[1];
-            const price = parseFloat(item[2]);
-            const imageUrl = item[3];
-            const itemTotal = quantity * price;
-            subtotal += itemTotal;
-
-            orderHtml += `
-                <div class="order-item" data-item-id="${id}">
-                    <img src="${imageUrl}" alt="${name}">
-                    <div class="item-details">
-                        <h3>${name}</h3>
-                        <p>$${price.toFixed(2)}</p>
-                    </div>
-                    <div class="item-quantity-controls">
-                        <button class="quantity-button decrement-item">-</button>
-                        <span class="item-quantity">${quantity}</span>
-                        <button class="quantity-button increment-item">+</button>
-                    </div>
-                    <button class="delete-item"><i class="fas fa-trash-alt"></i></button>
-                    <div class="item-price">$${itemTotal.toFixed(2)}</div>
-                </div>
-            `;
-        });
-
-        orderDetailsList.html(orderHtml);
-        const total = subtotal + DELIVERY_FEE + SERVICE_FEE;
-        $('#cartTotal').text(`$${total.toFixed(2)}`);
-        $('#itemTotal').text(`$${subtotal.toFixed(2)}`);
-        updateCheckoutButtonState();
-
-        $('.increment-item').off('click').on('click', function () {
-            const itemId = $(this).closest('.order-item').data('item-id');
-            updateCart(itemId, 1);
-        });
-
-        $('.decrement-item').off('click').on('click', function () {
-            const itemId = $(this).closest('.order-item').data('item-id');
-            updateCart(itemId, -1);
-        });
-
-        $('.delete-item').off('click').on('click', function () {
-            const itemId = $(this).closest('.order-item').data('item-id');
-            deleteCartItem(itemId);
-        });
-    }
-
-    function updateCart(itemId, change) {
-        let cart = JSON.parse(localStorage.getItem('cart') || '{}');
-        if (cart[itemId]) {
-            cart[itemId][0] += change;
-            if (cart[itemId][0] <= 0) {
-                delete cart[itemId];
-            }
-            localStorage.setItem('cart', JSON.stringify(cart));
-            updateOrderDetails();
-        }
-    }
-
-    function deleteCartItem(itemId) {
-        let cart = JSON.parse(localStorage.getItem('cart') || '{}');
-        if (cart[itemId]) {
-            delete cart[itemId];
-            localStorage.setItem('cart', JSON.stringify(cart));
-            updateOrderDetails();
-        }
-    }
-
     $('.payment-option').on('click', function () {
-        if ($(this).hasClass('active')) {
-            $('.payment-option').removeClass('selected');
-            $(this).addClass('selected');
-            selectedPaymentMethod = $(this).data('method');
-            updateCheckoutButtonState();
-            if ('vibrate' in navigator) navigator.vibrate(50);
-        }
+        if (!$(this).hasClass('active')) return;
+        $('.payment-option').removeClass('selected');
+        $(this).addClass('selected');
+        selectedPaymentMethod = $(this).data('method');
+        updateCheckoutButtonState();
+        if ('vibrate' in navigator) navigator.vibrate(50);
     });
 
-    function updateCheckoutButtonState() {
-        const cartEmpty = Object.keys(JSON.parse(localStorage.getItem('cart') || '{}')).length === 0;
-        const isPaymentSelected = selectedPaymentMethod !== '';
-        let isDeliveryInfoFilled = false;
+    // --- Cart & Order UI ---
+    function updateOrderDetails() {
+        const cart = JSON.parse(localStorage.getItem('cart') || '{}');
+        const $list = $('#orderDetailsList');
+        let html = '', subtotal = 0;
 
-        if (deliveryType === 'home') {
-            isDeliveryInfoFilled = Object.keys(homeDeliveryAddress).length > 0 &&
-                homeDeliveryAddress.address !== '' &&
-                homeDeliveryAddress.full_name !== '' &&
-                homeDeliveryAddress.phone_number !== '';
-            $('#checkoutButton').prop('disabled', cartEmpty || !isPaymentSelected || !isDeliveryInfoFilled);
-        } else {
-            isDeliveryInfoFilled = true;
-            $('#checkoutButton').prop('disabled', cartEmpty);
+        if (!Object.keys(cart).length) {
+            $list.html(`
+                <div class="empty-cart">
+                  <i class="fas fa-shopping-bag"></i>
+                  <p>Your cart is empty.</p>
+                </div>
+            `);
+            $('#itemTotal').text('$0.00');
+            $('#cartTotal').text('$0.00');
+            return;
         }
+
+        for (let [id, item] of Object.entries(cart)) {
+            const [qty, name, price, img] = item;
+            const total = qty * parseFloat(price);
+            subtotal += total;
+            html += `
+                <div class="order-item" data-item-id="${id}">
+                  <img src="${img}" alt="${name}">
+                  <div class="item-details">
+                    <h3>${name}</h3>
+                    <p>$${parseFloat(price).toFixed(2)}</p>
+                  </div>
+                  <div class="item-quantity-controls">
+                    <button class="quantity-button decrement-item">-</button>
+                    <span class="item-quantity">${qty}</span>
+                    <button class="quantity-button increment-item">+</button>
+                  </div>
+                  <button class="delete-item"><i class="fas fa-trash-alt"></i></button>
+                  <div class="item-price">$${total.toFixed(2)}</div>
+                </div>
+            `;
+        }
+        $list.html(html);
+        const totalDue = subtotal + SERVICE_FEE + DELIVERY_FEE;
+        $('#itemTotal').text(`$${subtotal.toFixed(2)}`);
+        $('#cartTotal').text(`$${totalDue.toFixed(2)}`);
+
+        // bind quantity/delete
+        $('.increment-item').off().on('click', function () {
+            updateCart($(this).closest('.order-item').data('item-id'), +1);
+        });
+        $('.decrement-item').off().on('click', function () {
+            updateCart($(this).closest('.order-item').data('item-id'), -1);
+        });
+        $('.delete-item').off().on('click', function () {
+            deleteCartItem($(this).closest('.order-item').data('item-id'));
+        });
     }
 
+    function updateCart(id, delta) {
+        const cart = JSON.parse(localStorage.getItem('cart') || '{}');
+        if (!cart[id]) return;
+        cart[id][0] += delta;
+        if (cart[id][0] < 1) delete cart[id];
+        localStorage.setItem('cart', JSON.stringify(cart));
+        updateOrderDetails();
+        updateCheckoutButtonState();
+    }
+
+    function deleteCartItem(id) {
+        const cart = JSON.parse(localStorage.getItem('cart') || '{}');
+        delete cart[id];
+        localStorage.setItem('cart', JSON.stringify(cart));
+        updateOrderDetails();
+        updateCheckoutButtonState();
+    }
+
+    // --- Checkout Button State ---
+    function updateCheckoutButtonState() {
+        const cartEmpty = !Object.keys(JSON.parse(localStorage.getItem('cart') || '{}')).length;
+        const paymentOK = !!selectedPaymentMethod;
+        const addressOK = deliveryType === 'restaurant'
+            ? true
+            : (homeDeliveryAddress.full_name && homeDeliveryAddress.phone_number && homeDeliveryAddress.address);
+        $('#checkoutButton').prop('disabled', cartEmpty || !paymentOK || !addressOK);
+    }
+
+    // --- Place Order ---
     $('#checkoutButton').on('click', function (e) {
         e.preventDefault();
-        loadingOverlay.addClass('active');
+        $loadingOverlay.addClass('active');
 
-        const rawCart = localStorage.getItem('cart');
-        const cart = rawCart ? JSON.parse(rawCart) : {};
-
-        if (Object.keys(cart).length === 0) {
-            alert("Your cart is empty.");
-            loadingOverlay.removeClass('active');
-            return;
+        const cart = JSON.parse(localStorage.getItem('cart') || '{}');
+        if (!Object.keys(cart).length) {
+            alert('Your cart is empty.');
+            return $loadingOverlay.removeClass('active');
+        }
+        if (!selectedPaymentMethod) {
+            alert('Please select a payment method.');
+            return $loadingOverlay.removeClass('active');
         }
 
-        if (selectedPaymentMethod === '') {
-            alert("Please select a payment method.");
-            loadingOverlay.removeClass('active');
-            return;
-        }
-
-        let deliveryDetails = {};
-        let customerDetails = {};
-
-        if (deliveryType === 'home') {
-            if (!homeDeliveryAddress.address || !homeDeliveryAddress.full_name || !homeDeliveryAddress.phone_number) {
-                alert("Please complete your address information.");
-                loadingOverlay.removeClass('active');
-                return;
-            }
-
-            deliveryDetails = { address: homeDeliveryAddress.address };
-            customerDetails = {
-                full_name: homeDeliveryAddress.full_name,
-                phone_number: homeDeliveryAddress.phone_number
-            };
-        }
-
-        // TODO: Send the order via AJAX or form submission here
-
-        console.log({
+        const payload = {
             delivery_type: deliveryType,
             payment_method: selectedPaymentMethod,
-            cart: cart,
-            delivery_details: deliveryDetails,
-            customer_details: customerDetails,
-            table_number: tableNumber
-        });
+            cart,
+            table_number: tableNumber,
+            delivery_details: deliveryType === 'home' ? { address: homeDeliveryAddress.address } : {},
+            customer_details: deliveryType === 'home'
+                ? { full_name: homeDeliveryAddress.full_name, phone_number: homeDeliveryAddress.phone_number }
+                : {}
+        };
 
-        // Simulate success response
+        // TODO: AJAX POST payload
+        console.log('Order payload:', payload);
+
+        // simulate success
         setTimeout(() => {
             localStorage.removeItem('cart');
             window.location.href = '/order-success/';
         }, 1500);
     });
 
-    // Initialize
+    // --- Init on load ---
     setDeliveryType();
     updateOrderDetails();
+    updatePaymentOptions();
+    updateCheckoutButtonState();
 });
+</script>
 
-    </script>
 </body>
 </html>
