@@ -575,593 +575,618 @@
             line-height: 1.4;
         }
         /* Add these styles to your existing CSS */
-#map-container {
-    height: 0;
-    overflow: hidden;
-    transition: height 0.3s ease;
-    margin-top: 10px;
-    border-radius: var(--radius-md);
-    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
-}
-
-#map-container.active {
-    height: 200px;
-    margin-bottom: 15px;
-}
-
-#map {
-    width: 100%;
-    height: 100%;
-}
-
-.map-toggle {
-    background: none;
-    border: none;
-    color: var(--accent);
-    font-size: 0.85rem;
-    display: flex;
-    align-items: center;
-    gap: 5px;
-    padding: 5px 0;
-    margin-top: 5px;
-    cursor: pointer;
-}
-
-.distance-indicator {
-    display: flex;
-    align-items: center;
-    gap: 0.5rem;
-    margin: 10px 0;
-    padding: 10px;
-    background-color: #f0f7f2;
-    border-radius: var(--radius-sm);
-    font-size: 0.85rem;
-}
-
-.distance-indicator i {
-    color: var(--accent);
-}
-
-.distance-status {
-    font-weight: 500;
-}
-
-.distance-status.nearby {
-    color: #2e7d32;
-}
-
-.distance-status.far {
-    color: #ff6f00;
-}
-
-.mapboxgl-popup {
-    max-width: 200px;
-}
-
-.mapboxgl-popup-content {
-    text-align: center;
-    padding: 10px;
-    font-family: 'Poppins', sans-serif;
-}
+ #map-container {
+      height: 0;
+      overflow: hidden;
+      transition: height 0.3s ease;
+      margin-top: 10px;
+      border-radius: var(--radius-md);
+      box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+    }
+    #map-container.active {
+      height: 200px;
+      margin-bottom: 15px;
+    }
+    #map {
+      width: 100%;
+      height: 100%;
+    }
+    .map-toggle {
+      background: none;
+      border: none;
+      color: var(--accent);
+      font-size: 0.85rem;
+      display: flex;
+      align-items: center;
+      gap: 5px;
+      padding: 5px 0;
+      margin-top: 5px;
+      cursor: pointer;
+    }
+    .distance-indicator {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      margin: 10px 0;
+      padding: 10px;
+      background-color: #f0f7f2;
+      border-radius: var(--radius-sm);
+      font-size: 0.85rem;
+    }
+    .distance-indicator i { color: var(--accent); }
+    .distance-status { font-weight: 500; }
+    .distance-status.nearby { color: #2e7d32; }
+    .distance-status.far    { color: #ff6f00; }
+    .mapboxgl-popup {
+      max-width: 200px;
+    }
+    .mapboxgl-popup-content {
+      text-align: center;
+      padding: 10px;
+      font-family: 'Poppins', sans-serif;
+    }
 
     </style>
 </head>
 <body>
-    <div class="app-container">
-        <header class="header">
-            <button class="back-button" onclick="window.history.back()">
-                <i class="fas fa-arrow-left"></i>
-            </button>
-            <h1>Checkout</h1>
-            <div></div>
-        </header>
+     <div class="app-container">
+    <header class="header">
+      <button class="back-button" onclick="window.history.back()">
+        <i class="fas fa-arrow-left"></i>
+      </button>
+      <h1>Checkout</h1>
+      <div></div>
+    </header>
 
-        <section class="delivery-options">
-            <h2 class="delivery-options-title">Delivery</h2>
-            <div class="delivery-switch-container">
-                <div class="delivery-switch-label active" data-delivery-type="restaurant">At Restaurant</div>
-                <div class="delivery-switch-label" data-delivery-type="home">Home</div>
-            </div>
-        </section>
-
-        <div class="delivery-details">
-            <div class="delivery-details-restaurant">
-                <div class="table-info">
-                    <i class="fas fa-chair"></i>
-                    Your food will be delivered to **Table 1**.
-                </div>
-                <!-- New location feedback elements -->
-                <div class="distance-indicator" id="distanceIndicator">
-                    <i class="fas fa-map-marker-alt"></i>
-                    <div>
-                        <span class="distance-value">Detecting your location...</span>
-                        <div class="distance-status" id="distanceStatus"></div>
-                    </div>
-                </div>
-                <button class="map-toggle" id="toggleMap">
-                    <i class="fas fa-map"></i> Show map
-                </button>
-                <div id="map-container">
-                    <div id="map"></div>
-                </div>
-                <!-- End of new elements -->
-            </div>
-            <div class="delivery-details-home">
-                <button class="delivery-address-button" id="openAddressModal">
-                    <i class="fas fa-map-marker-alt"></i>
-                    Delivery Address
-                </button>
-                <p class="estimated-delivery"><i class="far fa-clock"></i> ~14 mins</p>
-            </div>
+    <section class="delivery-options">
+      <h2 class="delivery-options-title">Delivery</h2>
+      <div class="delivery-switch-container">
+        <div class="delivery-switch-label active" data-delivery-type="restaurant">
+          At Restaurant
         </div>
-
-        <section class="order-section">
-            <h2 class="section-title">Your Order</h2>
-            <div id="orderDetailsList">
-                <div class="empty-cart">
-                    <i class="fas fa-shopping-bag"></i>
-                    <p>Your cart is empty.</p>
-                </div>
-            </div>
-        </section>
-
-        <section class="payment-methods">
-            <h2 class="payment-methods-title">Payment</h2>
-            <div class="payment-option restaurant-only" data-method="Cash on Delivery">
-                <div class="payment-icon">
-                    <i class="fas fa-money-bill-alt"></i>
-                </div>
-                <div class="payment-details">
-                    <h3>Cash on Delivery</h3>
-                    <p>Pay in cash when your food arrives</p>
-                </div>
-            </div>
-            <div class="payment-option home-only" data-method="Cash on Delivery">
-                <div class="payment-icon">
-                    <i class="fas fa-money-bill-alt"></i>
-                </div>
-                <div class="payment-details">
-                    <h3>Pay Cash to Rider</h3>
-                    <p>Pay cash upon delivery</p>
-                </div>
-            </div>
-            <div class="payment-option home-only" data-method="Mobile Money">
-                <div class="payment-icon">
-                    <i class="fas fa-mobile-alt"></i>
-                </div>
-                <div class="payment-details">
-                    <h3>Mobile Money</h3>
-                    <p>Pay via mobile money upon delivery</p>
-                </div>
-            </div>
-        </section>
-
-        <div class="checkout-bar">
-            <div class="total-amount">
-                <p>Item total</p>
-                <span id="itemTotal">$0.00</span>
-            </div>
-            <div class="total-amount">
-                <p>To Pay</p>
-                <span id="cartTotal" style="font-size: 1.1rem; font-weight: 600;">$0.00</span>
-            </div>
-            <button
-                id="checkoutButton"
-                class="checkout-button"
-                data-restaurant-slug="{{ restaurant.slug }}"
-                data-hashed-slug="{{ restaurant.hashed_slug }}"
-                data-restaurant-lat="{{ restaurant_lat }}"
-                data-restaurant-lon="{{ restaurant_lon }}"
-                disabled
-            >
-                <i class="fas fa-check-circle"></i>
-                Place Order
-            </button>
+        <div class="delivery-switch-label" data-delivery-type="home">
+          Home
         </div>
+      </div>
+    </section>
 
-        <div class="loading-overlay" id="loading-overlay">
-            <div class="loading-spinner"></div>
+    <div class="delivery-details">
+      <div class="delivery-details-restaurant">
+        <div class="table-info">
+          <i class="fas fa-chair"></i>
+          Your food will be delivered to <strong>Table 1</strong>.
         </div>
+        <div class="distance-indicator" id="distanceIndicator">
+          <i class="fas fa-map-marker-alt"></i>
+          <div>
+            <span class="distance-value">Detecting your location...</span>
+            <div class="distance-status" id="distanceStatus"></div>
+          </div>
+        </div>
+      </div>
 
-        <div class="address-modal" id="addressModal">
-            <div class="address-modal-content">
-                <div class="address-modal-header">
-                    <h2>Enter Delivery Address</h2>
-                    <button class="close-button" id="closeAddressModal">×</button>
-                </div>
-                <form class="address-form" id="deliveryAddressForm">
-                    <div>
-                        <label for="full-name">Full Name:</label>
-                        <input type="text" id="modal-full-name" placeholder="Your Full Name">
-                    </div>
-                    <div>
-                        <label for="phone-number">Phone Number:</label>
-                        <input type="tel" id="modal-phone-number" placeholder="Your Phone Number">
-                    </div>
-                    <div>
-                        <label for="address">Address:</label>
-                        <input type="text" id="modal-address" placeholder="Your Street Address">
-                    </div>
-                    <div class="address-actions">
-                        <button type="button" class="cancel-address" id="cancelAddress">Cancel</button>
-                        <button type="button" class="save-address" id="saveAddress">Save Address</button>
-                    </div>
-                </form>
-            </div>
+      <div class="delivery-details-home">
+        <button class="delivery-address-button" id="openAddressModal">
+          <i class="fas fa-map-marker-alt"></i>
+          Delivery Address
+        </button>
+        <p class="estimated-delivery">
+          <i class="far fa-clock"></i> ~14 mins
+        </p>
+      </div>
+
+      <!-- ← Always-visible map controls ↓ -->
+      <div class="map-wrapper">
+        <button class="map-toggle" id="toggleMap">
+          <i class="fas fa-map"></i> Show map
+        </button>
+        <div id="map-container">
+          <div id="map"></div>
         </div>
+      </div>
     </div>
 
+    <section class="order-section">
+      <h2 class="section-title">Your Order</h2>
+      <div id="orderDetailsList">
+        <div class="empty-cart">
+          <i class="fas fa-shopping-bag"></i>
+          <p>Your cart is empty.</p>
+        </div>
+      </div>
+    </section>
+
+    <section class="payment-methods">
+      <h2 class="payment-methods-title">Payment</h2>
+      <div class="payment-option restaurant-only" data-method="Cash on Delivery">
+        <div class="payment-icon"><i class="fas fa-money-bill-alt"></i></div>
+        <div class="payment-details">
+          <h3>Cash on Delivery</h3>
+          <p>Pay in cash when your food arrives</p>
+        </div>
+      </div>
+      <div class="payment-option home-only" data-method="Cash on Delivery">
+        <div class="payment-icon"><i class="fas fa-money-bill-alt"></i></div>
+        <div class="payment-details">
+          <h3>Pay Cash to Rider</h3>
+          <p>Pay cash upon delivery</p>
+        </div>
+      </div>
+      <div class="payment-option home-only" data-method="Mobile Money">
+        <div class="payment-icon"><i class="fas fa-mobile-alt"></i></div>
+        <div class="payment-details">
+          <h3>Mobile Money</h3>
+          <p>Pay via mobile money upon delivery</p>
+        </div>
+      </div>
+    </section>
+
+    <div class="checkout-bar">
+      <div class="total-amount">
+        <p>Item total</p>
+        <span id="itemTotal">$0.00</span>
+      </div>
+      <div class="total-amount">
+        <p>To Pay</p>
+        <span id="cartTotal" style="font-size:1.1rem; font-weight:600;">$0.00</span>
+      </div>
+      <button
+        id="checkoutButton"
+        class="checkout-button"
+        data-restaurant-lat="{{ restaurant_lat }}"
+        data-restaurant-lon="{{ restaurant_lon }}"
+        disabled
+      >
+        <i class="fas fa-check-circle"></i> Place Order
+      </button>
+    </div>
+
+    <div class="loading-overlay" id="loading-overlay">
+      <div class="loading-spinner"></div>
+    </div>
+
+    <div class="address-modal" id="addressModal">
+      <div class="address-modal-content">
+        <div class="address-modal-header">
+          <h2>Enter Delivery Address</h2>
+          <button class="close-button" id="closeAddressModal">×</button>
+        </div>
+        <form class="address-form" id="deliveryAddressForm">
+          <div>
+            <label for="full-name">Full Name:</label>
+            <input type="text" id="modal-full-name" placeholder="Your Full Name">
+          </div>
+          <div>
+            <label for="phone-number">Phone Number:</label>
+            <input type="tel" id="modal-phone-number" placeholder="Your Phone Number">
+          </div>
+          <div>
+            <label for="address">Address:</label>
+            <input type="text" id="modal-address" placeholder="Your Street Address">
+          </div>
+          <div class="address-actions">
+            <button type="button" class="cancel-address" id="cancelAddress">Cancel</button>
+            <button type="button" class="save-address"   id="saveAddress">Save Address</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+
+
     <div id="toast-container" class="toast-container"></div>
+     <!-- Dependencies -->
+  <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+  <script src="https://api.mapbox.com/mapbox-gl-js/v2.15.0/mapbox-gl.js"></script>
+  <script src="https://unpkg.com/@turf/turf/turf.min.js"></script>
 
     <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
     <script>
-$(document).ready(function () {
-    // --- Constants & State ---
-    const SERVICE_FEE = 0.51;
-    const DELIVERY_FEE = 0.00;
-    const THRESHOLD_DISTANCE = 100; // meters
+    $(document).ready(function () {
+  // ── Constants & State ──
+  const SERVICE_FEE        = 0.51;
+  const DELIVERY_FEE       = 0.00;
+  const THRESHOLD_DISTANCE = 100; // meters
 
-    let selectedPaymentMethod = 'Cash on Delivery';
-    let deliveryType = 'restaurant'; // 'restaurant' or 'home'
-    const tableNumber = '1';
-    let homeDeliveryAddress = {};
+  let selectedPaymentMethod = 'Cash on Delivery';
+  let deliveryType          = 'restaurant';
+  let homeDeliveryAddress   = {};
+  const tableNumber         = '1';
 
-    // --- Elements ---
-    const $openAddressModal   = $('#openAddressModal');
-    const $addressModal       = $('#addressModal');
-    const $closeAddressModal  = $('#closeAddressModal');
-    const $saveAddress        = $('#saveAddress');
-    const $cancelAddress      = $('#cancelAddress');
-    const $loadingOverlay     = $('#loading-overlay');
+  // ── Cached Elements ──
+  const $openAddressModal   = $('#openAddressModal');
+  const $addressModal       = $('#addressModal');
+  const $closeAddressModal  = $('#closeAddressModal');
+  const $saveAddress        = $('#saveAddress');
+  const $cancelAddress      = $('#cancelAddress');
+  const $loadingOverlay     = $('#loading-overlay');
 
-    const $modalFullName      = $('#modal-full-name');
-    const $modalPhoneNumber   = $('#modal-phone-number');
-    const $modalAddress       = $('#modal-address');
+  const $modalFullName      = $('#modal-full-name');
+  const $modalPhoneNumber   = $('#modal-phone-number');
+  const $modalAddress       = $('#modal-address');
 
-    const mapContainer        = document.getElementById('map-container');
-    const toggleMapButton     = document.getElementById('toggleMap');
-    const $distanceValue      = $('.distance-value');
-    const $distanceStatus     = $('#distanceStatus');
+  const mapContainer        = document.getElementById('map-container');
+  const toggleMapButton     = document.getElementById('toggleMap');
+  const $distanceValue      = $('.distance-value');
+  const $distanceStatus     = $('#distanceStatus');
 
-    const restaurantLat = parseFloat($('#checkoutButton').data('restaurant-lat'));
-    const restaurantLon = parseFloat($('#checkoutButton').data('restaurant-lon'));
+  const restaurantLat = parseFloat($('#checkoutButton').data('restaurant-lat'));
+  const restaurantLon = parseFloat($('#checkoutButton').data('restaurant-lon'));
 
-    let map, userMarker, restaurantMarker;
-    let isMapInitialized = false;
+  let map, userMarker, restaurantMarker;
+  let isMapInitialized = false;
 
-    // --- Mapbox Token ---
-    mapboxgl.accessToken = 'pk.eyJ1IjoibWl0Y2hlbGwyMzEiLCJhIjoiY205dGF0YXprMGFoajJrc2I5cDVvNnprZSJ9.LiQvQKUCOIe5fW0QYSOSFQ';
+  // ── Mapbox Setup ──
+  mapboxgl.accessToken = 'pk.eyJ1IjoibWl0Y2hlbGwyMzEiLCJhIjoiY205dGF0YXprMGFoajJrc2I5cDVvNnprZSJ9.LiQvQKUCOIe5fW0QYSOSFQ';
 
-    // --- Map Toggle Handler ---
-    toggleMapButton.addEventListener('click', () => {
-        mapContainer.classList.toggle('active');
-        toggleMapButton.innerHTML = mapContainer.classList.contains('active')
-            ? '<i class="fas fa-map"></i> Hide map'
-            : '<i class="fas fa-map"></i> Show map';
+  // ── Map Toggle Handler ──
+  toggleMapButton.addEventListener('click', () => {
+    mapContainer.classList.toggle('active');
+    toggleMapButton.innerHTML = mapContainer.classList.contains('active')
+      ? '<i class="fas fa-map"></i> Hide map'
+      : '<i class="fas fa-map"></i> Show map';
 
-        if (mapContainer.classList.contains('active') && !isMapInitialized) {
-            initializeMap();
-        }
+    if (mapContainer.classList.contains('active') && !isMapInitialized) {
+      initializeMap();
+      isMapInitialized = true;
+    }
+  });
+
+  // ── Initialize Map & Restaurant Marker ──
+  function initializeMap() {
+    map = new mapboxgl.Map({
+      container: 'map',
+      style:     'mapbox://styles/mapbox/streets-v11',
+      center:    [restaurantLon, restaurantLat],
+      zoom:      14
     });
 
-    // --- Initialize Map & Markers ---
-    function initializeMap() {
-        map = new mapboxgl.Map({
-            container: 'map',
-            style: 'mapbox://styles/mapbox/streets-v11',
-            center: [restaurantLon, restaurantLat],
-            zoom: 14
-        });
+    map.on('load', () => {
+      restaurantMarker = new mapboxgl.Marker({ color: '#2e7d32' })
+        .setLngLat([restaurantLon, restaurantLat])
+        .setPopup(new mapboxgl.Popup().setHTML('<strong>Restaurant</strong>'))
+        .addTo(map);
 
-        map.on('load', () => {
-            // Restaurant marker
-            restaurantMarker = new mapboxgl.Marker({ color: '#2e7d32' })
-                .setLngLat([restaurantLon, restaurantLat])
-                .setPopup(new mapboxgl.Popup().setHTML('<strong>Restaurant</strong>'))
-                .addTo(map);
+      getUserLocationForMap();
+    });
+  }
 
-            getUserLocationForMap();
-            isMapInitialized = true;
-        });
+  // ── Get & Mark User Location on Map ──
+  function getUserLocationForMap() {
+    if (!navigator.geolocation) {
+      $distanceValue.text('Geolocation not supported');
+      return;
     }
+    navigator.geolocation.getCurrentPosition(pos => {
+      const userLng = pos.coords.longitude;
+      const userLat = pos.coords.latitude;
 
-    // --- Get & Mark User Location on Map ---
-    function getUserLocationForMap() {
-        if (!navigator.geolocation) {
-            $distanceValue.text('Geolocation not supported');
-            return;
+      if (userMarker) userMarker.remove();
+      userMarker = new mapboxgl.Marker({ color: '#03a9f4' })
+        .setLngLat([userLng, userLat])
+        .setPopup(new mapboxgl.Popup().setHTML('<strong>Your Location</strong>'))
+        .addTo(map);
+
+      // Fit both markers
+      const bounds = new mapboxgl.LngLatBounds()
+        .extend([userLng, userLat])
+        .extend([restaurantLon, restaurantLat]);
+      map.fitBounds(bounds, { padding: 70 });
+
+      // Draw route line
+      if (map.getLayer('route')) {
+        map.removeLayer('route');
+        map.removeSource('route');
+      }
+      map.addSource('route', {
+        type: 'geojson',
+        data: {
+          type: 'Feature',
+          geometry: {
+            type: 'LineString',
+            coordinates: [
+              [userLng, userLat],
+              [restaurantLon, restaurantLat]
+            ]
+          }
         }
-        navigator.geolocation.getCurrentPosition(pos => {
-            const userLng = pos.coords.longitude;
-            const userLat = pos.coords.latitude;
+      });
+      map.addLayer({
+        id:     'route',
+        type:   'line',
+        source: 'route',
+        layout: { 'line-join': 'round', 'line-cap': 'round' },
+        paint:  { 'line-color': '#03a9f4', 'line-width': 3, 'line-dasharray': [2,1] }
+      });
 
-            // user marker
-            if (userMarker) userMarker.remove();
-            userMarker = new mapboxgl.Marker({ color: '#03a9f4' })
-                .setLngLat([userLng, userLat])
-                .setPopup(new mapboxgl.Popup().setHTML('<strong>Your Location</strong>'))
-                .addTo(map);
+      updateDistanceDisplay(userLng, userLat, restaurantLon, restaurantLat);
+    }, err => {
+      console.error('Geo error', err);
+      $distanceValue.text('Could not determine your location');
+    });
+  }
 
-            // fit both markers
-            const bounds = new mapboxgl.LngLatBounds()
-                .extend([userLng, userLat])
-                .extend([restaurantLon, restaurantLat]);
-            map.fitBounds(bounds, { padding: 70 });
+  // ── Update Distance UI ──
+  function updateDistanceDisplay(userLng, userLat, restLng, restLat) {
+    const from = turf.point([userLng, userLat]);
+    const to   = turf.point([restLng, restLat]);
+    const dist = turf.distance(from, to, { units: 'meters' });
 
-            // draw route line
-            if (map.getLayer('route')) {
-                map.removeLayer('route');
-                map.removeSource('route');
-            }
-            map.addSource('route', {
-                type: 'geojson',
-                data: {
-                    type: 'Feature',
-                    geometry: {
-                        type: 'LineString',
-                        coordinates: [
-                            [userLng, userLat],
-                            [restaurantLon, restaurantLat]
-                        ]
-                    }
-                }
-            });
-            map.addLayer({
-                id: 'route',
-                type: 'line',
-                source: 'route',
-                layout: { 'line-join': 'round', 'line-cap': 'round' },
-                paint: { 'line-color': '#03a9f4', 'line-width': 3, 'line-dasharray': [2,1] }
-            });
-
-            updateDistanceDisplay(userLng, userLat, restaurantLon, restaurantLat);
-        }, err => {
-            console.error('Geo error', err);
-            $distanceValue.text('Could not determine your location');
-        });
+    if (dist < 1000) {
+      $distanceValue.text(`${Math.round(dist)} meters away`);
+    } else {
+      $distanceValue.text(`${(dist / 1000).toFixed(1)} km away`);
     }
 
-    // --- Distance Calculation & UI ---
-    function updateDistanceDisplay(userLng, userLat, restLng, restLat) {
-        const from = turf.point([userLng, userLat]);
-        const to   = turf.point([restLng, restLat]);
-        const dist = turf.distance(from, to, { units: 'meters' });
+    if (dist <= THRESHOLD_DISTANCE) {
+      $distanceStatus
+        .text("You're at the restaurant!")
+        .addClass('nearby')
+        .removeClass('far');
+    } else {
+      $distanceStatus
+        .text("Delivery recommended")
+        .addClass('far')
+        .removeClass('nearby');
+    }
+  }
 
-        if (dist < 1000) {
-            $distanceValue.text(`${Math.round(dist)} meters away`);
+  // ── Geolocation Promise Helper ──
+  function getUserLocation() {
+    return new Promise((resolve, reject) => {
+      if (!navigator.geolocation) return reject('No geolocation');
+      navigator.geolocation.getCurrentPosition(
+        p => resolve([p.coords.longitude, p.coords.latitude]),
+        e => reject(e)
+      );
+    });
+  }
+
+  // ── Calculate Straight‐Line Distance ──
+  async function calculateDistance(userLoc, restLoc) {
+    return turf.distance(turf.point(userLoc), turf.point(restLoc), { units: 'meters' });
+  }
+
+  // ── Delivery Type Logic ──
+  async function setDeliveryType() {
+    try {
+      const userLoc = await getUserLocation();
+      const restLoc = [restaurantLon, restaurantLat];
+      const dist    = await calculateDistance(userLoc, restLoc);
+
+      if (dist < THRESHOLD_DISTANCE) {
+        // At Restaurant
+        deliveryType = 'restaurant';
+        $('.delivery-switch-label[data-delivery-type="restaurant"]').addClass('active');
+        $('.delivery-switch-label[data-delivery-type="home"]').removeClass('active');
+        $('.delivery-details-restaurant').show();
+        $('.delivery-details-home').hide();
+      } else {
+        // Home delivery: auto‐open map & show both markers
+        deliveryType = 'home';
+        $('.delivery-switch-label[data-delivery-type="home"]').addClass('active');
+        $('.delivery-switch-label[data-delivery-type="restaurant"]').removeClass('active');
+        $('.delivery-details-home').show();
+        $('.delivery-details-restaurant').hide();
+
+        // ←── NEW: auto-open map in Home mode
+        if (!mapContainer.classList.contains('active')) {
+          mapContainer.classList.add('active');
+          toggleMapButton.innerHTML = '<i class="fas fa-map"></i> Hide map';
+        }
+        if (!isMapInitialized) {
+          initializeMap();
+          isMapInitialized = true;
         } else {
-            $distanceValue.text(`${(dist/1000).toFixed(1)} km away`);
+          getUserLocationForMap();
         }
+      }
+    } catch (e) {
+      console.error('Location failed, default to Home', e);
+      // Fallback to Home delivery + auto‐open map
+      deliveryType = 'home';
+      $('.delivery-switch-label[data-delivery-type="home"]').addClass('active');
+      $('.delivery-switch-label[data-delivery-type="restaurant"]').removeClass('active');
+      $('.delivery-details-home').show();
+      $('.delivery-details-restaurant').hide();
 
-        if (dist <= THRESHOLD_DISTANCE) {
-            $distanceStatus.text("You're at the restaurant!").addClass('nearby').removeClass('far');
-        } else {
-            $distanceStatus.text("Delivery recommended").addClass('far').removeClass('nearby');
-        }
+      if (!mapContainer.classList.contains('active')) {
+        mapContainer.classList.add('active');
+        toggleMapButton.innerHTML = '<i class="fas fa-map"></i> Hide map';
+      }
+      if (!isMapInitialized) {
+        initializeMap();
+        isMapInitialized = true;
+      } else {
+        getUserLocationForMap();
+      }
     }
 
-    // --- Helper to get current position as Promise ---
-    function getUserLocation() {
-        return new Promise((resolve, reject) => {
-            if (!navigator.geolocation) return reject('No geo');
-            navigator.geolocation.getCurrentPosition(
-                p => resolve([p.coords.longitude, p.coords.latitude]),
-                e => reject(e)
-            );
-        });
-    }
-
-    // --- Calculate straight-line distance in meters ---
-    async function calculateDistance(userLoc, restLoc) {
-        const userPt = turf.point(userLoc);
-        const restPt = turf.point(restLoc);
-        return turf.distance(userPt, restPt, { units: 'meters' });
-    }
-
-    // --- Decide Delivery Type on Load ---
-    async function setDeliveryType() {
-        try {
-            const userLoc = await getUserLocation();
-            const restLoc = [restaurantLon, restaurantLat];
-            const dist    = await calculateDistance(userLoc, restLoc);
-
-            if (dist < THRESHOLD_DISTANCE) {
-                deliveryType = 'restaurant';
-                $('.delivery-switch-label[data-delivery-type="restaurant"]').addClass('active');
-                $('.delivery-switch-label[data-delivery-type="home"]').removeClass('active');
-                $('.delivery-details-restaurant').show();
-                $('.delivery-details-home').hide();
-            } else {
-                deliveryType = 'home';
-                $('.delivery-switch-label[data-delivery-type="home"]').addClass('active');
-                $('.delivery-switch-label[data-delivery-type="restaurant"]').removeClass('active');
-                $('.delivery-details-home').show();
-                $('.delivery-details-restaurant').hide();
-            }
-        } catch (e) {
-            console.error('Location fail, default to home', e);
-            deliveryType = 'home';
-            $('.delivery-switch-label[data-delivery-type="home"]').addClass('active');
-            $('.delivery-switch-label[data-delivery-type="restaurant"]').removeClass('active');
-            $('.delivery-details-home').show();
-            $('.delivery-details-restaurant').hide();
-        }
-        updatePaymentOptions();
-        updateOrderDetails();
-        updateCheckoutButtonState();
-    }
-
-    // --- Prevent manual switch once set ---
-    $('.delivery-switch-label').on('click', () => false);
-
-    // --- Address Modal ---
-    $openAddressModal .on('click', () => $addressModal.addClass('active'));
-    $closeAddressModal.on('click', () => $addressModal.removeClass('active'));
-    $cancelAddress     .on('click', () => $addressModal.removeClass('active'));
-
-    $saveAddress.on('click', () => {
-        const full  = $modalFullName.val().trim();
-        const phone = $modalPhoneNumber.val().trim();
-        const addr  = $modalAddress.val().trim();
-        if (!full || !phone || !addr) {
-            return alert('Please fill in all fields');
-        }
-        homeDeliveryAddress = { full_name: full, phone_number: phone, address: addr };
-        $addressModal.removeClass('active');
-        updateCheckoutButtonState();
-    });
-
-    // --- Payment Options ---
-    function updatePaymentOptions() {
-        if (deliveryType === 'restaurant') {
-            $('.payment-option.restaurant-only').addClass('active');
-            $('.payment-option.home-only').removeClass('active');
-            $('.payment-option[data-method="Cash on Delivery"].restaurant-only')
-                .addClass('selected');
-            selectedPaymentMethod = 'Cash on Delivery';
-        } else {
-            $('.payment-option.home-only').addClass('active');
-            $('.payment-option.restaurant-only').removeClass('active');
-            $('.payment-option').removeClass('selected');
-            selectedPaymentMethod = '';
-        }
-    }
-    $('.payment-option').on('click', function () {
-        if (!$(this).hasClass('active')) return;
-        $('.payment-option').removeClass('selected');
-        $(this).addClass('selected');
-        selectedPaymentMethod = $(this).data('method');
-        updateCheckoutButtonState();
-        if ('vibrate' in navigator) navigator.vibrate(50);
-    });
-
-    // --- Cart & Order UI ---
-    function updateOrderDetails() {
-        const cart = JSON.parse(localStorage.getItem('cart') || '{}');
-        const $list = $('#orderDetailsList');
-        let html = '', subtotal = 0;
-
-        if (!Object.keys(cart).length) {
-            $list.html(`
-                <div class="empty-cart">
-                  <i class="fas fa-shopping-bag"></i>
-                  <p>Your cart is empty.</p>
-                </div>
-            `);
-            $('#itemTotal').text('$0.00');
-            $('#cartTotal').text('$0.00');
-            return;
-        }
-
-        for (let [id, item] of Object.entries(cart)) {
-            const [qty, name, price, img] = item;
-            const total = qty * parseFloat(price);
-            subtotal += total;
-            html += `
-                <div class="order-item" data-item-id="${id}">
-                  <img src="${img}" alt="${name}">
-                  <div class="item-details">
-                    <h3>${name}</h3>
-                    <p>$${parseFloat(price).toFixed(2)}</p>
-                  </div>
-                  <div class="item-quantity-controls">
-                    <button class="quantity-button decrement-item">-</button>
-                    <span class="item-quantity">${qty}</span>
-                    <button class="quantity-button increment-item">+</button>
-                  </div>
-                  <button class="delete-item"><i class="fas fa-trash-alt"></i></button>
-                  <div class="item-price">$${total.toFixed(2)}</div>
-                </div>
-            `;
-        }
-        $list.html(html);
-        const totalDue = subtotal + SERVICE_FEE + DELIVERY_FEE;
-        $('#itemTotal').text(`$${subtotal.toFixed(2)}`);
-        $('#cartTotal').text(`$${totalDue.toFixed(2)}`);
-
-        // bind quantity/delete
-        $('.increment-item').off().on('click', function () {
-            updateCart($(this).closest('.order-item').data('item-id'), +1);
-        });
-        $('.decrement-item').off().on('click', function () {
-            updateCart($(this).closest('.order-item').data('item-id'), -1);
-        });
-        $('.delete-item').off().on('click', function () {
-            deleteCartItem($(this).closest('.order-item').data('item-id'));
-        });
-    }
-
-    function updateCart(id, delta) {
-        const cart = JSON.parse(localStorage.getItem('cart') || '{}');
-        if (!cart[id]) return;
-        cart[id][0] += delta;
-        if (cart[id][0] < 1) delete cart[id];
-        localStorage.setItem('cart', JSON.stringify(cart));
-        updateOrderDetails();
-        updateCheckoutButtonState();
-    }
-
-    function deleteCartItem(id) {
-        const cart = JSON.parse(localStorage.getItem('cart') || '{}');
-        delete cart[id];
-        localStorage.setItem('cart', JSON.stringify(cart));
-        updateOrderDetails();
-        updateCheckoutButtonState();
-    }
-
-    // --- Checkout Button State ---
-    function updateCheckoutButtonState() {
-        const cartEmpty = !Object.keys(JSON.parse(localStorage.getItem('cart') || '{}')).length;
-        const paymentOK = !!selectedPaymentMethod;
-        const addressOK = deliveryType === 'restaurant'
-            ? true
-            : (homeDeliveryAddress.full_name && homeDeliveryAddress.phone_number && homeDeliveryAddress.address);
-        $('#checkoutButton').prop('disabled', cartEmpty || !paymentOK || !addressOK);
-    }
-
-    // --- Place Order ---
-    $('#checkoutButton').on('click', function (e) {
-        e.preventDefault();
-        $loadingOverlay.addClass('active');
-
-        const cart = JSON.parse(localStorage.getItem('cart') || '{}');
-        if (!Object.keys(cart).length) {
-            alert('Your cart is empty.');
-            return $loadingOverlay.removeClass('active');
-        }
-        if (!selectedPaymentMethod) {
-            alert('Please select a payment method.');
-            return $loadingOverlay.removeClass('active');
-        }
-
-        const payload = {
-            delivery_type: deliveryType,
-            payment_method: selectedPaymentMethod,
-            cart,
-            table_number: tableNumber,
-            delivery_details: deliveryType === 'home' ? { address: homeDeliveryAddress.address } : {},
-            customer_details: deliveryType === 'home'
-                ? { full_name: homeDeliveryAddress.full_name, phone_number: homeDeliveryAddress.phone_number }
-                : {}
-        };
-
-        // TODO: AJAX POST payload
-        console.log('Order payload:', payload);
-
-        // simulate success
-        setTimeout(() => {
-            localStorage.removeItem('cart');
-            window.location.href = '/order-success/';
-        }, 1500);
-    });
-
-    // --- Init on load ---
-    setDeliveryType();
-    updateOrderDetails();
     updatePaymentOptions();
+    updateOrderDetails();
     updateCheckoutButtonState();
+  }
+
+  // ── Prevent Manual Switch ──
+  $('.delivery-switch-label').on('click', () => false);
+
+  // ── Address Modal Handlers ──
+  $openAddressModal.on('click',  () => $addressModal.addClass('active'));
+  $closeAddressModal.on('click', () => $addressModal.removeClass('active'));
+  $cancelAddress.on('click',     () => $addressModal.removeClass('active'));
+
+  $saveAddress.on('click', () => {
+    const full  = $modalFullName.val().trim();
+    const phone = $modalPhoneNumber.val().trim();
+    const addr  = $modalAddress.val().trim();
+    if (!full || !phone || !addr) {
+      return alert('Please fill in all fields');
+    }
+    homeDeliveryAddress = {
+      full_name:    full,
+      phone_number: phone,
+      address:      addr
+    };
+    $addressModal.removeClass('active');
+    updateCheckoutButtonState();
+  });
+
+  // ── Payment Option Logic ──
+  function updatePaymentOptions() {
+    if (deliveryType === 'restaurant') {
+      $('.payment-option.restaurant-only').addClass('active');
+      $('.payment-option.home-only').removeClass('active');
+      $('.payment-option[data-method="Cash on Delivery"].restaurant-only')
+        .addClass('selected');
+      selectedPaymentMethod = 'Cash on Delivery';
+    } else {
+      $('.payment-option.home-only').addClass('active');
+      $('.payment-option.restaurant-only').removeClass('active');
+      $('.payment-option').removeClass('selected');
+      selectedPaymentMethod = '';
+    }
+  }
+  $('.payment-option').on('click', function () {
+    if (!$(this).hasClass('active')) return;
+    $('.payment-option').removeClass('selected');
+    $(this).addClass('selected');
+    selectedPaymentMethod = $(this).data('method');
+    updateCheckoutButtonState();
+    if ('vibrate' in navigator) navigator.vibrate(50);
+  });
+
+  // ── Cart & Order Details ──
+  function updateOrderDetails() {
+    const cart = JSON.parse(localStorage.getItem('cart') || '{}');
+    const $list = $('#orderDetailsList');
+    let html = '', subtotal = 0;
+
+    if (!Object.keys(cart).length) {
+      $list.html(`
+        <div class="empty-cart">
+          <i class="fas fa-shopping-bag"></i>
+          <p>Your cart is empty.</p>
+        </div>
+      `);
+      $('#itemTotal').text('$0.00');
+      $('#cartTotal').text('$0.00');
+      return;
+    }
+
+    for (const [id, item] of Object.entries(cart)) {
+      const [qty, name, price, img] = item;
+      const total = qty * parseFloat(price);
+      subtotal += total;
+      html += `
+        <div class="order-item" data-item-id="${id}">
+          <img src="${img}" alt="${name}">
+          <div class="item-details">
+            <h3>${name}</h3>
+            <p>$${parseFloat(price).toFixed(2)}</p>
+          </div>
+          <div class="item-quantity-controls">
+            <button class="quantity-button decrement-item">-</button>
+            <span class="item-quantity">${qty}</span>
+            <button class="quantity-button increment-item">+</button>
+          </div>
+          <button class="delete-item"><i class="fas fa-trash-alt"></i></button>
+          <div class="item-price">$${total.toFixed(2)}</div>
+        </div>
+      `;
+    }
+    $list.html(html);
+
+    const totalDue = subtotal + SERVICE_FEE + DELIVERY_FEE;
+    $('#itemTotal').text(`$${subtotal.toFixed(2)}`);
+    $('#cartTotal').text(`$${totalDue.toFixed(2)}`);
+
+    $('.increment-item').off().on('click', e => {
+      updateCart($(e.currentTarget).closest('.order-item').data('item-id'), +1);
+    });
+    $('.decrement-item').off().on('click', e => {
+      updateCart($(e.currentTarget).closest('.order-item').data('item-id'), -1);
+    });
+    $('.delete-item').off().on('click', e => {
+      deleteCartItem($(e.currentTarget).closest('.order-item').data('item-id'));
+    });
+  }
+
+  function updateCart(id, delta) {
+    const cart = JSON.parse(localStorage.getItem('cart') || '{}');
+    if (!cart[id]) return;
+    cart[id][0] += delta;
+    if (cart[id][0] < 1) delete cart[id];
+    localStorage.setItem('cart', JSON.stringify(cart));
+    updateOrderDetails();
+    updateCheckoutButtonState();
+  }
+
+  function deleteCartItem(id) {
+    const cart = JSON.parse(localStorage.getItem('cart') || '{}');
+    delete cart[id];
+    localStorage.setItem('cart', JSON.stringify(cart));
+    updateOrderDetails();
+    updateCheckoutButtonState();
+  }
+
+  // ── Checkout Button State ──
+  function updateCheckoutButtonState() {
+    const cartEmpty = !Object.keys(JSON.parse(localStorage.getItem('cart') || '{}')).length;
+    const paymentOK = !!selectedPaymentMethod;
+    const addressOK = deliveryType === 'restaurant'
+      ? true
+      : (homeDeliveryAddress.full_name && homeDeliveryAddress.phone_number && homeDeliveryAddress.address);
+    $('#checkoutButton').prop('disabled', cartEmpty || !paymentOK || !addressOK);
+  }
+
+  // ── Place Order Handler ──
+  $('#checkoutButton').on('click', function (e) {
+    e.preventDefault();
+    $loadingOverlay.addClass('active');
+
+    const cart = JSON.parse(localStorage.getItem('cart') || '{}');
+    if (!Object.keys(cart).length) {
+      alert('Your cart is empty.');
+      return $loadingOverlay.removeClass('active');
+    }
+    if (!selectedPaymentMethod) {
+      alert('Please select a payment method.');
+      return $loadingOverlay.removeClass('active');
+    }
+
+    const payload = {
+      delivery_type:    deliveryType,
+      payment_method:   selectedPaymentMethod,
+      cart,
+      table_number:     tableNumber,
+      delivery_details: deliveryType === 'home'
+        ? { address: homeDeliveryAddress.address }
+        : {},
+      customer_details: deliveryType === 'home'
+        ? {
+            full_name:    homeDeliveryAddress.full_name,
+            phone_number: homeDeliveryAddress.phone_number
+          }
+        : {}
+    };
+
+    // TODO: AJAX POST payload to your server endpoint
+    console.log('Order payload:', payload);
+
+    // simulate success
+    setTimeout(() => {
+      localStorage.removeItem('cart');
+      window.location.href = '/order-success/';
+    }, 1500);
+  });
+
+  // ── Initialization ──
+  setDeliveryType();
+  updateOrderDetails();
+  updatePaymentOptions();
+  updateCheckoutButtonState();
 });
-</script>
+    </script>
 
 </body>
 </html>
