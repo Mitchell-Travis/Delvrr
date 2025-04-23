@@ -20,19 +20,21 @@ from django.core.files.base import ContentFile
 
 
 from datetime import datetime
+import datetime
+import hashlib
+from decimal import Decimal, ROUND_HALF_UP
 
 class Restaurant(models.Model):
-    user = models.OneToOneField(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
-    restaurant_name = models.CharField(max_length=40, null=True, blank=True, db_index=True)
-    slug = models.SlugField(max_length=255, null=True, blank=True)
-    hashed_slug = models.CharField(max_length=64, unique=True, blank=True)  # NEW: Hashed Identifier
-    logo_pic = models.ImageField(upload_to='logo_pic/RestaurantLogo/', null=True, blank=True)
-    address = models.CharField(max_length=255, blank=True, null=True)
-    mobile = models.CharField(max_length=20, null=False)
-    latitude = models.DecimalField(max_digits=9, decimal_places=6, null=True, blank=True)
-    longitude = models.DecimalField(max_digits=9, decimal_places=6, null=True, blank=True)
-    business_hours = models.CharField(max_length=255, null=True, blank=True)
-    
+    user             = models.OneToOneField(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
+    restaurant_name  = models.CharField(max_length=40, null=True, blank=True, db_index=True)
+    slug             = models.SlugField(max_length=255, null=True, blank=True)
+    hashed_slug      = models.CharField(max_length=64, unique=True, blank=True)  
+    logo_pic         = models.ImageField(upload_to='logo_pic/RestaurantLogo/', null=True, blank=True)
+    address          = models.CharField(max_length=255, blank=True, null=True)
+    mobile           = models.CharField(max_length=20)
+    latitude         = models.DecimalField(max_digits=11, decimal_places=8, null=True, blank=True)
+    longitude        = models.DecimalField(max_digits=11, decimal_places=8, null=True, blank=True)
+    business_hours   = models.CharField(max_length=255, null=True, blank=True)
 
     class Meta:
         indexes = [
@@ -40,55 +42,76 @@ class Restaurant(models.Model):
         ]
 
     def save(self, *args, **kwargs):
-        if not self.slug:
+        # 1) Generate slug if missing
+        if not self.slug and self.restaurant_name:
             self.slug = slugify(self.restaurant_name)
-        
+
+        # 2) Generate hashed_slug if missing (after first save to get self.id)
         if not self.hashed_slug:
-            self.hashed_slug = self.generate_secure_slug()
-        
+            # Temporarily save to get an ID if this is a new object
+            super().save(*args, **kwargs)
+            raw = f"{self.id}your_secret_salt"
+            self.hashed_slug = hashlib.sha256(raw.encode()).hexdigest()[:10]
+
+        # 3) Round latitude & longitude to 8 decimal places
+        quant = Decimal('0.00000001')
+        if self.latitude is not None:
+            self.latitude = Decimal(self.latitude).quantize(quant, rounding=ROUND_HALF_UP)
+        if self.longitude is not None:
+            self.longitude = Decimal(self.longitude).quantize(quant, rounding=ROUND_HALF_UP)
+
+        # 4) Save the final model
         super().save(*args, **kwargs)
 
-    def generate_secure_slug(self):
-        """Generate a unique hashed slug using SHA-256."""
-        secret_key = "your_secret_salt"  # Change this to a private key
-        raw_string = f"{self.id}{secret_key}"
-        return hashlib.sha256(raw_string.encode()).hexdigest()[:10]  # Shortened to 10 chars
-
     def __str__(self):
-        return self.restaurant_name or "No Name"
+        return self.restaurant_name or "Unnamed Restaurant"
 
     def get_primary_brand_color(self):
-        """Returns the restaurant's primary brand color or a default value."""
-        first_color = self.brand_colors.first()
-        return first_color.color if first_color else "#f7c028"  # Default color
+        first = self.brand_colors.first()
+        return first.color if first else "#f7c028"
 
     def get_total_orders(self):
-        """Cache the total orders for performance."""
-        cache_key = f'restaurant_{self.id}_total_orders'
-        total_orders = cache.get(cache_key)
-        if total_orders is None:
-            total_orders = Orders.objects.filter(restaurant=self).count()
-            cache.set(cache_key, total_orders, timeout=3600)  # Cache for 1 hour
-        return total_orders
+        key = f'restaurant_{self.id}_total_orders'
+        total = cache.get(key)
+        if total is None:
+            total = Orders.objects.filter(restaurant=self).count()
+            cache.set(key, total, 3600)
+        return total
 
     def is_open(self):
-        """Determine if the restaurant is currently open based on `business_hours`."""
+        """
+        Returns True if the restaurant is open right now.
+        Supports:
+          - "Everyday" or "Everyday." → always open
+          - Comma-separated schedules like "MonTue:0800-1700,WedThu:0900-1800"
+        """
         now = datetime.datetime.now()
-        day_of_week = now.strftime('%a')  # 'Mon', 'Tue', etc.
-        current_time = int(now.strftime('%H%M'))  # e.g., 1300 for 1:00 PM
+        dow = now.strftime('%a')               # 'Mon', 'Tue', ...
+        current = int(now.strftime('%H%M'))    # e.g. 1330
 
-        if self.business_hours:
-            try:
-                for schedule in self.business_hours.split(','):
-                    days, times = schedule.split(':')
-                    if day_of_week in days:
-                        open_time, close_time = map(int, times.split('-'))
-                        return open_time <= current_time <= close_time
-            except ValueError:
-                pass  # Handle incorrect formatting
+        if not self.business_hours:
+            return False
+
+        bh = self.business_hours.strip().rstrip('.').lower()
+        if bh == 'everyday':
+            return True
+
+        try:
+            for part in self.business_hours.split(','):
+                days, hours = part.split(':')
+                open_time, close_time = map(int, hours.split('-'))
+                days = days.strip()
+                # treat 'Everyday' here also
+                if 'Everyday'.lower() in days.lower():
+                    return open_time <= current <= close_time
+                # check if today is in the 'days' substring
+                if dow.lower()[:3] in days.lower():
+                    return open_time <= current <= close_time
+        except ValueError:
+            # malformed entry → treat as closed
+            return False
 
         return False
-
 
 class BrandColor(models.Model):
     restaurant = models.ForeignKey(Restaurant, on_delete=models.CASCADE, related_name='brand_colors')

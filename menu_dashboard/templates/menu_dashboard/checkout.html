@@ -793,25 +793,29 @@
   let homeDeliveryAddress   = {};
   const tableNumber         = '1';
 
+  // ── Read & round coords to 8 decimal places ──
+  const $checkoutButton = $('#checkoutButton');
+  const rawLat          = parseFloat($checkoutButton.attr('data-restaurant-lat'));
+  const rawLon          = parseFloat($checkoutButton.attr('data-restaurant-lon'));
+  const restaurantLat   = parseFloat(rawLat.toFixed(8));
+  const restaurantLon   = parseFloat(rawLon.toFixed(8));
+
   // ── Cached Elements ──
-  const $openAddressModal   = $('#openAddressModal');
-  const $addressModal       = $('#addressModal');
-  const $closeAddressModal  = $('#closeAddressModal');
-  const $saveAddress        = $('#saveAddress');
-  const $cancelAddress      = $('#cancelAddress');
-  const $loadingOverlay     = $('#loading-overlay');
+  const $openAddressModal  = $('#openAddressModal');
+  const $addressModal      = $('#addressModal');
+  const $closeAddressModal = $('#closeAddressModal');
+  const $saveAddress       = $('#saveAddress');
+  const $cancelAddress     = $('#cancelAddress');
+  const $loadingOverlay    = $('#loading-overlay');
 
-  const $modalFullName      = $('#modal-full-name');
-  const $modalPhoneNumber   = $('#modal-phone-number');
-  const $modalAddress       = $('#modal-address');
+  const $modalFullName     = $('#modal-full-name');
+  const $modalPhoneNumber  = $('#modal-phone-number');
+  const $modalAddress      = $('#modal-address');
 
-  const mapContainer        = document.getElementById('map-container');
-  const toggleMapButton     = document.getElementById('toggleMap');
-  const $distanceValue      = $('.distance-value');
-  const $distanceStatus     = $('#distanceStatus');
-
-  const restaurantLat = parseFloat($('#checkoutButton').data('restaurant-lat'));
-  const restaurantLon = parseFloat($('#checkoutButton').data('restaurant-lon'));
+  const mapContainer       = document.getElementById('map-container');
+  const toggleMapButton    = document.getElementById('toggleMap');
+  const $distanceValue     = $('.distance-value');
+  const $distanceStatus    = $('#distanceStatus');
 
   let map, userMarker, restaurantMarker;
   let isMapInitialized = false;
@@ -825,7 +829,6 @@
     toggleMapButton.innerHTML = mapContainer.classList.contains('active')
       ? '<i class="fas fa-map"></i> Hide map'
       : '<i class="fas fa-map"></i> Show map';
-
     if (mapContainer.classList.contains('active') && !isMapInitialized) {
       initializeMap();
       isMapInitialized = true;
@@ -840,13 +843,11 @@
       center:    [restaurantLon, restaurantLat],
       zoom:      14
     });
-
     map.on('load', () => {
       restaurantMarker = new mapboxgl.Marker({ color: '#2e7d32' })
         .setLngLat([restaurantLon, restaurantLat])
         .setPopup(new mapboxgl.Popup().setHTML('<strong>Restaurant</strong>'))
         .addTo(map);
-
       getUserLocationForMap();
     });
   }
@@ -860,20 +861,17 @@
     navigator.geolocation.getCurrentPosition(pos => {
       const userLng = pos.coords.longitude;
       const userLat = pos.coords.latitude;
-
       if (userMarker) userMarker.remove();
       userMarker = new mapboxgl.Marker({ color: '#03a9f4' })
         .setLngLat([userLng, userLat])
         .setPopup(new mapboxgl.Popup().setHTML('<strong>Your Location</strong>'))
         .addTo(map);
 
-      // Fit both markers
       const bounds = new mapboxgl.LngLatBounds()
         .extend([userLng, userLat])
         .extend([restaurantLon, restaurantLat]);
       map.fitBounds(bounds, { padding: 70 });
 
-      // Draw route line
       if (map.getLayer('route')) {
         map.removeLayer('route');
         map.removeSource('route');
@@ -908,26 +906,20 @@
 
   // ── Update Distance UI ──
   function updateDistanceDisplay(userLng, userLat, restLng, restLat) {
-    const from = turf.point([userLng, userLat]);
-    const to   = turf.point([restLng, restLat]);
-    const dist = turf.distance(from, to, { units: 'meters' });
-
+    const dist = turf.distance(
+      turf.point([userLng, userLat]),
+      turf.point([restLng, restLat]),
+      { units: 'meters' }
+    );
     if (dist < 1000) {
       $distanceValue.text(`${Math.round(dist)} meters away`);
     } else {
-      $distanceValue.text(`${(dist / 1000).toFixed(1)} km away`);
+      $distanceValue.text(`${(dist/1000).toFixed(1)} km away`);
     }
-
     if (dist <= THRESHOLD_DISTANCE) {
-      $distanceStatus
-        .text("You're at the restaurant!")
-        .addClass('nearby')
-        .removeClass('far');
+      $distanceStatus.text("You're at the restaurant!").addClass('nearby').removeClass('far');
     } else {
-      $distanceStatus
-        .text("Delivery recommended")
-        .addClass('far')
-        .removeClass('nearby');
+      $distanceStatus.text("Delivery recommended").addClass('far').removeClass('nearby');
     }
   }
 
@@ -947,61 +939,49 @@
     return turf.distance(turf.point(userLoc), turf.point(restLoc), { units: 'meters' });
   }
 
-  // ── Delivery Type Logic ──
+  // ── Delivery Type & Auto-Open Map in Home ──
   async function setDeliveryType() {
     try {
       const userLoc = await getUserLocation();
-      const restLoc = [restaurantLon, restaurantLat];
-      const dist    = await calculateDistance(userLoc, restLoc);
-
+      const dist    = await calculateDistance(userLoc, [restaurantLon, restaurantLat]);
       if (dist < THRESHOLD_DISTANCE) {
-        // At Restaurant
         deliveryType = 'restaurant';
         $('.delivery-switch-label[data-delivery-type="restaurant"]').addClass('active');
         $('.delivery-switch-label[data-delivery-type="home"]').removeClass('active');
         $('.delivery-details-restaurant').show();
         $('.delivery-details-home').hide();
       } else {
-        // Home delivery: auto‐open map & show both markers
         deliveryType = 'home';
         $('.delivery-switch-label[data-delivery-type="home"]').addClass('active');
         $('.delivery-switch-label[data-delivery-type="restaurant"]').removeClass('active');
         $('.delivery-details-home').show();
         $('.delivery-details-restaurant').hide();
-
-        // ←── NEW: auto-open map in Home mode
         if (!mapContainer.classList.contains('active')) {
           mapContainer.classList.add('active');
           toggleMapButton.innerHTML = '<i class="fas fa-map"></i> Hide map';
         }
         if (!isMapInitialized) {
-          initializeMap();
-          isMapInitialized = true;
+          initializeMap(); isMapInitialized = true;
         } else {
           getUserLocationForMap();
         }
       }
-    } catch (e) {
-      console.error('Location failed, default to Home', e);
-      // Fallback to Home delivery + auto‐open map
+    } catch {
       deliveryType = 'home';
       $('.delivery-switch-label[data-delivery-type="home"]').addClass('active');
       $('.delivery-switch-label[data-delivery-type="restaurant"]').removeClass('active');
       $('.delivery-details-home').show();
       $('.delivery-details-restaurant').hide();
-
       if (!mapContainer.classList.contains('active')) {
         mapContainer.classList.add('active');
         toggleMapButton.innerHTML = '<i class="fas fa-map"></i> Hide map';
       }
       if (!isMapInitialized) {
-        initializeMap();
-        isMapInitialized = true;
+        initializeMap(); isMapInitialized = true;
       } else {
         getUserLocationForMap();
       }
     }
-
     updatePaymentOptions();
     updateOrderDetails();
     updateCheckoutButtonState();
@@ -1010,34 +990,26 @@
   // ── Prevent Manual Switch ──
   $('.delivery-switch-label').on('click', () => false);
 
-  // ── Address Modal Handlers ──
+  // ── Address Modal ──
   $openAddressModal.on('click',  () => $addressModal.addClass('active'));
   $closeAddressModal.on('click', () => $addressModal.removeClass('active'));
-  $cancelAddress.on('click',     () => $addressModal.removeClass('active'));
-
-  $saveAddress.on('click', () => {
+  $cancelAddress    .on('click', () => $addressModal.removeClass('active'));
+  $saveAddress      .on('click', () => {
     const full  = $modalFullName.val().trim();
     const phone = $modalPhoneNumber.val().trim();
     const addr  = $modalAddress.val().trim();
-    if (!full || !phone || !addr) {
-      return alert('Please fill in all fields');
-    }
-    homeDeliveryAddress = {
-      full_name:    full,
-      phone_number: phone,
-      address:      addr
-    };
+    if (!full || !phone || !addr) return alert('Please fill in all fields');
+    homeDeliveryAddress = { full_name: full, phone_number: phone, address: addr };
     $addressModal.removeClass('active');
     updateCheckoutButtonState();
   });
 
-  // ── Payment Option Logic ──
+  // ── Payment Options ──
   function updatePaymentOptions() {
     if (deliveryType === 'restaurant') {
       $('.payment-option.restaurant-only').addClass('active');
       $('.payment-option.home-only').removeClass('active');
-      $('.payment-option[data-method="Cash on Delivery"].restaurant-only')
-        .addClass('selected');
+      $('.payment-option[data-method="Cash on Delivery"].restaurant-only').addClass('selected');
       selectedPaymentMethod = 'Cash on Delivery';
     } else {
       $('.payment-option.home-only').addClass('active');
@@ -1060,7 +1032,6 @@
     const cart = JSON.parse(localStorage.getItem('cart') || '{}');
     const $list = $('#orderDetailsList');
     let html = '', subtotal = 0;
-
     if (!Object.keys(cart).length) {
       $list.html(`
         <div class="empty-cart">
@@ -1072,7 +1043,6 @@
       $('#cartTotal').text('$0.00');
       return;
     }
-
     for (const [id, item] of Object.entries(cart)) {
       const [qty, name, price, img] = item;
       const total = qty * parseFloat(price);
@@ -1095,7 +1065,6 @@
       `;
     }
     $list.html(html);
-
     const totalDue = subtotal + SERVICE_FEE + DELIVERY_FEE;
     $('#itemTotal').text(`$${subtotal.toFixed(2)}`);
     $('#cartTotal').text(`$${totalDue.toFixed(2)}`);
@@ -1136,14 +1105,13 @@
     const addressOK = deliveryType === 'restaurant'
       ? true
       : (homeDeliveryAddress.full_name && homeDeliveryAddress.phone_number && homeDeliveryAddress.address);
-    $('#checkoutButton').prop('disabled', cartEmpty || !paymentOK || !addressOK);
+    $checkoutButton.prop('disabled', cartEmpty || !paymentOK || !addressOK);
   }
 
   // ── Place Order Handler ──
-  $('#checkoutButton').on('click', function (e) {
+  $checkoutButton.on('click', function (e) {
     e.preventDefault();
     $loadingOverlay.addClass('active');
-
     const cart = JSON.parse(localStorage.getItem('cart') || '{}');
     if (!Object.keys(cart).length) {
       alert('Your cart is empty.');
@@ -1153,27 +1121,18 @@
       alert('Please select a payment method.');
       return $loadingOverlay.removeClass('active');
     }
-
     const payload = {
       delivery_type:    deliveryType,
       payment_method:   selectedPaymentMethod,
       cart,
       table_number:     tableNumber,
-      delivery_details: deliveryType === 'home'
-        ? { address: homeDeliveryAddress.address }
-        : {},
+      delivery_details: deliveryType === 'home' ? { address: homeDeliveryAddress.address } : {},
       customer_details: deliveryType === 'home'
-        ? {
-            full_name:    homeDeliveryAddress.full_name,
-            phone_number: homeDeliveryAddress.phone_number
-          }
+        ? { full_name: homeDeliveryAddress.full_name, phone_number: homeDeliveryAddress.phone_number }
         : {}
     };
-
-    // TODO: AJAX POST payload to your server endpoint
     console.log('Order payload:', payload);
-
-    // simulate success
+    // TODO: AJAX POST payload
     setTimeout(() => {
       localStorage.removeItem('cart');
       window.location.href = '/order-success/';

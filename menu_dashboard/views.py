@@ -401,11 +401,12 @@ def restaurant_checkout(request, restaurant_name_slug, hashed_slug):
     
     if request.method == 'GET':
         return render(request, 'menu_dashboard/checkout.html', {
-            'restaurant': restaurant,
-            'is_logged_in': is_logged_in,
+            'restaurant':     restaurant,
+            'is_logged_in':   is_logged_in,
+            # pass the exact model fields
             'restaurant_lat': restaurant.latitude,
             'restaurant_lon': restaurant.longitude,
-    })
+        })
     
     if request.method == 'POST':
         if not is_logged_in:
@@ -420,9 +421,7 @@ def restaurant_checkout(request, restaurant_name_slug, hashed_slug):
             cart = json.loads(cart_data)
             payment_method = request.POST.get('payment_method')
             
-            # Fix: Correct syntax for get_or_create
             customer, created = Customer.objects.get_or_create(user=request.user)
-            
             table = Table.objects.filter(restaurant=restaurant).first()
             table_number = table.table_number if table else None
             
@@ -435,7 +434,7 @@ def restaurant_checkout(request, restaurant_name_slug, hashed_slug):
                 amount=0
             )
             
-            total_amount = Decimal('0.00')
+            total_amount   = Decimal('0.00')
             service_charge = Decimal('0.51')
             
             for product_id, item_data in cart.items():
@@ -456,14 +455,12 @@ def restaurant_checkout(request, restaurant_name_slug, hashed_slug):
             Earnings.objects.create(order=order, service_charge=service_charge)
             logger.info(f"Order placed: {order.id}")
             
-            # Clear session cart if it exists
             if 'cart' in request.session:
                 del request.session['cart']
             
-            # Return success response with order ID for redirect
             return JsonResponse({
-                'message': 'Order placed successfully',
-                'order_id': order.id,
+                'message':      'Order placed successfully',
+                'order_id':     order.id,
                 'total_amount': str(total_amount)
             })
             
