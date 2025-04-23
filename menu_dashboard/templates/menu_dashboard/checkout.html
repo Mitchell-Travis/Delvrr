@@ -781,8 +781,8 @@
   <script src="https://unpkg.com/@turf/turf/turf.min.js"></script>
 
     <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
-    <script>
-    $(document).ready(function () {
+   <script>
+$(document).ready(function () {
   // ── Constants & State ──
   const SERVICE_FEE        = 0.51;
   const DELIVERY_FEE       = 0.00;
@@ -793,14 +793,14 @@
   let homeDeliveryAddress   = {};
   const tableNumber         = '1';
 
-  // ── Read & round coords to 8 decimal places ──
+  // ── Read & round coords ──
   const $checkoutButton = $('#checkoutButton');
   const rawLat          = parseFloat($checkoutButton.attr('data-restaurant-lat'));
   const rawLon          = parseFloat($checkoutButton.attr('data-restaurant-lon'));
   const restaurantLat   = parseFloat(rawLat.toFixed(8));
   const restaurantLon   = parseFloat(rawLon.toFixed(8));
 
-  // ── Cached Elements ──
+  // ── Elements ──
   const $openAddressModal  = $('#openAddressModal');
   const $addressModal      = $('#addressModal');
   const $closeAddressModal = $('#closeAddressModal');
@@ -823,7 +823,7 @@
   // ── Mapbox Setup ──
   mapboxgl.accessToken = 'pk.eyJ1IjoibWl0Y2hlbGwyMzEiLCJhIjoiY205dGF0YXprMGFoajJrc2I5cDVvNnprZSJ9.LiQvQKUCOIe5fW0QYSOSFQ';
 
-  // ── Map Toggle Handler ──
+  // ── Map Toggle ──
   toggleMapButton.addEventListener('click', () => {
     mapContainer.classList.toggle('active');
     toggleMapButton.innerHTML = mapContainer.classList.contains('active')
@@ -844,15 +844,22 @@
       zoom:      14
     });
     map.on('load', () => {
-      restaurantMarker = new mapboxgl.Marker({ color: '#2e7d32' })
+      // restaurant icon
+      const restaurantEl = document.createElement('div');
+      restaurantEl.innerHTML = '<i class="fas fa-utensils fa-2x"></i>';
+      restaurantEl.style.color = '#d32f2f';
+      restaurantEl.style.textShadow = '0 0 3px #fff';
+
+      restaurantMarker = new mapboxgl.Marker({ element: restaurantEl })
         .setLngLat([restaurantLon, restaurantLat])
         .setPopup(new mapboxgl.Popup().setHTML('<strong>Restaurant</strong>'))
         .addTo(map);
+
       getUserLocationForMap();
     });
   }
 
-  // ── Get & Mark User Location on Map ──
+  // ── Get & Mark User Location ──
   function getUserLocationForMap() {
     if (!navigator.geolocation) {
       $distanceValue.text('Geolocation not supported');
@@ -861,8 +868,14 @@
     navigator.geolocation.getCurrentPosition(pos => {
       const userLng = pos.coords.longitude;
       const userLat = pos.coords.latitude;
+
+      const userEl = document.createElement('div');
+      userEl.innerHTML = '<i class="fas fa-user fa-2x"></i>';
+      userEl.style.color = '#1976d2';
+      userEl.style.textShadow = '0 0 3px #fff';
+
       if (userMarker) userMarker.remove();
-      userMarker = new mapboxgl.Marker({ color: '#03a9f4' })
+      userMarker = new mapboxgl.Marker({ element: userEl })
         .setLngLat([userLng, userLat])
         .setPopup(new mapboxgl.Popup().setHTML('<strong>Your Location</strong>'))
         .addTo(map);
@@ -905,57 +918,53 @@
   }
 
   // ── Update Distance UI ──
-  function updateDistanceDisplay(userLng, userLat, restLng, restLat) {
-    const dist = turf.distance(
-      turf.point([userLng, userLat]),
-      turf.point([restLng, restLat]),
-      { units: 'meters' }
+  function updateDistanceDisplay(uLng, uLat, rLng, rLat) {
+    const dist = turf.distance(turf.point([uLng, uLat]), turf.point([rLng, rLat]), { units: 'meters' });
+    $distanceValue.text(dist < 1000
+      ? `${Math.round(dist)} meters away`
+      : `${(dist/1000).toFixed(1)} km away`
     );
-    if (dist < 1000) {
-      $distanceValue.text(`${Math.round(dist)} meters away`);
-    } else {
-      $distanceValue.text(`${(dist/1000).toFixed(1)} km away`);
-    }
-    if (dist <= THRESHOLD_DISTANCE) {
-      $distanceStatus.text("You're at the restaurant!").addClass('nearby').removeClass('far');
-    } else {
-      $distanceStatus.text("Delivery recommended").addClass('far').removeClass('nearby');
-    }
+    $distanceStatus
+      .text(dist <= THRESHOLD_DISTANCE
+        ? "You're at the restaurant!"
+        : "Delivery recommended"
+      )
+      .toggleClass('nearby', dist <= THRESHOLD_DISTANCE)
+      .toggleClass('far', dist > THRESHOLD_DISTANCE);
   }
 
-  // ── Geolocation Promise Helper ──
+  // ── Geolocation Promise ──
   function getUserLocation() {
-    return new Promise((resolve, reject) => {
-      if (!navigator.geolocation) return reject('No geolocation');
-      navigator.geolocation.getCurrentPosition(
-        p => resolve([p.coords.longitude, p.coords.latitude]),
-        e => reject(e)
-      );
+    return new Promise((res, rej) => {
+      !navigator.geolocation
+        ? rej('No geolocation')
+        : navigator.geolocation.getCurrentPosition(
+            p => res([p.coords.longitude, p.coords.latitude]),
+            e => rej(e)
+          );
     });
   }
 
-  // ── Calculate Straight‐Line Distance ──
+  // ── Straight‐Line Distance ──
   async function calculateDistance(userLoc, restLoc) {
     return turf.distance(turf.point(userLoc), turf.point(restLoc), { units: 'meters' });
   }
 
-  // ── Delivery Type & Auto-Open Map in Home ──
+  // ── Delivery‐Type Logic + Auto-open on Home ──
   async function setDeliveryType() {
     try {
       const userLoc = await getUserLocation();
       const dist    = await calculateDistance(userLoc, [restaurantLon, restaurantLat]);
+
       if (dist < THRESHOLD_DISTANCE) {
         deliveryType = 'restaurant';
-        $('.delivery-switch-label[data-delivery-type="restaurant"]').addClass('active');
-        $('.delivery-switch-label[data-delivery-type="home"]').removeClass('active');
         $('.delivery-details-restaurant').show();
         $('.delivery-details-home').hide();
       } else {
         deliveryType = 'home';
-        $('.delivery-switch-label[data-delivery-type="home"]').addClass('active');
-        $('.delivery-switch-label[data-delivery-type="restaurant"]').removeClass('active');
         $('.delivery-details-home').show();
         $('.delivery-details-restaurant').hide();
+        // auto-open map
         if (!mapContainer.classList.contains('active')) {
           mapContainer.classList.add('active');
           toggleMapButton.innerHTML = '<i class="fas fa-map"></i> Hide map';
@@ -966,12 +975,16 @@
           getUserLocationForMap();
         }
       }
+      // update switch labels
+      $('.delivery-switch-label').removeClass('active');
+      $(`.delivery-switch-label[data-delivery-type="${deliveryType}"]`).addClass('active');
     } catch {
+      // fallback to home + auto-open map
       deliveryType = 'home';
-      $('.delivery-switch-label[data-delivery-type="home"]').addClass('active');
-      $('.delivery-switch-label[data-delivery-type="restaurant"]').removeClass('active');
       $('.delivery-details-home').show();
       $('.delivery-details-restaurant').hide();
+      $('.delivery-switch-label').removeClass('active');
+      $('.delivery-switch-label[data-delivery-type="home"]').addClass('active');
       if (!mapContainer.classList.contains('active')) {
         mapContainer.classList.add('active');
         toggleMapButton.innerHTML = '<i class="fas fa-map"></i> Hide map';
@@ -982,13 +995,22 @@
         getUserLocationForMap();
       }
     }
+
     updatePaymentOptions();
     updateOrderDetails();
     updateCheckoutButtonState();
   }
 
-  // ── Prevent Manual Switch ──
-  $('.delivery-switch-label').on('click', () => false);
+  // ── Block Manual Switch & Alert ──
+  $('.delivery-switch-label').on('click', function () {
+    const wanted = $(this).data('delivery-type');
+    if (deliveryType === wanted) return;
+    if (wanted === 'restaurant') {
+      alert("You’re not at the restaurant!");
+    } else {
+      alert("You can’t switch away from Home delivery manually.");
+    }
+  });
 
   // ── Address Modal ──
   $openAddressModal.on('click',  () => $addressModal.addClass('active'));
@@ -1108,44 +1130,57 @@
     $checkoutButton.prop('disabled', cartEmpty || !paymentOK || !addressOK);
   }
 
-  // ── Place Order Handler ──
-  $checkoutButton.on('click', function (e) {
-    e.preventDefault();
-    $loadingOverlay.addClass('active');
-    const cart = JSON.parse(localStorage.getItem('cart') || '{}');
-    if (!Object.keys(cart).length) {
-      alert('Your cart is empty.');
-      return $loadingOverlay.removeClass('active');
-    }
-    if (!selectedPaymentMethod) {
-      alert('Please select a payment method.');
-      return $loadingOverlay.removeClass('active');
-    }
-    const payload = {
-      delivery_type:    deliveryType,
-      payment_method:   selectedPaymentMethod,
-      cart,
-      table_number:     tableNumber,
-      delivery_details: deliveryType === 'home' ? { address: homeDeliveryAddress.address } : {},
-      customer_details: deliveryType === 'home'
-        ? { full_name: homeDeliveryAddress.full_name, phone_number: homeDeliveryAddress.phone_number }
-        : {}
-    };
-    console.log('Order payload:', payload);
-    // TODO: AJAX POST payload
-    setTimeout(() => {
-      localStorage.removeItem('cart');
-      window.location.href = '/order-success/';
-    }, 1500);
-  });
+      // ── Place Order Handler ──
+    $checkoutButton.on('click', function (e) {
+      e.preventDefault();
+      $loadingOverlay.addClass('active');
 
-  // ── Initialization ──
-  setDeliveryType();
-  updateOrderDetails();
-  updatePaymentOptions();
-  updateCheckoutButtonState();
+      const cart = JSON.parse(localStorage.getItem('cart') || '{}');
+      if (!Object.keys(cart).length) {
+        alert('Your cart is empty.');
+        return $loadingOverlay.removeClass('active');
+      }
+      if (!selectedPaymentMethod) {
+        alert('Please select a payment method.');
+        return $loadingOverlay.removeClass('active');
+      }
+
+      const payload = {
+        delivery_type:    deliveryType,
+        payment_method:   selectedPaymentMethod,
+        cart,
+        table_number:     tableNumber,
+        delivery_details: deliveryType === 'home'
+          ? { address: homeDeliveryAddress.address }
+          : {},
+        customer_details: deliveryType === 'home'
+          ? {
+              full_name:    homeDeliveryAddress.full_name,
+              phone_number: homeDeliveryAddress.phone_number
+            }
+          : {}
+      };
+
+      console.log('Order payload:', payload);
+      // TODO: Replace with real AJAX POST to your server endpoint
+      // $.post('/your-order-endpoint/', payload).done(...).fail(...);
+
+      // Simulate success
+      setTimeout(() => {
+        localStorage.removeItem('cart');
+        window.location.href = '/order-success/';
+      }, 1500);
+    });
+
+    // ── Initialization ──
+    setDeliveryType();
+    updateOrderDetails();
+    updatePaymentOptions();
+    updateCheckoutButtonState();
 });
-    </script>
+</script>
+
+
 
 </body>
 </html>
