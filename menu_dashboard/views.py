@@ -276,37 +276,42 @@ def restaurant_menu(request, restaurant_name_slug, hashed_slug):
 logger = logging.getLogger(__name__)
 
 @login_required(login_url='customer_signin')
-def order_success(request, order_id):
-    # Fetch the order
-    order = get_object_or_404(Orders, id=order_id)
+def order_success(request, restaurant_name_slug, hashed_slug, order_id):
+    # 1) Verify the restaurant via both slugs
+    restaurant = get_object_or_404(
+        Restaurant,
+        slug=restaurant_name_slug,
+        hashed_slug=hashed_slug
+    )
 
-    # Ensure the user is authorized to view this order
+    # 2) Fetch the order and ensure it belongs to that restaurant
+    order = get_object_or_404(
+        Orders,
+        id=order_id,
+        restaurant=restaurant
+    )
+
+    # 3) Confirm the logged‑in user owns this order
     if request.user.customer != order.customer:
         return HttpResponseForbidden("You are not authorized to view this order.")
 
-    # Fetch the restaurant
-    restaurant = get_object_or_404(Restaurant, id=order.restaurant.id)
-    restaurant_slug = restaurant.slug  # Make sure this field exists and is not empty
-
-     # Clear the cart
+    # 4) (Optional) clear any session‑based cart
     if 'cart' in request.session:
         del request.session['cart']
 
-    # Prepare context
+    # 5) Build context for your template
     context = {
-        'restaurant_name_slug': restaurant_slug,  # Pass the slug to the template
-        'restaurant_id': restaurant.id,           # Pass the restaurant ID to the template
-        'restaurant_name': restaurant.restaurant_name,  # For display
-        'order_id': order.id,
-        'order_time': order.order_date,
-        'payment_method': order.payment_method,
-        'customer_name': f"{order.customer.user.first_name} {order.customer.user.last_name}",
-        'table_number': order.table_number,
-        'amount': order.amount,
+        'restaurant':         restaurant,
+        'order':              order,
+        'customer_name':      f"{order.customer.user.first_name} {order.customer.user.last_name}",
+        'order_time':         order.order_date,
+        'payment_method':     order.payment_method,
+        'table_number':       order.table_number,
+        'amount':             order.amount,
     }
 
+    # 6) Render the success page
     return render(request, 'menu_dashboard/order_success.html', context)
-
 
 
 
@@ -384,45 +389,43 @@ from django.shortcuts import redirect
 from django.contrib import messages
 
 @login_required
-def restaurant_checkout(request, restaurant_id):
-    # Fetch the restaurant object
-    restaurant = get_object_or_404(Restaurant, id=restaurant_id)
+def restaurant_checkout(request, restaurant_name_slug, hashed_slug):
+    # Fetch the restaurant using the correct parameters
+    restaurant = get_object_or_404(
+        Restaurant,
+        slug=restaurant_name_slug,
+        hashed_slug=hashed_slug
+    )
 
-    # Check if the user is logged in
     is_logged_in = request.user.is_authenticated
-
-    # Allow access to the checkout page even if the user is not logged in
+    
     if request.method == 'GET':
         return render(request, 'menu_dashboard/checkout.html', {
             'restaurant': restaurant,
-            'restaurant_id': restaurant_id,
-            'is_logged_in': is_logged_in
-        })
-
-    # Enforce login when trying to place an order (POST request)
+            'is_logged_in': is_logged_in,
+            'restaurant_lat': restaurant.latitude,
+            'restaurant_lon': restaurant.longitude,
+    })
+    
     if request.method == 'POST':
         if not is_logged_in:
-            # Redirect to login page if the user is not authenticated
             messages.info(request, "To place an order, please log in or create an account.")
-            return JsonResponse({'message': 'User not authenticated. Please log in.'}, status=401)
-
+            return JsonResponse({'message': 'User not authenticated.'}, status=401)
+        
         try:
-            # Parse cart data
             cart_data = request.POST.get('cart')
             if not cart_data:
                 return JsonResponse({'message': 'Cart data is missing'}, status=400)
-
+            
             cart = json.loads(cart_data)
             payment_method = request.POST.get('payment_method')
-
-            # Ensure the customer exists
+            
+            # Fix: Correct syntax for get_or_create
             customer, created = Customer.objects.get_or_create(user=request.user)
-
-            # Fetch the first available table, if any
+            
             table = Table.objects.filter(restaurant=restaurant).first()
             table_number = table.table_number if table else None
-
-            # Create the order
+            
             order = Orders.objects.create(
                 customer=customer,
                 restaurant=restaurant,
@@ -431,44 +434,43 @@ def restaurant_checkout(request, restaurant_id):
                 table_number=table_number,
                 amount=0
             )
-
+            
             total_amount = Decimal('0.00')
             service_charge = Decimal('0.51')
-
-            # Process each item in the cart
+            
             for product_id, item_data in cart.items():
                 product = get_object_or_404(Product, id=product_id)
-                quantity = item_data[0]
-                amount = product.price * quantity
-                total_amount += amount
-
+                qty = item_data[0]
+                total_amount += product.price * qty
                 OrderProduct.objects.create(
                     order=order,
                     product=product,
-                    quantity=quantity,
+                    quantity=qty,
                     price=product.price
                 )
-
+            
             total_amount += service_charge
             order.amount = total_amount
             order.save()
-
-            # Record earnings
+            
             Earnings.objects.create(order=order, service_charge=service_charge)
-
-            # Log the order creation
-            logger.info(f"Order placed successfully: Order ID {order.id}")
-
-            # Optionally clear the cart here
-            request.session.pop('cart', None)
-
-            return JsonResponse({'message': 'Order placed successfully', 'order_id': order.id, 'total_amount': str(total_amount)})
-
+            logger.info(f"Order placed: {order.id}")
+            
+            # Clear session cart if it exists
+            if 'cart' in request.session:
+                del request.session['cart']
+            
+            # Return success response with order ID for redirect
+            return JsonResponse({
+                'message': 'Order placed successfully',
+                'order_id': order.id,
+                'total_amount': str(total_amount)
+            })
+            
         except Exception as e:
             logger.error(f"Error processing order: {e}")
-            return JsonResponse({'message': f"Error processing order. Please try again. {str(e)}"}, status=500)
-
-    # For other HTTP methods, return a 405 error
+            return JsonResponse({'message': str(e)}, status=500)
+    
     return JsonResponse({'message': 'Method not allowed'}, status=405)
 
 

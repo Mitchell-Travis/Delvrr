@@ -2,589 +2,947 @@
 <html lang="en">
 <head>
     <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
     <title>Delvrr Checkout</title>
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" rel="stylesheet">
-   <style>
-:root {
-    --primary: #f7c028; /* Updated Brand */
-    --primary-gradient: linear-gradient(135deg, #f7c028, #d6a021); /* Brand to a slightly darker variant */
-    --surface: #ffffff; /* Updated Background */
-    --surface-alt: #F8F8F8; /* Light Gray remains */
-    --text: #1F2937; /* Dark Gray */
-    --text-secondary: #6B7280; /* Gray */
-    --success: #34D399; /* Green */
-    --warning: #FBBF24; /* Yellow */
-    --error: #EF4444; /* Red */
-    --radius-sm: 12px;
-    --radius-md: 16px;
-    --radius-lg: 24px;
-    --safe-area-top: env(safe-area-inset-top, 0px);
-    --safe-area-bottom: env(safe-area-inset-bottom, 0px);
-}
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600&display=swap" rel="stylesheet">
+    <!-- Mapbox Integration -->
+    <script src='https://api.mapbox.com/mapbox-gl-js/v2.3.1/mapbox-gl.js'></script>
+    <link href='https://api.mapbox.com/mapbox-gl-js/v2.3.1/mapbox-gl.css' rel='stylesheet' />
+    <script src='https://unpkg.com/@turf/turf@6/turf.min.js'></script>
+    <style>
+        :root {
+            --primary: #2e7d32;
+            --primary-gradient: linear-gradient(135deg, #2e7d32, #1b5e20);
+            --surface: #ffffff;
+            --surface-alt: #f1f8e9;
+            --text: #212121;
+            --text-secondary: #757575;
+            --radius-sm: 6px;
+            --radius-md: 10px;
+            --radius-lg: 14px;
+            --safe-area-top: env(safe-area-inset-top, 0px);
+            --safe-area-bottom: env(safe-area-inset-bottom, 0px);
+            --accent: #03a9f4;
+            --input-border: #ced4da;
+            --input-focus-border: var(--primary);
+            --input-bg: #f8f9fa;
+            --modal-bg: rgba(0, 0, 0, 0.5);
+            --modal-inner-bg: var(--surface);
+        }
 
-* {
-    margin: 0;
-    padding: 0;
-    box-sizing: border-box;
-    -webkit-tap-highlight-color: transparent;
-}
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            -webkit-tap-highlight-color: transparent;
+        }
 
-body {
-    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-    background: var(--surface);
-    color: var(--text);
-    line-height: 1.5;
-    overflow-x: hidden;
-}
+        body {
+            font-family: 'Poppins', sans-serif;
+            background-color: var(--surface-alt);
+            color: var(--text);
+            line-height: 1.5;
+            overflow-x: hidden;
+        }
 
-.app-container {
-    max-width: 480px;
-    margin: 0 auto;
-    min-height: 100vh;
-    position: relative;
-    background: var(--surface);
-}
+        .app-container {
+            max-width: 400px;
+            margin: 10px auto;
+            min-height: calc(100vh - 20px);
+            background-color: var(--surface);
+            border-radius: var(--radius-lg);
+            box-shadow: 0 1px 4px rgba(0, 0, 0, 0.08);
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+        }
 
-.header {
-    position: sticky;
-    top: 0;
-    background: var(--surface);
-    padding: calc(1rem + var(--safe-area-top)) 1.5rem 1rem;
-    z-index: 100;
-    backdrop-filter: blur(10px);
-    border-bottom: 1px solid rgba(0, 0, 0, 0.05);
-}
+        .header {
+            background-color: var(--surface);
+            padding: calc(0.8rem + var(--safe-area-top)) 1rem 0.8rem;
+            border-bottom: 1px solid #e0e0e0;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            position: sticky;
+            top: 0;
+            z-index: 10;
+        }
 
-.header-content {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-}
+        .back-button {
+            background: none;
+            border: none;
+            color: var(--text-secondary);
+            font-size: 1rem;
+            cursor: pointer;
+            padding: 6px;
+            border-radius: var(--radius-sm);
+        }
 
-.back-button {
-    width: 40px;
-    height: 40px;
-    border-radius: 50%;
-    border: none;
-    background: var(--surface-alt);
-    color: var(--text);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    cursor: pointer;
-    transition: all 0.2s ease;
-}
+        .back-button:active {
+            opacity: 0.7;
+        }
 
-.back-button:active {
-    transform: scale(0.95);
-}
+        .header h1 {
+            font-size: 1.1rem;
+            font-weight: 500;
+            margin: 0;
+        }
 
-.table-card {
-    margin: 1rem 1.5rem;
-    padding: 1.5rem;
-    background: var(--primary);
-    border-radius: var(--radius-lg);
-    color: white;
-    position: relative;
-    overflow: hidden;
-}
+        .delivery-options {
+            padding: 1rem;
+            border-bottom: 1px solid #e0e0e0;
+        }
 
-.table-card::before {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-}
+        .delivery-options-title {
+            font-size: 1rem;
+            font-weight: 500;
+            margin-bottom: 0.8rem;
+            color: var(--text);
+        }
 
-.order-section {
-    margin: 2rem 1.5rem;
-}
+        .delivery-switch-container {
+            display: flex;
+            background-color: #f9f9f9;
+            border-radius: var(--radius-md);
+            overflow: hidden;
+            border: 1px solid #e0e0e0;
+        }
 
-.section-title {
-    font-size: 1.25rem;
-    font-weight: 600;
-    margin-bottom: 1rem;
-}
+        .delivery-switch-label {
+            padding: 0.8rem 1.2rem;
+            font-size: 0.9rem;
+            color: var(--text-secondary);
+            cursor: pointer;
+            transition: background-color 0.2s ease, color 0.2s ease;
+            user-select: none;
+            text-align: center;
+            flex-grow: 1;
+        }
 
-.order-item {
-    display: grid;
-    grid-template-columns: auto 1fr auto;
-    gap: 1rem;
-    padding: 1rem;
-    background: var(--surface);
-    border-radius: var(--radius-md);
-    margin-bottom: 1rem;
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
-    transition: transform 0.2s ease;
-}
+        .delivery-switch-label.active {
+            background-color: var(--primary);
+            color: white;
+        }
 
-.order-item:active {
-    transform: scale(0.98);
-}
+        .delivery-details {
+            padding: 1rem;
+        }
 
-.order-item img {
-    width: 70px;
-    height: 70px;
-    object-fit: contain; /* Changed from cover to contain */
-    border-radius: var(--radius-sm);
-    background-color: #f5f5f5; /* Optional: adds background for better visibility */
-}
+        .delivery-details-home {
+            display: none;
+        }
 
-.payment-methods {
-    margin: 2rem 1.5rem;
-}
+        .delivery-details-home.active {
+            display: block;
+        }
 
-.payment-option {
-    padding: 1.25rem;
-    background: var(--surface);
-    border-radius: var(--radius-md);
-    margin-bottom: 1rem;
-    display: flex;
-    align-items: center;
-    gap: 1rem;
-    cursor: pointer;
-    transition: all 0.2s ease;
-    border: 2px solid transparent;
-}
+        .delivery-details-restaurant {
+            display: block;
+        }
 
-.payment-option:not([style*="opacity"]):active {
-    transform: scale(0.98);
-}
+        .delivery-details-restaurant.inactive {
+            display: none;
+        }
 
-/* Updated payment-option.selected to use the new brand color */
-.payment-option.selected {
-    border-color: var(--primary);
-    background: linear-gradient(to right, rgba(247, 192, 40, 0.1), transparent);
-}
+        .table-info {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            margin-bottom: 0.8rem;
+            font-size: 0.9rem;
+            color: var(--text-secondary);
+            background-color: #f0f7f2;
+            padding: 0.8rem;
+            border-radius: var(--radius-sm);
+        }
 
-.payment-icon {
-    width: 48px;
-    height: 48px;
-    border-radius: var(--radius-sm);
-    background: var(--surface-alt);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 1.5rem;
-    color: var(--primary);
-}
+        .table-info i {
+            color: var(--accent);
+            font-size: 1rem;
+        }
 
-.checkout-bar {
-    position: fixed;
-    bottom: 0;
-    left: 0;
-    right: 0;
-    background: var(--surface);
-    padding: 1rem 1.5rem calc(1rem + var(--safe-area-bottom));
-    box-shadow: 0 -4px 12px rgba(0, 0, 0, 0.05);
-    z-index: 100;
-}
+        .delivery-address-button {
+            background: none;
+            border: none;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-weight: 500;
+            margin-bottom: 0.5rem;
+            font-size: 0.95rem;
+            color: var(--text);
+            cursor: pointer;
+            padding: 0;
+        }
 
-.checkout-content {
-    max-width: 480px;
-    margin: 0 auto;
-}
+        .delivery-address-button i {
+            font-size: 1rem;
+            color: var(--accent);
+        }
 
-.total-row {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 1rem;
-}
+        .delivery-address-button:active {
+            opacity: 0.8;
+        }
 
-.checkout-button {
-    background: var(--primary);
-    color: white;
-    border: none;
-    width: 100%;
-    padding: 1rem;
-    border-radius: var(--radius-md);
-    font-weight: 600;
-    font-size: 1.1rem;
-    cursor: pointer;
-    transition: all 0.2s ease;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 0.5rem;
-}
+        .address-modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: var(--modal-bg);
+            z-index: 100;
+            justify-content: center;
+            align-items: center;
+        }
 
-.checkout-button:disabled {
-    opacity: 0.7;
-    cursor: not-allowed;
-}
+        .address-modal.active {
+            display: flex;
+        }
 
-.checkout-button:not(:disabled):active {
-    transform: scale(0.98);
-}
+        .address-modal-content {
+            background-color: var(--modal-inner-bg);
+            border-radius: var(--radius-md);
+            padding: 1.5rem;
+            width: 90%;
+            max-width: 350px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        }
 
-.loading-overlay {
-    position: fixed;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    background: rgba(0, 0, 0, 0.8);
-    backdrop-filter: blur(8px);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    z-index: 1000;
-    opacity: 0;
-    pointer-events: none;
-    transition: opacity 0.3s ease;
-}
+        .address-modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1rem;
+        }
 
-.loading-overlay.active {
-    opacity: 1;
-    pointer-events: all;
-}
+        .address-modal-header h2 {
+            font-size: 1.1rem;
+            font-weight: 500;
+            color: var(--text);
+            margin: 0;
+        }
 
-.loading-spinner {
-    width: 48px;
-    height: 48px;
-    border: 4px solid rgba(255, 255, 255, 0.1);
-    border-left-color: white;
-    border-radius: 50%;
-    animation: spin 1s linear infinite;
-}
+        .close-button {
+            background: none;
+            border: none;
+            color: var(--text-secondary);
+            font-size: 1.2rem;
+            cursor: pointer;
+        }
 
-.toast {
-    position: fixed;
-    top: calc(var(--safe-area-top) + 1rem);
-    left: 50%;
-    transform: translateX(-50%) translateY(-100%);
-    background: var(--surface);
-    padding: 1rem 1.5rem;
-    border-radius: var(--radius-md);
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-    display: flex;
-    align-items: center;
-    gap: 0.5rem;
-    z-index: 1000;
-    transition: transform 0.3s cubic-bezier(0.68, -0.55, 0.265, 1.55);
-}
+        .close-button:active {
+            opacity: 0.7;
+        }
 
-.toast.active {
-    transform: translateX(-50%) translateY(0);
-}
+        .address-form > div {
+            margin-bottom: 1rem;
+        }
 
-@keyframes spin {
-    to { transform: rotate(360deg); }
-}
+        .address-form label {
+            display: block;
+            font-size: 0.8rem;
+            color: var(--text-secondary);
+            margin-bottom: 0.2rem;
+        }
 
-@media (min-width: 481px) {
-    .app-container {
-        margin: 2rem auto;
-        border-radius: var(--radius-lg);
-        box-shadow: 0 8px 24px rgba(0, 0, 0, 0.1);
-        min-height: calc(100vh - 4rem);
-    }
+        .address-form input[type="text"],
+        .address-form input[type="tel"] {
+            width: 100%;
+            padding: 0.7rem;
+            border: 1px solid var(--input-border);
+            border-radius: var(--radius-sm);
+            background-color: var(--input-bg);
+            font-size: 0.85rem;
+            color: var(--text);
+            transition: border-color 0.2s ease;
+        }
 
-    .checkout-bar {
-        max-width: 480px;
-        left: 50%;
-        transform: translateX(-50%);
-        border-radius: var(--radius-lg) var(--radius-lg) 0 0;
-    }
-}
-</style>
+        .address-form input[type="text"]:focus,
+        .address-form input[type="tel"]:focus {
+            border-color: var(--input-focus-border);
+            outline: none;
+        }
 
+        .address-actions {
+            display: flex;
+            justify-content: flex-end;
+            gap: 0.5rem;
+            margin-top: 1rem;
+        }
+
+        .address-actions button {
+            padding: 0.7rem 1rem;
+            border-radius: var(--radius-sm);
+            font-size: 0.9rem;
+            cursor: pointer;
+            border: none;
+            transition: opacity 0.2s ease;
+        }
+
+        .address-actions button:active {
+            opacity: 0.8;
+        }
+
+        .address-actions .save-address {
+            background-color: var(--primary);
+            color: white;
+        }
+
+        .address-actions .cancel-address {
+            background-color: var(--surface-alt);
+            color: var(--text-secondary);
+            border: 1px solid var(--input-border);
+        }
+
+        .estimated-delivery {
+            font-size: 0.75rem;
+            color: #558b2f;
+            font-style: italic;
+            margin-top: 0.6rem;
+        }
+
+        .order-section {
+            padding: 1rem;
+        }
+
+        .section-title {
+            font-size: 1rem;
+            font-weight: 500;
+            margin-bottom: 0.8rem;
+            color: var(--text);
+        }
+
+        .order-item {
+            background-color: var(--surface);
+            border-radius: var(--radius-sm);
+            margin-bottom: 0.4rem;
+            padding: 0.5rem;
+            display: flex;
+            align-items: center;
+            gap: 0.4rem;
+            box-shadow: 0 0.5px 1px rgba(0, 0, 0, 0.05);
+            font-size: 0.8rem;
+        }
+
+        .order-item img {
+            width: 36px;
+            height: 36px;
+            object-fit: cover;
+            border-radius: var(--radius-sm);
+            background-color: #eee;
+        }
+
+        .item-details {
+            flex-grow: 1;
+        }
+
+        .item-details h3 {
+            font-size: 0.85rem;
+            margin-bottom: 0.1rem;
+        }
+
+        .item-details p {
+            font-size: 0.7rem;
+            color: var(--text-secondary);
+            margin-bottom: 0;
+        }
+
+        .item-quantity-controls {
+            display: flex;
+            align-items: center;
+            gap: 0.3rem;
+            margin-left: auto;
+        }
+
+        .quantity-button {
+            background: none;
+            border: 1px solid var(--input-border);
+            border-radius: var(--radius-sm);
+            width: 24px;
+            height: 24px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 0.8rem;
+            cursor: pointer;
+            color: var(--text-secondary);
+        }
+
+        .quantity-button:active {
+            opacity: 0.7;
+        }
+
+        .item-quantity {
+            font-weight: 500;
+            font-size: 0.8rem;
+            width: 20px;
+            text-align: center;
+        }
+
+        .delete-item {
+            background: none;
+            border: none;
+            color: var(--text-secondary);
+            font-size: 1rem;
+            cursor: pointer;
+            margin-left: 0.5rem;
+        }
+
+        .delete-item:active {
+            opacity: 0.7;
+        }
+
+        .payment-methods {
+            padding: 1rem;
+            border-top: 1px solid #e0e0e0;
+        }
+
+        .payment-methods-title {
+            font-size: 1rem;
+            font-weight: 500;
+            margin-bottom: 0.8rem;
+            color: var(--text);
+        }
+
+        .payment-option {
+            display: none; /* Hidden by default */
+            background-color: var(--surface);
+            border-radius: var(--radius-sm);
+            padding: 0.7rem;
+            margin-bottom: 0.5rem;
+            align-items: center;
+            gap: 0.8rem;
+            cursor: pointer;
+            border: 1px solid #e0e0e0;
+            transition: border-color 0.2s ease, background-color 0.2s ease;
+        }
+
+        .payment-option.active {
+            display: flex; /* Shown when active */
+        }
+
+        .payment-option.selected {
+            border-color: var(--primary);
+            background-color: rgba(var(--primary-rgb, 46, 125, 50), 0.15);
+        }
+
+        .payment-icon {
+            background-color: #e8f5e9;
+            color: var(--primary);
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1rem;
+        }
+
+        .payment-details h3 {
+            font-size: 0.85rem;
+            margin-bottom: 0.1rem;
+        }
+
+        .payment-details p {
+            font-size: 0.75rem;
+            color: var(--text-secondary);
+        }
+
+        .checkout-bar {
+            background-color: var(--surface);
+            padding: 0.7rem 1rem calc(0.7rem + var(--safe-area-bottom));
+            border-top: 1px solid #e0e0e0;
+            box-shadow: 0 -0.5px 1px rgba(0, 0, 0, 0.05);
+            position: sticky;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            z-index: 10;
+        }
+
+        .total-amount {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 0.5rem;
+        }
+
+        .total-amount p {
+            font-size: 0.85rem;
+            color: var(--text-secondary);
+            margin: 0;
+        }
+
+        .total-amount span {
+            font-size: 1.1rem;
+            font-weight: 500;
+            color: var(--text);
+        }
+
+        .checkout-button {
+            background-color: var(--primary);
+            color: white;
+            border: none;
+            border-radius: var(--radius-md);
+            padding: 0.8rem 1.2rem;
+            font-size: 0.9rem;
+            font-weight: 500;
+            width: 100%;
+            cursor: pointer;
+            transition: background-color 0.2s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.4rem;
+        }
+
+        .checkout-button:disabled {
+            opacity: 0.7;
+            cursor: not-allowed;
+        }
+
+        .checkout-button:active:not(:disabled) {
+            transform: scale(0.98);
+        }
+
+        .loading-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.5);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.3s ease;
+        }
+
+        .loading-overlay.active {
+            display: flex;
+            opacity: 1;
+            pointer-events: all;
+        }
+
+        .loading-spinner {
+            border: 2px solid #f3f3f3;
+            border-top: 2px solid var(--primary);
+            border-radius: 50%;
+            width: 24px;
+            height: 24px;
+            animation: spin 1.2s linear infinite;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .empty-cart {
+            padding: 1.5rem;
+            text-align: center;
+            color: var(--text-secondary);
+        }
+
+        .empty-cart i {
+            font-size: 1.5rem;
+            margin-bottom: 0.6rem;
+        }
+
+        html {
+            -webkit-text-size-adjust: 100%;
+            -moz-text-size-adjust: 100%;
+            -ms-text-size-adjust: 100%;
+        }
+
+        input,
+        textarea,
+        select {
+            font-size: 16px !important;
+            line-height: 1.4;
+        }
+
+        .address-modal-content input,
+        .address-modal-content textarea {
+            font-size: 16px !important;
+            line-height: 1.4;
+        }
+    </style>
 </head>
 <body>
     <div class="app-container">
-        <header class="header">
-            <div class="header-content">
-                <button class="back-button" onclick="window.history.back()">
-                    <i class="fas fa-arrow-left"></i>
-                </button>
-                <h1 style="font-size: 1.25rem; font-weight: 600;">Checkout</h1>
-                <div style="width: 40px;"></div>
-            </div>
-        </header>
+    <header class="header">
+        <button class="back-button" onclick="window.history.back()">
+            <i class="fas fa-arrow-left"></i>
+        </button>
+        <h1>Checkout</h1>
+        <div></div>
+    </header>
 
-        <div class="table-card">
-            <div style="display: flex; align-items: center; gap: 1rem;">
-                <div class="payment-icon" style="background: rgba(255, 255, 255, 0.2); color: white;">
-                    <i class="fas fa-utensils"></i>
-                </div>
-                <div>
-                    <h3 style="font-size: 1.1rem; margin-bottom: 0.10rem;">Table 1</h3>
-                    <p style="opacity: 0.9;">Your order will be served here</p>
-                </div>
-            </div>
-        </div>
+    <!-- Auto Delivery Info Based on Location -->
+    <section class="delivery-options">
+        <h2 class="delivery-options-title">Delivery</h2>
+        <!-- The switcher is removed — display will depend on JS logic -->
+    </section>
 
-        <section class="order-section">
-            <h2 class="section-title">Order Details</h2>
-            <div id="orderDetailsList"></div>
-        </section>
-
-        <section class="payment-methods">
-            <h2 class="section-title">Payment Method</h2>
-            <div class="payment-option" data-method="Cash on Delivery">
-                <div class="payment-icon">
-                    <i class="fas fa-money-bill-alt"></i>
-                </div>
-                <div>
-                    <h3 style="font-size: 1rem; margin-bottom: 0.25rem;">Pay at Table</h3>
-                    <p style="color: var(--text-secondary); font-size: 0.9rem;">Cash on delive</p>
-                </div>
-            </div>
-            <div class="payment-option" data-method="Card Payment" style="opacity: 0.5">
-                    <div class="payment-icon">
-                        <i class="fas fa-credit-card"></i>
-                    </div>
-                    <div>
-                        <h3 style="font-size: 1rem; margin-bottom: 0.25rem;">Card Payment</h3>
-                        <p style="color: var(--text-secondary); font-size: 0.9rem;">Coming soon</p>
-                    </div>
-                </div>
-                <div class="payment-option" data-method="Mobile Pay" style="opacity: 0.5">
-                    <div class="payment-icon">
-                        <i class="fas fa-mobile-alt"></i>
-                    </div>
-                    <div>
-                        <h3 style="font-size: 1rem; margin-bottom: 0.25rem;">Mobile Pay</h3>
-                        <p style="color: var(--text-secondary); font-size: 0.9rem;">Coming soon</p>
-                    </div>
-                </div>
-            </section>
-
-            <!-- Add spacing for the fixed checkout bar -->
-            <div style="height: 140px;"></div>
-        </div>
-
-        <div class="checkout-bar">
-            <div class="checkout-content">
-                <div class="total-row">
-                    <div>
-                        <p style="color: var(--text-secondary);">Total Amount</p>
-                        <p style="font-size: 1.25rem; font-weight: 600;" id="cartTotal">$0.00</p>
-                    </div>
-                    <button id="checkoutButton" class="checkout-button" disabled>
-                        <i class="fas fa-lock"></i>
-                        Place Order
-                    </button>
-                </div>
+    <div class="delivery-details">
+        <!-- At Restaurant Delivery Info -->
+        <div class="delivery-details-restaurant" style="display: none;">
+            <div class="table-info">
+                <i class="fas fa-chair"></i>
+                Your food will be delivered to <strong>Table 1</strong>.
             </div>
         </div>
 
-        <div class="loading-overlay" id="loading-overlay">
-            <div class="loading-spinner"></div>
+        <!-- Home Delivery Info -->
+        <div class="delivery-details-home" style="display: none;">
+            <button class="delivery-address-button" id="openAddressModal">
+                <i class="fas fa-map-marker-alt"></i>
+                Delivery Address
+            </button>
+            <p class="estimated-delivery"><i class="far fa-clock"></i> ~14 mins</p>
         </div>
-
-        <!-- Customization Modal -->
-    <div id="customizationModal" class="modal" style="display: none;">
-      <div class="modal-content">
-        <span class="close">&times;</span>
-        <h2>Customize Your Order</h2>
-        <label>
-          <input type="checkbox" id="extraCheese">
-          Extra Cheese
-        </label>
-        <br>
-        <label>
-          <input type="checkbox" id="noOnions">
-          No Onions
-        </label>
-        <br>
-        <button id="saveCustomization" class="checkout-button" style="width: auto; margin-top: 1rem;">Save</button>
-      </div>
-    </div>
     </div>
 
-    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-    <script>
-        $(document).ready(function() {
-            const SERVICE_FEE = 0.51;
-            let selectedPaymentMethod = '';
+    <section class="order-section">
+        <h2 class="section-title">Your Order</h2>
+        <div id="orderDetailsList">
+            <div class="empty-cart">
+                <i class="fas fa-shopping-bag"></i>
+                <p>Your cart is empty.</p>
+            </div>
+        </div>
+    </section>
 
-            // Show toast message
-            function showToast(message, type = 'info') {
-                const toast = $('#toast');
-                const icon = toast.find('i');
-                
-                // Set icon and color based on type
-                icon.removeClass().addClass('fas');
-                switch(type) {
-                    case 'success':
-                        icon.addClass('fa-check-circle').css('color', 'var(--success)');
-                        break;
-                    case 'error':
-                        icon.addClass('fa-exclamation-circle').css('color', 'var(--error)');
-                        break;
-                    case 'warning':
-                        icon.addClass('fa-exclamation-triangle').css('color', 'var(--warning)');
-                        break;
-                    default:
-                        icon.addClass('fa-info-circle').css('color', 'var(--primary)');
-                }
+    <section class="payment-methods">
+        <h2 class="payment-methods-title">Payment</h2>
 
-                $('#toast-message').text(message);
-                toast.addClass('active');
+        <!-- Only show if at restaurant -->
+        <div class="payment-option restaurant-only" style="display: none;" data-method="Cash on Delivery">
+            <div class="payment-icon">
+                <i class="fas fa-money-bill-alt"></i>
+            </div>
+            <div class="payment-details">
+                <h3>Cash on Delivery</h3>
+                <p>Pay in cash when your food arrives</p>
+            </div>
+        </div>
 
-                setTimeout(() => {
-                    toast.removeClass('active');
-                }, 3000);
+        <!-- Only show for home delivery -->
+        <div class="payment-option home-only" style="display: none;" data-method="Cash on Delivery">
+            <div class="payment-icon">
+                <i class="fas fa-money-bill-alt"></i>
+            </div>
+            <div class="payment-details">
+                <h3>Pay Cash to Rider</h3>
+                <p>Pay cash upon delivery</p>
+            </div>
+        </div>
+        <div class="payment-option home-only" style="display: none;" data-method="Mobile Money">
+            <div class="payment-icon">
+                <i class="fas fa-mobile-alt"></i>
+            </div>
+            <div class="payment-details">
+                <h3>Mobile Money</h3>
+                <p>Pay via mobile money upon delivery</p>
+            </div>
+        </div>
+    </section>
+
+    <div class="checkout-bar">
+        <div class="total-amount">
+            <p>Item total</p>
+            <span id="itemTotal">$0.00</span>
+        </div>
+        <div class="total-amount">
+            <p>To Pay</p>
+            <span id="cartTotal" style="font-size: 1.1rem; font-weight: 600;">$0.00</span>
+        </div>
+        <button
+            id="checkoutButton"
+            class="checkout-button"
+            data-restaurant-slug="{{ restaurant.slug }}"
+            data-hashed-slug="{{ restaurant.hashed_slug }}"
+            data-restaurant-lat="{{ restaurant_lat }}"
+            data-restaurant-lon="{{ restaurant_lon }}"
+            disabled
+        >
+            <i class="fas fa-check-circle"></i>
+            Place Order
+        </button>
+    </div>
+
+    <div class="loading-overlay" id="loading-overlay">
+        <div class="loading-spinner"></div>
+    </div>
+
+    <!-- Address Modal -->
+    <div class="address-modal" id="addressModal">
+        <div class="address-modal-content">
+            <div class="address-modal-header">
+                <h2>Enter Delivery Address</h2>
+                <button class="close-button" id="closeAddressModal">×</button>
+            </div>
+            <form class="address-form" id="deliveryAddressForm">
+                <div>
+                    <label for="full-name">Full Name:</label>
+                    <input type="text" id="modal-full-name" placeholder="Your Full Name">
+                </div>
+                <div>
+                    <label for="phone-number">Phone Number:</label>
+                    <input type="tel" id="modal-phone-number" placeholder="Your Phone Number">
+                </div>
+                <div>
+                    <label for="address">Address:</label>
+                    <input type="text" id="modal-address" placeholder="Your Street Address">
+                </div>
+                <div class="address-actions">
+                    <button type="button" class="cancel-address" id="cancelAddress">Cancel</button>
+                    <button type="button" class="save-address" id="saveAddress">Save Address</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+
+    <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+    <script type="text/javascript">
+$(document).ready(function () {
+    const SERVICE_FEE = 0.51;
+    const THRESHOLD_DISTANCE = 100; // meters
+
+    let selectedPaymentMethod = 'Cash on Delivery';
+    let deliveryType = 'restaurant';
+    const tableNumber = '1';
+    let homeDeliveryAddress = {};
+
+    // Cache selectors
+    const $restaurantDetails = $('.delivery-details-restaurant');
+    const $homeDetails = $('.delivery-details-home');
+    const $paymentRestaurant = $('.payment-option.restaurant-only');
+    const $paymentHome = $('.payment-option.home-only');
+    const $checkoutButton = $('#checkoutButton');
+    const $loadingOverlay = $('#loading-overlay');
+
+    // ADDRESS MODAL ELEMENTS
+    const addressModal = $('#addressModal');
+    const modalFullNameInput = $('#modal-full-name');
+    const modalPhoneInput    = $('#modal-phone-number');
+    const modalAddressInput  = $('#modal-address');
+
+    // OPEN/CLOSE ADDRESS MODAL
+    $('#openAddressModal').on('click', () => addressModal.addClass('active'));
+    $('#closeAddressModal, #cancelAddress').on('click', () => addressModal.removeClass('active'));
+
+    $('#saveAddress').on('click', () => {
+        const fullName = modalFullNameInput.val().trim();
+        const phone    = modalPhoneInput.val().trim();
+        const address  = modalAddressInput.val().trim();
+        if (!fullName || !phone || !address) {
+            return alert('Please fill in all address fields.');
+        }
+        homeDeliveryAddress = { full_name: fullName, phone_number: phone, address };
+        addressModal.removeClass('active');
+        updateCheckoutButtonState();
+    });
+
+    // GET USER LOCATION
+    function getUserLocation() {
+        return new Promise((resolve, reject) => {
+            if (!navigator.geolocation) {
+                return reject(new Error('Geolocation not supported.'));
             }
-
-            // Update order details with smooth animations
-            function updateOrderDetails() {
-                const cart = JSON.parse(localStorage.getItem('cart') || '{}');
-                let orderHtml = '';
-                let subtotal = 0;
-
-                if (Object.keys(cart).length === 0) {
-                    orderHtml = `
-                        <div style="text-align: center; padding: 2rem; color: var(--text-secondary);">
-                            <i class="fas fa-shopping-bag" style="font-size: 2rem; margin-bottom: 1rem;"></i>
-                            <p>Your cart is empty</p>
-                        </div>
-                    `;
-                } else {
-                    Object.entries(cart).forEach(([id, item]) => {
-                        const itemTotal = item[0] * item[2];
-                        subtotal += itemTotal;
-                        orderHtml += `
-                            <div class="order-item">
-                                <img src="${item[3]}" alt="${item[1]}">
-                                <div>
-                                    <h3 style="font-size: 1rem; margin-bottom: 0.5rem;">${item[1]}</h3>
-                                    <p style="color: var(--text-secondary); font-size: 0.9rem;">
-                                        ${item[0]} × $${item[2].toFixed(2)}
-                                    </p>
-                                </div>
-                                <div style="text-align: right;">
-                                    <p style="font-weight: 600;">$${itemTotal.toFixed(2)}</p>
-                                </div>
-                            </div>
-                        `;
-                    });
-                }
-
-                $('#orderDetailsList').html(orderHtml);
-                const total = subtotal + SERVICE_FEE;
-                $('#cartTotal').text(`$${total.toFixed(2)}`);
-                
-                // Update checkout button state
-                const checkoutButton = $('#checkoutButton');
-                checkoutButton.prop('disabled', Object.keys(cart).length === 0 || !selectedPaymentMethod);
-            }
-
-            // Payment method selection with haptic feedback
-            $('.payment-option').not('[style*="opacity"]').on('click', function() {
-                $('.payment-option').removeClass('selected');
-                $(this).addClass('selected');
-                selectedPaymentMethod = $(this).data('method');
-                
-                // Provide haptic feedback if available
-                if (navigator.vibrate) {
-                    navigator.vibrate(50);
-                }
-                
-                updateOrderDetails();
-            });
-
-            // Enhanced checkout process
-            $('#checkoutButton').on('click', function(e) {
-                e.preventDefault();
-                const cart = localStorage.getItem('cart');
-                
-                if (!cart || Object.keys(JSON.parse(cart)).length === 0) {
-                    showToast('Your cart is empty', 'warning');
-                    return;
-                }
-
-                if (!selectedPaymentMethod) {
-                    showToast('Please select a payment method', 'warning');
-                    return;
-                }
-
-                const subtotal = parseFloat($('#cartTotal').text().replace('$', ''));
-                const restaurantId = '{{ restaurant.id }}';
-                const csrfToken = '{{ csrf_token }}';
-
-                $('#loading-overlay').addClass('active');
-
-                $.ajax({
-                    type: 'POST',
-                    url: `/dashboard/${restaurantId}/checkout/`,
-                    data: {
-                        cart: cart,
-                        payment_method: selectedPaymentMethod,
-                        total_amount: subtotal,
-                        csrfmiddlewaretoken: csrfToken,
-                    },
-                    success: function(response) {
-                        setTimeout(() => {
-                            $('#loading-overlay').removeClass('active');
-                            if (response.message === 'Order placed successfully') {
-                                showToast('Order placed successfully!', 'success');
-                                localStorage.removeItem('cart');
-                                
-                                setTimeout(() => {
-                                    window.location.href = `/dashboard/${response.order_id}/order_success/`;
-                                }, 1000);
-                            }
-                        }, 1500);
-                    },
-                    error: function(xhr) {
-                        $('#loading-overlay').removeClass('active');
-                        if (xhr.status === 401) {
-                            showToast('Please log in to continue', 'error');
-                            setTimeout(() => {
-                                window.location.href = `/customer_signin/?next=${encodeURIComponent(window.location.href)}`;
-                            }, 1500);
-                        } else {
-                            showToast('Error placing order', 'error');
-                        }
-                    }
-                });
-            });
-
-            // Add touch ripple effect
-            $('.payment-option, .checkout-button').on('touchstart', function(e) {
-                const rect = e.currentTarget.getBoundingClientRect();
-                const ripple = document.createElement('div');
-                const size = Math.max(rect.width, rect.height);
-                const x = e.touches[0].clientX - rect.left - size / 2;
-                const y = e.touches[0].clientY - rect.top - size / 2;
-                
-                ripple.style.cssText = `
-                    position: absolute;
-                    width: ${size}px;
-                    height: ${size}px;
-                    background: rgba(255, 255, 255, 0.4);
-                    border-radius: 50%;
-                    transform: translate(${x}px, ${y}px) scale(0);
-                    transition: transform 0.5s;
-                `;
-                
-                e.currentTarget.style.overflow = 'hidden';
-                e.currentTarget.appendChild(ripple);
-                
-                requestAnimationFrame(() => {
-                    ripple.style.transform = `translate(${x}px, ${y}px) scale(2)`;
-                    ripple.style.opacity = '0';
-                });
-                
-                setTimeout(() => ripple.remove(), 500);
-            });
-
-            // Initialize the page
-            updateOrderDetails();
-
-            // Add smooth page transitions
-            window.addEventListener('pageshow', function(event) {
-                if (event.persisted) {
-                    window.location.reload();
-                }
-            });
+            navigator.geolocation.getCurrentPosition(
+                pos => resolve([pos.coords.longitude, pos.coords.latitude]),
+                err => reject(err),
+                { enableHighAccuracy: true, timeout: 10000 }
+            );
         });
-    </script>
+    }
+
+    // CALCULATE DISTANCE (meters) VIA Turf.js
+    function calculateDistance(userLoc, restLoc) {
+        const userPt = turf.point(userLoc);
+        const restPt = turf.point(restLoc);
+        return turf.distance(userPt, restPt, { units: 'meters' });
+    }
+
+    // AUTO-SELECT DELIVERY TYPE BASED ON DISTANCE
+    async function setDeliveryType() {
+        try {
+            const userLoc = await getUserLocation();
+            const restLon = parseFloat($checkoutButton.data('restaurant-lon'));
+            const restLat = parseFloat($checkoutButton.data('restaurant-lat'));
+            const dist = await calculateDistance(userLoc, [restLon, restLat]);
+
+            if (dist <= THRESHOLD_DISTANCE) {
+                deliveryType = 'restaurant';
+                $restaurantDetails.show();
+                $homeDetails.hide();
+            } else {
+                deliveryType = 'home';
+                $homeDetails.show();
+                $restaurantDetails.hide();
+            }
+        } catch (err) {
+            console.warn('Location error, defaulting to home delivery:', err);
+            deliveryType = 'home';
+            $homeDetails.show();
+            $restaurantDetails.hide();
+        }
+        updatePaymentOptions();
+        updateOrderDetails();
+        updateCheckoutButtonState();
+    }
+
+    // SHOW/HIDE PAYMENT OPTIONS BASED ON DELIVERY TYPE
+    function updatePaymentOptions() {
+        if (deliveryType === 'restaurant') {
+            $paymentRestaurant.show();
+            $paymentHome.hide();
+            selectedPaymentMethod = 'Cash on Delivery';
+        } else {
+            $paymentHome.show();
+            $paymentRestaurant.hide();
+            selectedPaymentMethod = '';
+        }
+    }
+
+    // RENDER CART & CALCULATE TOTALS
+    function updateOrderDetails() {
+        const cart = JSON.parse(localStorage.getItem('cart') || '{}');
+        const $list = $('#orderDetailsList');
+        let html = '';
+        let subtotal = 0;
+
+        if (!Object.keys(cart).length) {
+            $list.html(`<div class="empty-cart"><i class="fas fa-shopping-bag"></i><p>Your cart is empty.</p></div>`);
+            $('#itemTotal').text('$0.00');
+            $('#cartTotal').text('$0.00');
+            return;
+        }
+
+        Object.entries(cart).forEach(([id, [qty, name, price, img]]) => {
+            price = parseFloat(price);
+            const itemTotal = qty * price;
+            subtotal += itemTotal;
+            html += `
+                <div class="order-item" data-item-id="${id}">
+                  <img src="${img}" alt="${name}">
+                  <div class="item-details"><h3>${name}</h3><p>$${price.toFixed(2)}</p></div>
+                  <div class="item-quantity-controls">
+                    <button class="quantity-button decrement-item">-</button>
+                    <span class="item-quantity">${qty}</span>
+                    <button class="quantity-button increment-item">+</button>
+                  </div>
+                  <button class="delete-item"><i class="fas fa-trash-alt"></i></button>
+                  <div class="item-price">$${itemTotal.toFixed(2)}</div>
+                </div>`;
+        });
+
+        $list.html(html);
+        const total = subtotal + SERVICE_FEE;
+        $('#itemTotal').text(`$${subtotal.toFixed(2)}`);
+        $('#cartTotal').text(`$${total.toFixed(2)}`);
+
+        // Bind quantity/delete handlers
+        $('.increment-item').off().on('click', () => changeQty($(event.target).closest('.order-item').data('item-id'), +1));
+        $('.decrement-item').off().on('click', () => changeQty($(event.target).closest('.order-item').data('item-id'), -1));
+        $('.delete-item').off().on('click', () => deleteItem($(event.target).closest('.order-item').data('item-id')));
+    }
+
+    function changeQty(itemId, delta) {
+        let cart = JSON.parse(localStorage.getItem('cart') || '{}');
+        if (!cart[itemId]) return;
+        cart[itemId][0] += delta;
+        if (cart[itemId][0] < 1) delete cart[itemId];
+        localStorage.setItem('cart', JSON.stringify(cart));
+        updateOrderDetails();
+        updateCheckoutButtonState();
+    }
+
+    function deleteItem(itemId) {
+        let cart = JSON.parse(localStorage.getItem('cart') || '{}');
+        delete cart[itemId];
+        localStorage.setItem('cart', JSON.stringify(cart));
+        updateOrderDetails();
+        updateCheckoutButtonState();
+    }
+
+    // ENABLE/DISABLE CHECKOUT BUTTON
+    function updateCheckoutButtonState() {
+        const cart = JSON.parse(localStorage.getItem('cart') || '{}');
+        const empty = !Object.keys(cart).length;
+        let ready = !empty;
+
+        if (deliveryType === 'home') {
+            const d = homeDeliveryAddress;
+            ready = ready && d.full_name && d.phone_number && d.address && selectedPaymentMethod;
+        }
+        $checkoutButton.prop('disabled', !ready);
+    }
+
+    // PLACE ORDER AJAX
+    $checkoutButton.on('click', function (e) {
+        e.preventDefault();
+        $loadingOverlay.addClass('active');
+
+        const rawCart = localStorage.getItem('cart') || '{}';
+        const cart    = JSON.parse(rawCart);
+
+        if (!Object.keys(cart).length) {
+            alert('Your cart is empty.');
+            return $loadingOverlay.removeClass('active');
+        }
+        if (!selectedPaymentMethod) {
+            alert('Please select a payment method.');
+            return $loadingOverlay.removeClass('active');
+        }
+
+        const formData = new FormData();
+        formData.append('cart', rawCart);
+        formData.append('payment_method', selectedPaymentMethod);
+        formData.append('delivery_type', deliveryType);
+        formData.append('delivery_details', JSON.stringify(deliveryType === 'home' ? { address: homeDeliveryAddress.address } : { table_number: tableNumber }));
+        formData.append('customer_details', JSON.stringify(deliveryType === 'home' ? {
+            full_name: homeDeliveryAddress.full_name,
+            phone_number: homeDeliveryAddress.phone_number
+        } : {}));
+
+        const csrftoken = $('[name=csrfmiddlewaretoken]').val() ||
+            document.cookie.split('; ').find(r => r.startsWith('csrftoken=')).split('=')[1];
+
+        $.ajax({
+            url: window.location.href,
+            type: 'POST',
+            data: formData,
+            processData: false,
+            contentType: false,
+            headers: { 'X-CSRFToken': csrftoken },
+            success: resp => {
+                localStorage.removeItem('cart');
+                window.location.href = `/menu/${$checkoutButton.data('restaurant-slug')}/${$checkoutButton.data('hashed-slug')}/${resp.order_id}/order_success/`;
+            },
+            error: xhr => {
+                alert(`Error: ${JSON.parse(xhr.responseText).message || 'Unable to place order.'}`);
+            },
+            complete: () => $loadingOverlay.removeClass('active')
+        });
+    });
+
+    // INITIALIZE
+    setDeliveryType();
+    updateOrderDetails();
+    updateCheckoutButtonState();
+});
+</script>
 </body>
 </html>

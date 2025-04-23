@@ -19,8 +19,16 @@ urlpatterns = [
 	path('delete_product/<int:product_id>/', views.delete_product, name='delete_product'),
 	path('contact/', views.contact, name='contact'),
 
-	path('<int:restaurant_id>/checkout/', views.restaurant_checkout, name='restaurant_checkout'),
-    path('<int:order_id>/order_success/', views.order_success, name='order_success'),
+	path(
+        'menu/<slug:restaurant_name_slug>/<slug:hashed_slug>/checkout/',
+        views.restaurant_checkout,
+        name='restaurant_checkout'
+    ),
+    path(
+        '<slug:restaurant_name_slug>/<slug:hashed_slug>/<int:order_id>/order_success/',
+        views.order_success,
+        name='order_success'
+    ),
     # path('<int:order_id>/download_receipt/', views.download_receipt, name='download_receipt'),
 	path('vendor/topup/', views.vendor_topup, name='vendor_topup'),
     path('wallet/', views.view_wallet, name='view_wallet'),

@@ -7,20 +7,12 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
     :root {
-        --primary: #f7c028; /* Updated Brand */
-        --primary-gradient: linear-gradient(135deg, #f7c028, #d67a2a); /* Updated gradient */
-        --surface: #ffffff; /* Updated Background for surfaces */
+        --primary: #f7c028;
+        --primary-dark: #d67a2a;
+        --surface: #ffffff;
         --surface-alt: #F8F8F8;
         --text: #1F2937;
         --text-secondary: #6B7280;
-        --success: #34D399;
-        --warning: #FBBF24;
-        --error: #EF4444;
-        --radius-sm: 12px;
-        --radius-md: 16px;
-        --radius-lg: 24px;
-        --safe-area-top: env(safe-area-inset-top, 0px);
-        --safe-area-bottom: env(safe-area-inset-bottom, 0px);
     }
 
     * {
@@ -36,22 +28,45 @@
         display: flex;
         align-items: center;
         justify-content: center;
-        padding: 16px;
+        padding: 12px;
+        background-image: 
+            radial-gradient(circle at 20% 20%, rgba(247, 192, 40, 0.05) 0%, transparent 40%),
+            radial-gradient(circle at 80% 80%, rgba(214, 122, 42, 0.07) 0%, transparent 40%);
     }
 
     .card {
         background: white;
         width: 100%;
-        max-width: 360px;
-        border-radius: 24px;
-        box-shadow: 0 12px 36px rgba(0, 0, 0, 0.1);
+        max-width: 300px;
+        border-radius: 20px;
+        box-shadow: 0 12px 28px rgba(0, 0, 0, 0.08), 0 6px 12px rgba(247, 192, 40, 0.1);
         overflow: hidden;
-        animation: slideUp 0.6s cubic-bezier(0.16, 1, 0.3, 1);
+        animation: floatIn 0.6s cubic-bezier(0.16, 1, 0.3, 1);
+        position: relative;
+    }
+
+    .progress-bar {
+        position: absolute;
+        top: 0;
+        left: 0;
+        height: 3px;
+        width: 100%;
+        background: rgba(255, 255, 255, 0.2);
+        overflow: hidden;
+        z-index: 10;
+    }
+
+    .progress-fill {
+        height: 100%;
+        width: 30%;
+        background: white;
+        position: absolute;
+        animation: progress 3s infinite ease-in-out;
     }
 
     .header {
-        background: var(--primary);
-        padding: 32px 24px;
+        background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+        padding: 18px 16px;
         text-align: center;
         color: white;
         position: relative;
@@ -65,24 +80,32 @@
         left: 0;
         right: 0;
         bottom: 0;
-        background: radial-gradient(circle at top right, rgba(255,255,255,0.1) 0%, transparent 60%);
+        background: 
+            radial-gradient(circle at top right, rgba(255,255,255,0.2) 0%, transparent 60%),
+            radial-gradient(circle at bottom left, rgba(255,255,255,0.1) 0%, transparent 40%);
     }
 
-    .check-circle {
-        width: 64px;
-        height: 64px;
-        background: rgba(255, 255, 255, 0.15);
-        backdrop-filter: blur(8px);
+    .success-animation {
+        width: 60px;
+        height: 60px;
+        margin: 0 auto 10px;
+        position: relative;
+        z-index: 2;
+        animation: bounce 0.5s 0.2s cubic-bezier(0.33, 1, 0.68, 1) both;
+    }
+
+    .outer-circle {
+        width: 60px;
+        height: 60px;
         border-radius: 50%;
-        margin: 0 auto 16px;
+        background: rgba(255, 255, 255, 0.15);
         display: flex;
         align-items: center;
         justify-content: center;
         position: relative;
-        animation: scaleIn 0.5s 0.2s cubic-bezier(0.33, 1, 0.68, 1) both;
     }
 
-    .check-circle::before {
+    .outer-circle::before {
         content: '';
         position: absolute;
         inset: -3px;
@@ -92,174 +115,162 @@
     }
 
     .check-icon {
-        width: 48px;
-        height: 48px;
+        width: 45px;
+        height: 45px;
         background: white;
         border-radius: 50%;
         display: flex;
         align-items: center;
         justify-content: center;
-        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+        box-shadow: 0 3px 8px rgba(0, 0, 0, 0.15);
     }
 
     .check-icon i {
         color: var(--primary);
-        font-size: 24px;
+        font-size: 22px;
     }
 
     .header h1 {
-        font-size: 22px;
-        margin-bottom: 8px;
-        font-weight: 600;
+        font-size: 18px;
+        margin-bottom: 5px;
+        font-weight: 700;
+        position: relative;
+        z-index: 2;
     }
 
-    .header p {
-        font-size: 14px;
-        opacity: 0.9;
-        display: flex;
+    .status-badge {
+        background: rgba(255, 255, 255, 0.15);
+        border-radius: 100px;
+        padding: 4px 10px;
+        font-size: 12px;
+        font-weight: 500;
+        display: inline-flex;
         align-items: center;
-        justify-content: center;
-        gap: 6px;
+        gap: 5px;
+        backdrop-filter: blur(8px);
     }
 
-    .status-dot {
-        width: 6px;
-        height: 6px;
+    .pulse-dot {
+        width: 5px;
+        height: 5px;
         background: white;
         border-radius: 50%;
+        display: inline-block;
         animation: blink 1.5s infinite;
     }
 
     .content {
-        padding: 24px;
+        padding: 16px;
     }
 
-    .section {
-        margin-bottom: 20px;
-    }
-
-    .section-title {
-        font-size: 12px;
-        text-transform: uppercase;
-        letter-spacing: 0.5px;
-        color: #999;
+    .order-info {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 8px;
         margin-bottom: 12px;
     }
 
-    .details-grid {
-        display: grid;
-        grid-template-columns: 1fr 1fr;
-        gap: 16px;
-    }
-
-    .detail-item {
-        background: var(--surface-alt);
-        padding: 12px;
+    .info-item {
+        padding: 10px;
         border-radius: 12px;
+        background: var(--surface-alt);
     }
 
-    .detail-label {
-        font-size: 12px;
-        color: #666;
-        margin-bottom: 4px;
+    .info-label {
+        font-size: 11px;
+        color: var(--text-secondary);
+        margin-bottom: 2px;
     }
 
-    .detail-value {
-        font-size: 14px;
+    .info-value {
+        font-size: 13px;
         font-weight: 600;
-        color: #000;
+        color: var(--text);
     }
 
-    .total {
-        background: #fff7f0; /* Light tint matching new brand */
+    .total-section {
+        background: linear-gradient(to bottom right, #fff7e7, #fff7f0);
         border-radius: 16px;
-        padding: 20px;
-        text-align: center;
-        border: 1px dashed rgba(239, 140, 49, 0.2);
+        padding: 12px;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        border: 1px dashed rgba(214, 122, 42, 0.2);
+        margin-bottom: 16px;
     }
 
     .total-label {
         font-size: 13px;
-        color: #666;
-        margin-bottom: 8px;
+        font-weight: 500;
+        color: var(--text-secondary);
     }
 
-    .total-value {
-        font-size: 28px;
+    .total-amount {
+        font-size: 20px;
         font-weight: 700;
-        color: var(--primary);
-        letter-spacing: -0.5px;
+        color: var(--primary-dark);
     }
 
-    .action-button {
-        display: block;
-        background: var(--primary);
+    .primary-button {
+        background: linear-gradient(135deg, var(--primary), var(--primary-dark));
         color: white;
-        text-decoration: none;
-        padding: 16px;
-        text-align: center;
+        border: none;
+        border-radius: 14px;
+        padding: 14px;
         font-weight: 600;
         font-size: 14px;
-        margin-top: 24px;
-        border-radius: 14px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 7px;
         transition: all 0.3s ease;
-        box-shadow: 0 4px 12px rgba(239, 140, 49, 0.15);
+        box-shadow: 0 5px 10px rgba(214, 122, 42, 0.15);
+        text-decoration: none;
     }
 
-    .action-button:hover {
+    .primary-button:hover {
         transform: translateY(-2px);
-        box-shadow: 0 6px 16px rgba(239, 140, 49, 0.25);
+        box-shadow: 0 7px 14px rgba(214, 122, 42, 0.25);
     }
 
-    .action-button:active {
+    .primary-button:active {
         transform: scale(0.98);
     }
 
     .toast {
-    position: fixed;
-    top: 16px;
-    left: 50%;
-    transform: translateX(-50%);
-    background: var(--primary); /* Uses the new brand color (#f7c028) */
-    backdrop-filter: blur(8px);
-    color: white;
-    padding: 12px 24px;
-    border-radius: 100px;
-    font-size: 14px;
-    font-weight: 500;
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    box-shadow: 0 8px 24px rgba(247, 192, 40, 0.2); /* Semi-transparent version of #f7c028 */
-    animation: slideIn 0.3s cubic-bezier(0.16, 1, 0.3, 1);
-}
-
-
-    @keyframes slideUp {
-        from { 
-            opacity: 0;
-            transform: translateY(20px);
-        }
-        to { 
-            opacity: 1;
-            transform: translateY(0);
-        }
+        position: fixed;
+        top: 16px;
+        left: 50%;
+        transform: translateX(-50%);
+        background: rgba(247, 192, 40, 0.95);
+        color: white;
+        padding: 10px 16px;
+        border-radius: 100px;
+        font-size: 13px;
+        font-weight: 500;
+        display: flex;
+        align-items: center;
+        gap: 7px;
+        box-shadow: 0 6px 20px rgba(214, 122, 42, 0.3);
+        animation: toastIn 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+        backdrop-filter: blur(8px);
+        z-index: 100;
     }
 
-    @keyframes slideIn {
-        from { 
-            opacity: 0;
-            transform: translate(-50%, -20px);
-        }
-        to { 
-            opacity: 1;
-            transform: translate(-50%, 0);
-        }
+    @keyframes floatIn {
+        0% { opacity: 0; transform: translateY(20px); }
+        100% { opacity: 1; transform: translateY(0); }
+    }
+
+    @keyframes bounce {
+        0% { opacity: 0; transform: scale(0.8); }
+        40% { transform: scale(1.1); }
+        100% { opacity: 1; transform: scale(1); }
     }
 
     @keyframes pulse {
         0% { transform: scale(1); opacity: 1; }
-        100% { transform: scale(1.2); opacity: 0; }
+        100% { transform: scale(1.3); opacity: 0; }
     }
 
     @keyframes blink {
@@ -268,57 +279,65 @@
         100% { opacity: 0.4; }
     }
 
-    @keyframes scaleIn {
-        from { transform: scale(0.8); opacity: 0; }
-        to { transform: scale(1); opacity: 1; }
+    @keyframes toastIn {
+        0% { opacity: 0; transform: translate(-50%, -20px); }
+        100% { opacity: 1; transform: translate(-50%, 0); }
     }
-</style>
 
+    @keyframes progress {
+        0% { transform: translateX(-100%); }
+        50% { transform: translateX(40%); }
+        100% { transform: translateX(100%); }
+    }
+    </style>
 </head>
 <body>
     <div class="card">
+        <div class="progress-bar">
+            <div class="progress-fill"></div>
+        </div>
         <div class="header">
-            <div class="check-circle">
-                <div class="check-icon">
-                    <i class="fas fa-check"></i>
+            <div class="success-animation">
+                <div class="outer-circle">
+                    <div class="check-icon">
+                        <i class="fas fa-check"></i>
+                    </div>
                 </div>
             </div>
             <h1>Order Confirmed!</h1>
-            <p>
-                <span class="status-dot"></span>
-                Your order is being prepared
-            </p>
+            <div class="status-badge">
+                <span class="pulse-dot"></span>
+                Preparing your order
+            </div>
         </div>
 
         <div class="content">
-            <div class="section">
-                <div class="section-title">Order Details</div>
-                <div class="details-grid">
-                    <div class="detail-item">
-                        <div class="detail-label">Order ID</div>
-                        <div class="detail-value">{{ order_id }}</div>
-                    </div>
-                    <div class="detail-item">
-                        <div class="detail-label">Table</div>
-                        <div class="detail-value">{{ table_number }}</div>
-                    </div>
-                    <div class="detail-item">
-                        <div class="detail-label">Time</div>
-                        <div class="detail-value">{{ order_time|date:"g:i A" }}</div>
-                    </div>
-                    <div class="detail-item">
-                        <div class="detail-label">Payment</div>
-                        <div class="detail-value">{{ payment_method }}</div>
-                    </div>
+            <div class="order-info">
+                <div class="info-item">
+                    <div class="info-label">Order ID</div>
+                    <div class="info-value">{{ order_id }}</div>
+                </div>
+                <div class="info-item">
+                    <div class="info-label">Table</div>
+                    <div class="info-value">{{ table_number }}</div>
+                </div>
+                <div class="info-item">
+                    <div class="info-label">Time</div>
+                    <div class="info-value">{{ order_time|date:"g:i A" }}</div>
+                </div>
+                <div class="info-item">
+                    <div class="info-label">Payment</div>
+                    <div class="info-value">{{ payment_method }}</div>
                 </div>
             </div>
 
-            <div class="total">
+            <div class="total-section">
                 <div class="total-label">Total Amount</div>
-                <div class="total-value">${{ amount }}</div>
+                <div class="total-amount">${{ amount }}</div>
             </div>
 
-            <a href="{% url 'restaurant_menu' restaurant_name_slug=restaurant_name_slug restaurant_id=restaurant_id %}" class="action-button">
+            <a href="{% url 'restaurant_menu' restaurant_name_slug=restaurant.slug hashed_slug=restaurant.hashed_slug %}" class="primary-button">
+                <i class="fas fa-utensils"></i>
                 Back to Menu
             </a>
         </div>
