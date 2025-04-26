@@ -396,61 +396,389 @@
             opacity: 0.7;
         }
 
-        .payment-methods {
-            padding: 1rem;
-            border-top: 1px solid #e0e0e0;
-        }
+        /* Enhanced Payment Methods CSS */
+.payment-methods {
+  padding: 1.25rem;
+  border-top: 1px solid #e0e0e0;
+  background-color: #f9f9f9;
+  border-radius: 8px;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+}
 
-        .payment-methods-title {
-            font-size: 1rem;
-            font-weight: 500;
-            margin-bottom: 0.8rem;
-            color: var(--text);
-        }
+.payment-methods-title {
+  font-size: 1.1rem;
+  font-weight: 600;
+  margin-bottom: 1rem;
+  color: var(--text);
+  position: relative;
+  padding-bottom: 0.5rem;
+}
 
-        .payment-option {
-            display: none; /* Hidden by default */
-            background-color: var(--surface);
-            border-radius: var(--radius-sm);
-            padding: 0.7rem;
-            margin-bottom: 0.5rem;
-            align-items: center;
-            gap: 0.8rem;
-            cursor: pointer;
-            border: 1px solid #e0e0e0;
-            transition: border-color 0.2s ease, background-color 0.2s ease;
-        }
+.payment-methods-title:after {
+  content: '';
+  position: absolute;
+  left: 0;
+  bottom: 0;
+  width: 40px;
+  height: 3px;
+  background-color: var(--primary);
+  border-radius: 3px;
+}
 
-        .payment-option.active {
-            display: flex; /* Shown when active */
-        }
+.payment-option {
+  display: none; /* Hidden by default */
+  background-color: var(--surface);
+  border-radius: 8px;
+  padding: 1rem;
+  margin-bottom: 0.75rem;
+  align-items: center;
+  gap: 1rem;
+  cursor: pointer;
+  border: 2px solid #e0e0e0;
+  transition: all 0.3s ease;
+  position: relative;
+  overflow: hidden;
+}
 
-        .payment-option.selected {
-            border-color: var(--primary);
-            background-color: rgba(var(--primary-rgb, 46, 125, 50), 0.15);
-        }
+.payment-option.active {
+  display: flex; /* Shown when active */
+}
 
-        .payment-icon {
-            background-color: #e8f5e9;
-            color: var(--primary);
-            width: 32px;
-            height: 32px;
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 1rem;
-        }
+.payment-option.selected {
+  border-color: var(--primary);
+  background-color: rgba(var(--primary-rgb, 46, 125, 50), 0.08);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+}
 
-        .payment-details h3 {
-            font-size: 0.85rem;
-            margin-bottom: 0.1rem;
-        }
+.payment-option:hover:not(.selected) {
+  border-color: #bdbdbd;
+  background-color: #f5f5f5;
+}
 
-        .payment-details p {
-            font-size: 0.75rem;
-            color: var(--text-secondary);
-        }
+.payment-icon {
+  background-color: #e8f5e9;
+  color: var(--primary);
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.1rem;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+  transition: all 0.3s ease;
+}
+
+.payment-option.selected .payment-icon {
+  transform: scale(1.1);
+  background-color: var(--primary);
+  color: white;
+}
+
+.payment-details {
+  flex: 1;
+}
+
+.payment-details h3 {
+  font-size: 0.95rem;
+  margin-bottom: 0.25rem;
+  font-weight: 600;
+  color: var(--text);
+}
+
+.payment-details p {
+  font-size: 0.8rem;
+  color: var(--text-secondary);
+  margin: 0;
+}
+
+/* Mobile Money Form Styling */
+.mobile-money-form {
+  display: none;
+  padding: 1rem;
+  margin-top: 1rem;
+  background-color: white;
+  border-radius: 8px;
+  border: 1px solid #e0e0e0;
+  animation: slideDown 0.3s ease-out;
+}
+
+@keyframes slideDown {
+  from { opacity: 0; transform: translateY(-10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.payment-info-box {
+  background-color: #f0f7ff;
+  border: 1px solid #cce0ff;
+  border-radius: 8px;
+  margin-bottom: 1.25rem;
+  overflow: hidden;
+}
+
+.payment-header {
+  background-color: #e6f0ff;
+  padding: 0.75rem 1rem;
+  font-weight: 600;
+  color: #0056b3;
+  font-size: 0.9rem;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.payment-info-content {
+  padding: 1rem;
+}
+
+.restaurant-number {
+  font-size: 0.9rem;
+  margin-bottom: 0.75rem;
+  color: #333;
+}
+
+.payment-note {
+  font-size: 0.8rem;
+  color: #555;
+  margin-bottom: 0.75rem;
+}
+
+.amount-box {
+  background-color: white;
+  border: 1px dashed #aaa;
+  border-radius: 6px;
+  padding: 0.75rem;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: 0.75rem;
+}
+
+.amount {
+  font-weight: 700;
+  font-size: 1.1rem;
+  color: var(--primary);
+}
+
+.form-group {
+  margin-bottom: 1rem;
+}
+
+.form-group label {
+  display: block;
+  margin-bottom: 0.4rem;
+  font-size: 0.85rem;
+  color: #555;
+  font-weight: 500;
+}
+
+.form-control {
+  width: 100%;
+  padding: 0.75rem;
+  border: 1px solid #ddd;
+  border-radius: 6px;
+  font-size: 0.9rem;
+  transition: border-color 0.2s ease;
+}
+
+.form-control:focus {
+  border-color: var(--primary);
+  outline: none;
+  box-shadow: 0 0 0 2px rgba(var(--primary-rgb, 46, 125, 50), 0.2);
+}
+
+.transaction-verification {
+  margin-top: 1.5rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.btn {
+  padding: 0.75rem 1rem;
+  border: none;
+  border-radius: 6px;
+  font-size: 0.9rem;
+  font-weight: 600;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  transition: all 0.2s ease;
+}
+
+.btn-verify {
+  background-color: var(--primary);
+  color: white;
+}
+
+.btn-verify:hover {
+  background-color: rgba(var(--primary-rgb, 46, 125, 50), 0.9);
+  transform: translateY(-2px);
+}
+
+.btn-success {
+  background-color: #4caf50;
+  color: white;
+}
+
+.btn-secondary {
+  background-color: #f5f5f5;
+  color: #333;
+}
+
+.verification-status {
+  min-height: 24px;
+  font-size: 0.85rem;
+  text-align: center;
+  padding: 0.25rem;
+}
+
+/* Payment Modal */
+.modal {
+  display: none;
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0,0,0,0.5);
+  z-index: 1000;
+  justify-content: center;
+  align-items: center;
+}
+
+.modal-content {
+  background-color: white;
+  width: 90%;
+  max-width: 420px;
+  border-radius: 12px;
+  box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+  animation: modalFadeIn 0.3s ease-out;
+}
+
+@keyframes modalFadeIn {
+  from { opacity: 0; transform: translateY(-20px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.modal-header {
+  padding: 1rem 1.5rem;
+  border-bottom: 1px solid #eee;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.modal-header h2 {
+  font-size: 1.1rem;
+  font-weight: 600;
+  margin: 0;
+}
+
+.close-modal {
+  background: none;
+  border: none;
+  font-size: 1.5rem;
+  cursor: pointer;
+  color: #777;
+}
+
+.modal-body {
+  padding: 1.5rem;
+}
+
+.verification-progress {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1rem;
+  padding: 1rem 0;
+}
+
+.spinner {
+  width: 40px;
+  height: 40px;
+  border: 4px solid rgba(var(--primary-rgb, 46, 125, 50), 0.2);
+  border-top: 4px solid var(--primary);
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+.verification-result {
+  display: none;
+  flex-direction: column;
+  align-items: center;
+  gap: 1rem;
+  padding: 1rem 0;
+  text-align: center;
+}
+
+.verification-result i {
+  font-size: 3rem;
+}
+
+.verification-result.success i {
+  color: #4caf50;
+}
+
+.verification-result.failed i {
+  color: #f44336;
+}
+
+.modal-footer {
+  padding: 1rem 1.5rem;
+  border-top: 1px solid #eee;
+  display: flex;
+  justify-content: flex-end;
+  gap: 0.75rem;
+}
+/* Additional CSS for the new Cash on Delivery verification system */
+.order-verification-badge {
+  position: absolute;
+  top: -8px;
+  right: -8px;
+  background-color: #4caf50;
+  color: white;
+  font-size: 0.7rem;
+  padding: 3px 8px;
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+textarea.form-control {
+  resize: vertical;
+  min-height: 60px;
+}
+
+.form-check {
+  display: flex;
+  align-items: center;
+  margin-bottom: 1rem;
+  gap: 8px;
+}
+
+.form-check input {
+  margin: 0;
+  width: 18px;
+  height: 18px;
+}
+
+.form-check label {
+  margin: 0;
+  font-size: 0.85rem;
+  color: #555;
+}
+
 
         .checkout-bar {
             background-color: var(--surface);
@@ -696,30 +1024,91 @@
       </div>
     </section>
 
-    <section class="payment-methods">
-      <h2 class="payment-methods-title">Payment</h2>
-      <div class="payment-option restaurant-only" data-method="Cash on Delivery">
-        <div class="payment-icon"><i class="fas fa-money-bill-alt"></i></div>
-        <div class="payment-details">
-          <h3>Cash on Delivery</h3>
-          <p>Pay in cash when your food arrives</p>
+    <!-- Enhanced Payment Methods HTML Section -->
+<!-- Enhanced Payment Methods HTML Section -->
+<section class="payment-methods">
+  <h2 class="payment-methods-title">Payment Method</h2>
+  
+  <!-- Restaurant payment options -->
+  <div class="payment-option restaurant-only" data-method="Cash on Delivery">
+    <div class="payment-icon"><i class="fas fa-money-bill-alt"></i></div>
+    <div class="payment-details">
+      <h3>Cash on Delivery</h3>
+      <p>Pay in cash when your food arrives</p>
+    </div>
+  </div>
+  
+  <!-- Home delivery payment options -->
+  <div class="payment-option home-only" data-method="Cash on Delivery" id="cashDeliveryOption">
+    <div class="payment-icon"><i class="fas fa-money-bill-alt"></i></div>
+    <div class="payment-details">
+      <h3>Cash on Delivery</h3>
+      <p>Pay in cash when your food arrives</p>
+    </div>
+  </div>
+  
+  <!-- Order Verification Form for home delivery -->
+  <div id="orderVerificationForm" class="mobile-money-form">
+    <div class="payment-info-box">
+      <div class="payment-header">
+        <i class="fas fa-info-circle"></i> Order Verification
+      </div>
+      <div class="payment-info-content">
+        <p class="payment-note">To ensure your delivery arrives promptly, please verify your order with a quick phone confirmation</p>
+        <div class="amount-box">
+          <span>Total Amount:</span>
+          <span id="mobileMoneyAmount" class="amount">$0.00</span>
         </div>
       </div>
-      <div class="payment-option home-only" data-method="Cash on Delivery">
-        <div class="payment-icon"><i class="fas fa-money-bill-alt"></i></div>
-        <div class="payment-details">
-          <h3>Pay Cash to Rider</h3>
-          <p>Pay cash upon delivery</p>
-        </div>
+    </div>
+    
+    <div class="form-group">
+      <label for="confirmPhone">Confirm Your Phone Number</label>
+      <input type="tel" id="confirmPhone" class="form-control" placeholder="Enter your number" required>
+    </div>
+    
+    <div class="form-group">
+      <label for="orderNotes">Special Instructions (Optional)</label>
+      <textarea id="orderNotes" class="form-control" placeholder="Delivery instructions, landmarks, etc." rows="2"></textarea>
+    </div>
+    
+    <div class="transaction-verification">
+      <button id="verifyOrder" class="btn btn-verify">
+        <i class="fas fa-check-circle"></i> Verify Order
+      </button>
+      <div id="verificationStatus" class="verification-status"></div>
+    </div>
+  </div>
+</section>
+
+<!-- Order Verification Modal -->
+<div id="paymentModal" class="modal">
+  <div class="modal-content">
+    <div class="modal-header">
+      <h2>Verifying Order</h2>
+      <button id="closePaymentModal" class="close-modal">&times;</button>
+    </div>
+    <div class="modal-body">
+      <div id="paymentVerificationProgress" class="verification-progress">
+        <div class="spinner"></div>
+        <p>Verifying your order...</p>
       </div>
-      <div class="payment-option home-only" data-method="Mobile Money">
-        <div class="payment-icon"><i class="fas fa-mobile-alt"></i></div>
-        <div class="payment-details">
-          <h3>Mobile Money</h3>
-          <p>Pay via mobile money upon delivery</p>
-        </div>
+      <div id="paymentVerificationSuccess" class="verification-result success">
+        <i class="fas fa-check-circle"></i>
+        <p>Order verified successfully!</p>
+        <small>Our team will call you shortly to confirm your order</small>
       </div>
-    </section>
+      <div id="paymentVerificationFailed" class="verification-result failed">
+        <i class="fas fa-times-circle"></i>
+        <p>Verification failed. Please check your details and try again.</p>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button id="continueToCheckout" class="btn btn-success">Continue to Checkout</button>
+      <button id="tryAgainPayment" class="btn btn-secondary">Try Again</button>
+    </div>
+  </div>
+</div>
 
     <div class="checkout-bar">
       <div class="total-amount">
@@ -782,403 +1171,729 @@
 
     <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
    <script>
-$(document).ready(function () {
-  // ── Constants & State ──
-  const SERVICE_FEE        = 0.51;
-  const DELIVERY_FEE       = 0.00;
-  const THRESHOLD_DISTANCE = 100; // meters
+    $(document).ready(function () {
+    // ── Constants & State ──
+    const SERVICE_FEE = 0.51;
+    const DELIVERY_FEE = 0.00;
+    const THRESHOLD_DISTANCE = 100; // meters
+    const RESTAURANT_MOBILE_MONEY = "0123456789";
 
-  let selectedPaymentMethod = 'Cash on Delivery';
-  let deliveryType          = 'restaurant';
-  let homeDeliveryAddress   = {};
-  const tableNumber         = '1';
+    // Read & round restaurant coords once
+    const restaurantLat = parseFloat(parseFloat($('#checkoutButton').attr('data-restaurant-lat')).toFixed(8));
+    const restaurantLon = parseFloat(parseFloat($('#checkoutButton').attr('data-restaurant-lon')).toFixed(8));
+    const restaurantLocation = [restaurantLon, restaurantLat];
 
-  // ── Read & round coords ──
-  const $checkoutButton = $('#checkoutButton');
-  const rawLat          = parseFloat($checkoutButton.attr('data-restaurant-lat'));
-  const rawLon          = parseFloat($checkoutButton.attr('data-restaurant-lon'));
-  const restaurantLat   = parseFloat(rawLat.toFixed(8));
-  const restaurantLon   = parseFloat(rawLon.toFixed(8));
+    // Application state
+    const state = {
+        selectedPaymentMethod: '',
+        deliveryType: 'unknown',
+        homeDeliveryAddress: {},
+        paymentVerified: false,
+        tableNumber: '1',
+        userLocation: null,
+        isMapInitialized: false,
+        map: null,
+        userMarker: null,
+        restaurantMarker: null,
+        distanceToRestaurant: null
+    };
 
-  // ── Elements ──
-  const $openAddressModal  = $('#openAddressModal');
-  const $addressModal      = $('#addressModal');
-  const $closeAddressModal = $('#closeAddressModal');
-  const $saveAddress       = $('#saveAddress');
-  const $cancelAddress     = $('#cancelAddress');
-  const $loadingOverlay    = $('#loading-overlay');
+    // ── Cache DOM Elements (once, at initialization) ──
+    const elements = {
+        checkoutButton: $('#checkoutButton'),
+        openAddressModal: $('#openAddressModal'),
+        addressModal: $('#addressModal'),
+        closeAddressModal: $('#closeAddressModal'),
+        saveAddress: $('#saveAddress'),
+        cancelAddress: $('#cancelAddress'),
+        loadingOverlay: $('#loading-overlay'),
+        orderVerificationForm: $('#orderVerificationForm'),
+        paymentModal: $('#paymentModal'),
+        closePaymentModal: $('#closePaymentModal'),
+        continueToCheckout: $('#continueToCheckout'),
+        tryAgainPayment: $('#tryAgainPayment'),
+        verifyOrder: $('#verifyOrder'),
+        verificationStatus: $('#verificationStatus'),
+        totalAmount: $('#mobileMoneyAmount'),
+        confirmPhone: $('#confirmPhone'),
+        orderNotes: $('#orderNotes'),
+        modalFullName: $('#modal-full-name'),
+        modalPhoneNumber: $('#modal-phone-number'),
+        modalAddress: $('#modal-address'),
+        mapContainer: document.getElementById('map-container'),
+        toggleMapButton: document.getElementById('toggleMap'),
+        distanceValue: $('.distance-value'),
+        distanceStatus: $('#distanceStatus'),
+        orderDetailsList: $('#orderDetailsList'),
+        itemTotal: $('#itemTotal'),
+        cartTotal: $('#cartTotal'),
+        deliverySwitchLabels: $('.delivery-switch-label'),
+        paymentOptions: $('.payment-option')
+    };
 
-  const $modalFullName     = $('#modal-full-name');
-  const $modalPhoneNumber  = $('#modal-phone-number');
-  const $modalAddress      = $('#modal-address');
+    // ── Helper Functions ──
 
-  const mapContainer       = document.getElementById('map-container');
-  const toggleMapButton    = document.getElementById('toggleMap');
-  const $distanceValue     = $('.distance-value');
-  const $distanceStatus    = $('#distanceStatus');
-
-  let map, userMarker, restaurantMarker;
-  let isMapInitialized = false;
-
-  // ── Mapbox Setup ──
-  mapboxgl.accessToken = 'pk.eyJ1IjoibWl0Y2hlbGwyMzEiLCJhIjoiY205dGF0YXprMGFoajJrc2I5cDVvNnprZSJ9.LiQvQKUCOIe5fW0QYSOSFQ';
-
-  // ── Map Toggle ──
-  toggleMapButton.addEventListener('click', () => {
-    mapContainer.classList.toggle('active');
-    toggleMapButton.innerHTML = mapContainer.classList.contains('active')
-      ? '<i class="fas fa-map"></i> Hide map'
-      : '<i class="fas fa-map"></i> Show map';
-    if (mapContainer.classList.contains('active') && !isMapInitialized) {
-      initializeMap();
-      isMapInitialized = true;
-    }
-  });
-
-  // ── Initialize Map & Restaurant Marker ──
-  function initializeMap() {
-    map = new mapboxgl.Map({
-      container: 'map',
-      style:     'mapbox://styles/mapbox/streets-v11',
-      center:    [restaurantLon, restaurantLat],
-      zoom:      14
-    });
-    map.on('load', () => {
-      // restaurant icon
-      const restaurantEl = document.createElement('div');
-      restaurantEl.innerHTML = '<i class="fas fa-utensils fa-2x"></i>';
-      restaurantEl.style.color = '#d32f2f';
-      restaurantEl.style.textShadow = '0 0 3px #fff';
-
-      restaurantMarker = new mapboxgl.Marker({ element: restaurantEl })
-        .setLngLat([restaurantLon, restaurantLat])
-        .setPopup(new mapboxgl.Popup().setHTML('<strong>Restaurant</strong>'))
-        .addTo(map);
-
-      getUserLocationForMap();
-    });
-  }
-
-  // ── Get & Mark User Location ──
-  function getUserLocationForMap() {
-    if (!navigator.geolocation) {
-      $distanceValue.text('Geolocation not supported');
-      return;
-    }
-    navigator.geolocation.getCurrentPosition(pos => {
-      const userLng = pos.coords.longitude;
-      const userLat = pos.coords.latitude;
-
-      const userEl = document.createElement('div');
-      userEl.innerHTML = '<i class="fas fa-user fa-2x"></i>';
-      userEl.style.color = '#1976d2';
-      userEl.style.textShadow = '0 0 3px #fff';
-
-      if (userMarker) userMarker.remove();
-      userMarker = new mapboxgl.Marker({ element: userEl })
-        .setLngLat([userLng, userLat])
-        .setPopup(new mapboxgl.Popup().setHTML('<strong>Your Location</strong>'))
-        .addTo(map);
-
-      const bounds = new mapboxgl.LngLatBounds()
-        .extend([userLng, userLat])
-        .extend([restaurantLon, restaurantLat]);
-      map.fitBounds(bounds, { padding: 70 });
-
-      if (map.getLayer('route')) {
-        map.removeLayer('route');
-        map.removeSource('route');
-      }
-      map.addSource('route', {
-        type: 'geojson',
-        data: {
-          type: 'Feature',
-          geometry: {
-            type: 'LineString',
-            coordinates: [
-              [userLng, userLat],
-              [restaurantLon, restaurantLat]
-            ]
-          }
+    // Calculate straight-line distance
+    function calculateDistance(userLoc, restLoc) {
+        if (typeof turf === 'undefined' || !turf.point || !turf.distance) {
+            console.error("Turf.js library not loaded!");
+            return Infinity;
         }
-      });
-      map.addLayer({
-        id:     'route',
-        type:   'line',
-        source: 'route',
-        layout: { 'line-join': 'round', 'line-cap': 'round' },
-        paint:  { 'line-color': '#03a9f4', 'line-width': 3, 'line-dasharray': [2,1] }
-      });
+        return turf.distance(turf.point(userLoc), turf.point(restLoc), { units: 'meters' });
+    }
 
-      updateDistanceDisplay(userLng, userLat, restaurantLon, restaurantLat);
-    }, err => {
-      console.error('Geo error', err);
-      $distanceValue.text('Could not determine your location');
-    });
-  }
-
-  // ── Update Distance UI ──
-  function updateDistanceDisplay(uLng, uLat, rLng, rLat) {
-    const dist = turf.distance(turf.point([uLng, uLat]), turf.point([rLng, rLat]), { units: 'meters' });
-    $distanceValue.text(dist < 1000
-      ? `${Math.round(dist)} meters away`
-      : `${(dist/1000).toFixed(1)} km away`
-    );
-    $distanceStatus
-      .text(dist <= THRESHOLD_DISTANCE
-        ? "You're at the restaurant!"
-        : "Delivery recommended"
-      )
-      .toggleClass('nearby', dist <= THRESHOLD_DISTANCE)
-      .toggleClass('far', dist > THRESHOLD_DISTANCE);
-  }
-
-  // ── Geolocation Promise ──
-  function getUserLocation() {
-    return new Promise((res, rej) => {
-      !navigator.geolocation
-        ? rej('No geolocation')
-        : navigator.geolocation.getCurrentPosition(
-            p => res([p.coords.longitude, p.coords.latitude]),
-            e => rej(e)
-          );
-    });
-  }
-
-  // ── Straight‐Line Distance ──
-  async function calculateDistance(userLoc, restLoc) {
-    return turf.distance(turf.point(userLoc), turf.point(restLoc), { units: 'meters' });
-  }
-
-  // ── Delivery‐Type Logic + Auto-open on Home ──
-  async function setDeliveryType() {
-    try {
-      const userLoc = await getUserLocation();
-      const dist    = await calculateDistance(userLoc, [restaurantLon, restaurantLat]);
-
-      if (dist < THRESHOLD_DISTANCE) {
-        deliveryType = 'restaurant';
-        $('.delivery-details-restaurant').show();
-        $('.delivery-details-home').hide();
-      } else {
-        deliveryType = 'home';
-        $('.delivery-details-home').show();
-        $('.delivery-details-restaurant').hide();
-        // auto-open map
-        if (!mapContainer.classList.contains('active')) {
-          mapContainer.classList.add('active');
-          toggleMapButton.innerHTML = '<i class="fas fa-map"></i> Hide map';
+    // Update distance display UI
+    function updateDistanceDisplay(dist) {
+        if (dist === Infinity) {
+            elements.distanceValue.text('Could not calculate distance');
+            elements.distanceStatus.text('');
+            elements.distanceStatus.removeClass('nearby far');
+            return;
         }
-        if (!isMapInitialized) {
-          initializeMap(); isMapInitialized = true;
-        } else {
-          getUserLocationForMap();
+        
+        elements.distanceValue.text(dist < 1000
+            ? `${Math.round(dist)} meters away`
+            : `${(dist / 1000).toFixed(1)} km away`
+        );
+        
+        elements.distanceStatus
+            .text(dist <= THRESHOLD_DISTANCE
+                ? "You're at the restaurant!"
+                : "Delivery recommended"
+            )
+            .toggleClass('nearby', dist <= THRESHOLD_DISTANCE)
+            .toggleClass('far', dist > THRESHOLD_DISTANCE);
+    }
+
+    // Get user location as a Promise - with caching
+    function getUserLocation() {
+        // Return cached location if available
+        if (state.userLocation) {
+            return Promise.resolve(state.userLocation);
         }
-      }
-      // update switch labels
-      $('.delivery-switch-label').removeClass('active');
-      $(`.delivery-switch-label[data-delivery-type="${deliveryType}"]`).addClass('active');
-    } catch {
-      // fallback to home + auto-open map
-      deliveryType = 'home';
-      $('.delivery-details-home').show();
-      $('.delivery-details-restaurant').hide();
-      $('.delivery-switch-label').removeClass('active');
-      $('.delivery-switch-label[data-delivery-type="home"]').addClass('active');
-      if (!mapContainer.classList.contains('active')) {
-        mapContainer.classList.add('active');
-        toggleMapButton.innerHTML = '<i class="fas fa-map"></i> Hide map';
-      }
-      if (!isMapInitialized) {
-        initializeMap(); isMapInitialized = true;
-      } else {
-        getUserLocationForMap();
-      }
-    }
-
-    updatePaymentOptions();
-    updateOrderDetails();
-    updateCheckoutButtonState();
-  }
-
-  // ── Block Manual Switch & Alert ──
-  $('.delivery-switch-label').on('click', function () {
-    const wanted = $(this).data('delivery-type');
-    if (deliveryType === wanted) return;
-    if (wanted === 'restaurant') {
-      alert("You’re not at the restaurant!");
-    } else {
-      alert("You can’t switch away from Home delivery manually.");
-    }
-  });
-
-  // ── Address Modal ──
-  $openAddressModal.on('click',  () => $addressModal.addClass('active'));
-  $closeAddressModal.on('click', () => $addressModal.removeClass('active'));
-  $cancelAddress    .on('click', () => $addressModal.removeClass('active'));
-  $saveAddress      .on('click', () => {
-    const full  = $modalFullName.val().trim();
-    const phone = $modalPhoneNumber.val().trim();
-    const addr  = $modalAddress.val().trim();
-    if (!full || !phone || !addr) return alert('Please fill in all fields');
-    homeDeliveryAddress = { full_name: full, phone_number: phone, address: addr };
-    $addressModal.removeClass('active');
-    updateCheckoutButtonState();
-  });
-
-  // ── Payment Options ──
-  function updatePaymentOptions() {
-    if (deliveryType === 'restaurant') {
-      $('.payment-option.restaurant-only').addClass('active');
-      $('.payment-option.home-only').removeClass('active');
-      $('.payment-option[data-method="Cash on Delivery"].restaurant-only').addClass('selected');
-      selectedPaymentMethod = 'Cash on Delivery';
-    } else {
-      $('.payment-option.home-only').addClass('active');
-      $('.payment-option.restaurant-only').removeClass('active');
-      $('.payment-option').removeClass('selected');
-      selectedPaymentMethod = '';
-    }
-  }
-  $('.payment-option').on('click', function () {
-    if (!$(this).hasClass('active')) return;
-    $('.payment-option').removeClass('selected');
-    $(this).addClass('selected');
-    selectedPaymentMethod = $(this).data('method');
-    updateCheckoutButtonState();
-    if ('vibrate' in navigator) navigator.vibrate(50);
-  });
-
-  // ── Cart & Order Details ──
-  function updateOrderDetails() {
-    const cart = JSON.parse(localStorage.getItem('cart') || '{}');
-    const $list = $('#orderDetailsList');
-    let html = '', subtotal = 0;
-    if (!Object.keys(cart).length) {
-      $list.html(`
-        <div class="empty-cart">
-          <i class="fas fa-shopping-bag"></i>
-          <p>Your cart is empty.</p>
-        </div>
-      `);
-      $('#itemTotal').text('$0.00');
-      $('#cartTotal').text('$0.00');
-      return;
-    }
-    for (const [id, item] of Object.entries(cart)) {
-      const [qty, name, price, img] = item;
-      const total = qty * parseFloat(price);
-      subtotal += total;
-      html += `
-        <div class="order-item" data-item-id="${id}">
-          <img src="${img}" alt="${name}">
-          <div class="item-details">
-            <h3>${name}</h3>
-            <p>$${parseFloat(price).toFixed(2)}</p>
-          </div>
-          <div class="item-quantity-controls">
-            <button class="quantity-button decrement-item">-</button>
-            <span class="item-quantity">${qty}</span>
-            <button class="quantity-button increment-item">+</button>
-          </div>
-          <button class="delete-item"><i class="fas fa-trash-alt"></i></button>
-          <div class="item-price">$${total.toFixed(2)}</div>
-        </div>
-      `;
-    }
-    $list.html(html);
-    const totalDue = subtotal + SERVICE_FEE + DELIVERY_FEE;
-    $('#itemTotal').text(`$${subtotal.toFixed(2)}`);
-    $('#cartTotal').text(`$${totalDue.toFixed(2)}`);
-
-    $('.increment-item').off().on('click', e => {
-      updateCart($(e.currentTarget).closest('.order-item').data('item-id'), +1);
-    });
-    $('.decrement-item').off().on('click', e => {
-      updateCart($(e.currentTarget).closest('.order-item').data('item-id'), -1);
-    });
-    $('.delete-item').off().on('click', e => {
-      deleteCartItem($(e.currentTarget).closest('.order-item').data('item-id'));
-    });
-  }
-
-  function updateCart(id, delta) {
-    const cart = JSON.parse(localStorage.getItem('cart') || '{}');
-    if (!cart[id]) return;
-    cart[id][0] += delta;
-    if (cart[id][0] < 1) delete cart[id];
-    localStorage.setItem('cart', JSON.stringify(cart));
-    updateOrderDetails();
-    updateCheckoutButtonState();
-  }
-
-  function deleteCartItem(id) {
-    const cart = JSON.parse(localStorage.getItem('cart') || '{}');
-    delete cart[id];
-    localStorage.setItem('cart', JSON.stringify(cart));
-    updateOrderDetails();
-    updateCheckoutButtonState();
-  }
-
-  // ── Checkout Button State ──
-  function updateCheckoutButtonState() {
-    const cartEmpty = !Object.keys(JSON.parse(localStorage.getItem('cart') || '{}')).length;
-    const paymentOK = !!selectedPaymentMethod;
-    const addressOK = deliveryType === 'restaurant'
-      ? true
-      : (homeDeliveryAddress.full_name && homeDeliveryAddress.phone_number && homeDeliveryAddress.address);
-    $checkoutButton.prop('disabled', cartEmpty || !paymentOK || !addressOK);
-  }
-
-      // ── Place Order Handler ──
-    $checkoutButton.on('click', function (e) {
-      e.preventDefault();
-      $loadingOverlay.addClass('active');
-
-      const cart = JSON.parse(localStorage.getItem('cart') || '{}');
-      if (!Object.keys(cart).length) {
-        alert('Your cart is empty.');
-        return $loadingOverlay.removeClass('active');
-      }
-      if (!selectedPaymentMethod) {
-        alert('Please select a payment method.');
-        return $loadingOverlay.removeClass('active');
-      }
-
-      const payload = {
-        delivery_type:    deliveryType,
-        payment_method:   selectedPaymentMethod,
-        cart,
-        table_number:     tableNumber,
-        delivery_details: deliveryType === 'home'
-          ? { address: homeDeliveryAddress.address }
-          : {},
-        customer_details: deliveryType === 'home'
-          ? {
-              full_name:    homeDeliveryAddress.full_name,
-              phone_number: homeDeliveryAddress.phone_number
+        
+        return new Promise((res, rej) => {
+            if (!navigator.geolocation) {
+                rej('No geolocation support');
+            } else {
+                navigator.geolocation.getCurrentPosition(
+                    p => {
+                        // Cache the user location
+                        state.userLocation = [p.coords.longitude, p.coords.latitude];
+                        res(state.userLocation);
+                    },
+                    e => rej(e),
+                    // Add options for faster response
+                    { maximumAge: 60000, timeout: 5000, enableHighAccuracy: false }
+                );
             }
-          : {}
-      };
+        });
+    }
 
-      console.log('Order payload:', payload);
-      // TODO: Replace with real AJAX POST to your server endpoint
-      // $.post('/your-order-endpoint/', payload).done(...).fail(...);
+    // Lazy load Mapbox initialization
+    function initializeMap() {
+        if (state.isMapInitialized) return Promise.resolve();
+        
+        return new Promise((resolve, reject) => {
+            // Defer map initialization to not block page loading
+            requestAnimationFrame(() => {
+                try {
+                    mapboxgl.accessToken = 'pk.eyJ1IjoibWl0Y2hlbGwyMzEiLCJhIjoiY205dGF0YXprMGFoajJrc2I5cDVvNnprZSJ9.LiQvQKUCOIe5fW0QYSOSFQ';
+                    state.map = new mapboxgl.Map({
+                        container: 'map',
+                        style: 'mapbox://styles/mapbox/streets-v11',
+                        center: restaurantLocation,
+                        zoom: 14
+                    });
+                    
+                    state.map.on('load', () => {
+                        // Add restaurant marker
+                        const restaurantEl = document.createElement('div');
+                        restaurantEl.innerHTML = '<i class="fas fa-utensils fa-2x"></i>';
+                        restaurantEl.style.color = '#d32f2f';
+                        restaurantEl.style.textShadow = '0 0 3px #fff';
+                        
+                        state.restaurantMarker = new mapboxgl.Marker({ element: restaurantEl })
+                            .setLngLat(restaurantLocation)
+                            .setPopup(new mapboxgl.Popup().setHTML('<strong>Restaurant</strong>'))
+                            .addTo(state.map);
+                            
+                        state.isMapInitialized = true;
+                        resolve();
+                        
+                        // Get user location for map and add user marker/route
+                        updateMapWithUserLocation();
+                    });
+                    
+                    state.map.on('error', (e) => {
+                        console.error('Mapbox error:', e.error);
+                        reject(e.error);
+                    });
+                } catch (err) {
+                    console.error('Map initialization error:', err);
+                    reject(err);
+                }
+            });
+        });
+    }
 
-      // Simulate success
-      setTimeout(() => {
-        localStorage.removeItem('cart');
-        window.location.href = '/order-success/';
-      }, 1500);
+    // Update map with user location (separated from initialization)
+    async function updateMapWithUserLocation() {
+        if (!state.isMapInitialized) return;
+        
+        try {
+            const userLoc = await getUserLocation();
+            
+            // Add/update user marker
+            const userEl = document.createElement('div');
+            userEl.innerHTML = '<i class="fas fa-user fa-2x"></i>';
+            userEl.style.color = '#1976d2';
+            userEl.style.textShadow = '0 0 3px #fff';
+            
+            if (state.userMarker) state.userMarker.remove();
+            
+            state.userMarker = new mapboxgl.Marker({ element: userEl })
+                .setLngLat(userLoc)
+                .setPopup(new mapboxgl.Popup().setHTML('<strong>Your Location</strong>'))
+                .addTo(state.map);
+
+            // Fit map bounds to include both markers
+            const bounds = new mapboxgl.LngLatBounds()
+                .extend(userLoc)
+                .extend(restaurantLocation);
+                
+            state.map.fitBounds(bounds, { padding: 70 });
+
+            // Draw route line - efficiently update existing or create new
+            const routeGeoJSON = {
+                type: 'Feature',
+                geometry: {
+                    type: 'LineString',
+                    coordinates: [userLoc, restaurantLocation]
+                }
+            };
+            
+            if (state.map.getSource('route')) {
+                state.map.getSource('route').setData(routeGeoJSON);
+            } else {
+                state.map.addSource('route', { type: 'geojson', data: routeGeoJSON });
+                state.map.addLayer({
+                    id: 'route',
+                    type: 'line',
+                    source: 'route',
+                    layout: { 'line-join': 'round', 'line-cap': 'round' },
+                    paint: { 'line-color': '#03a9f4', 'line-width': 3, 'line-dasharray': [2, 1] }
+                });
+            }
+
+            // Calculate and cache distance
+            state.distanceToRestaurant = calculateDistance(userLoc, restaurantLocation);
+            updateDistanceDisplay(state.distanceToRestaurant);
+
+        } catch (err) {
+            console.error('Geo error for map:', err);
+            elements.distanceValue.text('Could not determine your location for map');
+            elements.distanceStatus.text('').removeClass('nearby far');
+        }
+    }
+
+    // Determine and set delivery type based on user location
+    async function setDeliveryType() {
+        try {
+            // Get user location (cached if available)
+            const userLoc = await getUserLocation();
+            const dist = calculateDistance(userLoc, restaurantLocation);
+            state.distanceToRestaurant = dist;
+
+            const isAtRestaurant = dist < THRESHOLD_DISTANCE;
+            state.deliveryType = isAtRestaurant ? 'restaurant' : 'home';
+
+            // Update UI based on delivery type
+            if (isAtRestaurant) {
+                $('.delivery-details-restaurant').show();
+                $('.delivery-details-home').hide();
+                elements.mapContainer.classList.remove('active');
+                elements.toggleMapButton.innerHTML = '<i class="fas fa-map"></i> Show map';
+                
+                // No verification needed for eat-in orders
+                state.paymentVerified = true;
+                elements.orderVerificationForm.hide();
+                $('#cashDeliveryOption .order-verification-badge').remove();
+                elements.verificationStatus.empty();
+            } else {
+                $('.delivery-details-home').show();
+                $('.delivery-details-restaurant').hide();
+                
+                // Initialize map asynchronously without blocking UI
+                setTimeout(() => {
+                    if (!elements.mapContainer.classList.contains('active')) {
+                        elements.mapContainer.classList.add('active');
+                        elements.toggleMapButton.innerHTML = '<i class="fas fa-map"></i> Hide map';
+                    }
+                    initializeMap();
+                }, 100);
+                
+                // Show verification form for home delivery
+                state.paymentVerified = false;
+                elements.orderVerificationForm.show();
+                
+                // Update total amount for verification form
+                updateOrderTotalAmountDisplay(calculateCartTotal());
+            }
+
+            // Update switch labels UI
+            elements.deliverySwitchLabels.removeClass('active');
+            $(`.delivery-switch-label[data-delivery-type="${state.deliveryType}"]`).addClass('active');
+
+            // Update other UI elements (without unnecessary duplicate calls)
+            updatePaymentOptions();
+            
+            // Update distance display if we have distance information
+            if (state.distanceToRestaurant !== null) {
+                updateDistanceDisplay(state.distanceToRestaurant);
+            }
+            
+        } catch (err) {
+            console.warn('Could not get user location, defaulting to Home delivery.', err);
+            // Fallback to home delivery
+            state.deliveryType = 'home';
+            $('.delivery-details-home').show();
+            $('.delivery-details-restaurant').hide();
+            
+            // Initialize map centered on restaurant
+            setTimeout(() => {
+                if (!elements.mapContainer.classList.contains('active')) {
+                    elements.mapContainer.classList.add('active');
+                    elements.toggleMapButton.innerHTML = '<i class="fas fa-map"></i> Hide map';
+                }
+                initializeMap();
+                updateDistanceDisplay(Infinity);
+            }, 100);
+            
+            // Update UI for home delivery
+            elements.deliverySwitchLabels.removeClass('active');
+            $(`.delivery-switch-label[data-delivery-type="${state.deliveryType}"]`).addClass('active');
+            
+            updatePaymentOptions();
+        }
+    }
+
+    // ── Cart Management ──
+    
+    // Calculate cart total (extracted to be reusable)
+    function calculateCartTotal() {
+        const cart = JSON.parse(localStorage.getItem('cart') || '{}');
+        let subtotal = 0;
+        
+        Object.entries(cart).forEach(([id, item]) => {
+            subtotal += item[0] * parseFloat(item[2]);
+        });
+        
+        return subtotal + SERVICE_FEE + DELIVERY_FEE;
+    }
+
+    // Update cart display and totals - with optimized DOM updates
+    function updateOrderDetails() {
+        const cart = JSON.parse(localStorage.getItem('cart') || '{}');
+        const items = Object.entries(cart);
+        
+        // Handle empty cart case
+        if (!items.length) {
+            elements.orderDetailsList.html(`
+                <div class="empty-cart">
+                    <i class="fas fa-shopping-bag"></i>
+                    <p>Your cart is empty.</p>
+                </div>
+            `);
+            elements.itemTotal.text('$0.00');
+            elements.cartTotal.text('$0.00');
+            updateCheckoutButtonState();
+            return;
+        }
+
+        // Prepare HTML for all items at once (single DOM update)
+        let html = '';
+        let subtotal = 0;
+
+        items.forEach(([id, item]) => {
+            const [qty, name, price, img] = item;
+            const itemPrice = parseFloat(price);
+            const total = qty * itemPrice;
+            subtotal += total;
+            
+            html += `
+                <div class="order-item" data-item-id="${id}" data-item-price="${itemPrice.toFixed(2)}">
+                    <img src="${img}" alt="${name}">
+                    <div class="item-details">
+                        <h3>${name}</h3>
+                        <p>$${itemPrice.toFixed(2)}</p>
+                    </div>
+                    <div class="item-quantity-controls">
+                        <button class="quantity-button decrement-item">-</button>
+                        <span class="item-quantity">${qty}</span>
+                        <button class="quantity-button increment-item">+</button>
+                    </div>
+                    <button class="delete-item"><i class="fas fa-trash-alt"></i></button>
+                    <div class="item-price">$${total.toFixed(2)}</div>
+                </div>
+            `;
+        });
+
+        // Single DOM update for entire cart
+        elements.orderDetailsList.html(html);
+
+        const totalDue = subtotal + SERVICE_FEE + DELIVERY_FEE;
+        elements.itemTotal.text(`$${subtotal.toFixed(2)}`);
+        elements.cartTotal.text(`$${totalDue.toFixed(2)}`);
+
+        // Update payment modal if visible
+        if (elements.orderVerificationForm.is(':visible')) {
+            updateOrderTotalAmountDisplay(totalDue);
+        }
+
+        updateCheckoutButtonState();
+    }
+
+    // Update cart logic (handles increment, decrement, delete internally)
+    function updateCart(id, delta) {
+        const cart = JSON.parse(localStorage.getItem('cart') || '{}');
+        if (!cart[id]) return;
+
+        cart[id][0] += delta; // Update quantity
+        if (cart[id][0] < 1) {
+            delete cart[id]; // Remove item if quantity is less than 1
+        }
+
+        localStorage.setItem('cart', JSON.stringify(cart));
+        
+        // Provide haptic feedback if available 
+        if ('vibrate' in navigator) navigator.vibrate(30);
+        
+        // Update UI after cart change
+        updateOrderDetails();
+    }
+
+    // Delete item from cart
+    function deleteCartItem(id) {
+        const cart = JSON.parse(localStorage.getItem('cart') || '{}');
+        if (!cart[id]) return;
+
+        delete cart[id];
+        localStorage.setItem('cart', JSON.stringify(cart));
+        
+        if ('vibrate' in navigator) navigator.vibrate(50);
+        
+        updateOrderDetails();
+    }
+
+    // Update visibility and selection of payment options
+    function updatePaymentOptions() {
+        // Reset selected method first
+        state.selectedPaymentMethod = '';
+        elements.paymentOptions.removeClass('selected active');
+
+        if (state.deliveryType === 'restaurant') {
+            $('.payment-option.restaurant-only').addClass('active');
+            // Auto-select Cash for restaurant orders
+            $('.payment-option[data-method="Cash on Delivery"].restaurant-only').addClass('selected');
+            state.selectedPaymentMethod = 'Cash on Delivery';
+            elements.orderVerificationForm.hide();
+            state.paymentVerified = true;
+            $('#cashDeliveryOption .order-verification-badge').remove();
+            elements.verificationStatus.empty();
+        } else {
+            $('.payment-option.home-only').addClass('active');
+            // Auto-select Cash on Delivery for home delivery
+            $('.payment-option[data-method="Cash on Delivery"].home-only').addClass('selected');
+            state.selectedPaymentMethod = 'Cash on Delivery';
+            elements.orderVerificationForm.show();
+            state.paymentVerified = false;
+            
+            // Update total amount in verification form
+            updateOrderTotalAmountDisplay(calculateCartTotal());
+        }
+        
+        updateCheckoutButtonState();
+    }
+
+    // Update the total amount displayed in the payment verification section
+    function updateOrderTotalAmountDisplay(amount) {
+        elements.totalAmount.text(`$${amount.toFixed(2)}`);
+    }
+
+    // Update the state (enabled/disabled) and text of the checkout button
+    function updateCheckoutButtonState() {
+        const cart = JSON.parse(localStorage.getItem('cart') || '{}');
+        const cartEmpty = !Object.keys(cart).length;
+        const paymentSelected = !!state.selectedPaymentMethod;
+        const addressEntered = state.deliveryType === 'restaurant' ? 
+            true : // Address not needed for restaurant
+            !!(state.homeDeliveryAddress.full_name && 
+               state.homeDeliveryAddress.phone_number && 
+               state.homeDeliveryAddress.address);
+
+        // Determine if button should be disabled
+        const disableButton = cartEmpty || !paymentSelected || 
+                             (state.deliveryType === 'home' && !addressEntered);
+
+        elements.checkoutButton.prop('disabled', disableButton);
+
+        // Update button text based on verification status for Home Delivery
+        if (state.deliveryType === 'home') {
+            if (!addressEntered) {
+                elements.checkoutButton.text('Enter Delivery Address');
+                elements.verifyOrder.prop('disabled', true);
+                elements.confirmPhone.prop('disabled', true);
+            } else if (!state.paymentVerified) {
+                elements.checkoutButton.text('Verify Order First');
+                elements.verifyOrder.prop('disabled', false);
+                elements.confirmPhone.prop('disabled', false);
+            } else {
+                elements.checkoutButton.text('Place Order');
+                elements.verifyOrder.prop('disabled', true);
+                elements.confirmPhone.prop('disabled', true);
+            }
+        } else {
+            elements.checkoutButton.text('Place Order');
+        }
+    }
+
+    // ── Event Handlers ──
+
+    // Map Toggle - with lazy initialization
+    elements.toggleMapButton.addEventListener('click', () => {
+        const isMapActive = elements.mapContainer.classList.toggle('active');
+        
+        elements.toggleMapButton.innerHTML = isMapActive
+            ? '<i class="fas fa-map"></i> Hide map'
+            : '<i class="fas fa-map"></i> Show map';
+            
+        if (isMapActive && !state.isMapInitialized) {
+            // Lazy load map when needed
+            initializeMap();
+        }
+    });
+
+    // Prevent manual delivery switch and alert
+    elements.deliverySwitchLabels.on('click', function () {
+        const wanted = $(this).data('delivery-type');
+        if (state.deliveryType === wanted) return;
+
+        if (state.deliveryType === 'restaurant') {
+            alert("You must be detected as being at the restaurant for 'Eat-in' delivery.");
+        } else {
+            alert("Delivery type is determined by your location relative to the restaurant. You cannot manually switch to 'Eat-in' if you are not detected nearby.");
+        }
+        
+        // Keep UI reflecting actual delivery type
+        elements.deliverySwitchLabels.removeClass('active');
+        $(`.delivery-switch-label[data-delivery-type="${state.deliveryType}"]`).addClass('active');
+    });
+
+    // Address Modal Handlers
+    elements.openAddressModal.on('click', () => {
+        // Populate modal with existing address data
+        elements.modalFullName.val(state.homeDeliveryAddress.full_name || '');
+        elements.modalPhoneNumber.val(state.homeDeliveryAddress.phone_number || '');
+        elements.modalAddress.val(state.homeDeliveryAddress.address || '');
+        elements.addressModal.addClass('active');
+    });
+    
+    elements.closeAddressModal.on('click', () => elements.addressModal.removeClass('active'));
+    elements.cancelAddress.on('click', () => elements.addressModal.removeClass('active'));
+    
+    elements.saveAddress.on('click', () => {
+        const full = elements.modalFullName.val().trim();
+        const phone = elements.modalPhoneNumber.val().trim();
+        const addr = elements.modalAddress.val().trim();
+        
+        if (!full || !phone || !addr) {
+            alert('Please fill in all fields for delivery address.');
+            return;
+        }
+        
+        state.homeDeliveryAddress = { full_name: full, phone_number: phone, address: addr };
+        elements.addressModal.removeClass('active');
+
+        // Auto-fill confirmation phone if empty
+        if (elements.confirmPhone.val().trim() === '') {
+            elements.confirmPhone.val(phone);
+        }
+
+        updateCheckoutButtonState();
+    });
+
+    // Payment Option Selection
+    elements.paymentOptions.on('click', function () {
+        // Only allow selecting active options
+        if (!$(this).hasClass('active')) return;
+
+        // Deselect others and select this one
+        elements.paymentOptions.removeClass('selected');
+        $(this).addClass('selected');
+        state.selectedPaymentMethod = $(this).data('method');
+
+        // Reset verification for home delivery
+        if (state.deliveryType === 'home') {
+            state.paymentVerified = false;
+            $('#cashDeliveryOption .order-verification-badge').remove();
+            elements.verificationStatus.empty();
+        }
+
+        updateCheckoutButtonState();
+        if ('vibrate' in navigator) navigator.vibrate(50);
+    });
+
+    // Event Delegation for Cart Item Quantity and Delete
+    elements.orderDetailsList.on('click', '.increment-item', function() {
+        const itemId = $(this).closest('.order-item').data('item-id');
+        updateCart(itemId, +1);
+    });
+
+    elements.orderDetailsList.on('click', '.decrement-item', function() {
+        const itemId = $(this).closest('.order-item').data('item-id');
+        updateCart(itemId, -1);
+    });
+
+    elements.orderDetailsList.on('click', '.delete-item', function() {
+        const itemId = $(this).closest('.order-item').data('item-id');
+        deleteCartItem(itemId);
+    });
+
+    // Verify Order Button Handler
+    elements.verifyOrder.on('click', function() {
+        const phoneNumber = elements.confirmPhone.val().trim();
+
+        // Validate phone number
+        if (!phoneNumber || phoneNumber.length < 8 || !/^\d+$/.test(phoneNumber)) {
+            elements.verificationStatus.html('<span style="color: #f44336;">Please enter a valid phone number (at least 8 digits).</span>');
+            return;
+        }
+
+        // Show verification modal
+        elements.paymentModal.css('display', 'flex');
+        $('#paymentVerificationProgress').show();
+        $('#paymentVerificationSuccess, #paymentVerificationFailed').hide();
+        $('#continueToCheckout, #tryAgainPayment').hide();
+
+        // Simulate verification (use setTimeout to not block UI)
+        setTimeout(() => {
+            const isValid = true; // Always succeed for demo
+            
+            $('#paymentVerificationProgress').hide();
+
+            if (isValid) {
+                $('#paymentVerificationSuccess, #continueToCheckout').show();
+                state.paymentVerified = true;
+                elements.verificationStatus.html('<span style="color: #4caf50;">Verification successful.</span>');
+            } else {
+                $('#paymentVerificationFailed, #tryAgainPayment').show();
+                state.paymentVerified = false;
+                elements.verificationStatus.html('<span style="color: #f44336;">Verification failed. Please try again.</span>');
+            }
+            
+            updateCheckoutButtonState();
+        }, 1000); // Reduce simulation time for better UX
+    });
+
+    // Payment Modal Handlers
+    elements.closePaymentModal.on('click', function() {
+        elements.paymentModal.hide();
+        updateCheckoutButtonState();
+    });
+
+    elements.continueToCheckout.on('click', function() {
+        elements.paymentModal.hide();
+        $('#cashDeliveryOption').append('<span class="order-verification-badge"><i class="fas fa-check-circle"></i> Verified</span>');
+        updateCheckoutButtonState();
+    });
+
+    elements.tryAgainPayment.on('click', function() {
+        elements.paymentModal.hide();
+        updateCheckoutButtonState();
+    });
+
+    // Place Order Handler
+    elements.checkoutButton.on('click', function(e) {
+        e.preventDefault();
+
+        // Final validation checks
+        const cart = JSON.parse(localStorage.getItem('cart') || '{}');
+        
+        if (Object.keys(cart).length === 0) {
+            alert('Your cart is empty.');
+            return;
+        }
+        
+        if (!state.selectedPaymentMethod) {
+            alert('Please select a payment method.');
+            return;
+        }
+        
+        if (state.deliveryType === 'home') {
+            if (!state.homeDeliveryAddress.full_name || 
+                !state.homeDeliveryAddress.phone_number || 
+                !state.homeDeliveryAddress.address) {
+                alert('Please enter your full delivery address details.');
+                elements.openAddressModal.focus();
+                return;
+            }
+            
+            if (!state.paymentVerified) {
+                alert('Please verify your order details first.');
+                elements.verifyOrder.focus();
+                return;
+            }
+        }
+
+        // Show loading overlay
+        elements.loadingOverlay.addClass('active');
+
+        // Build the payload
+        const payload = {
+            delivery_type: state.deliveryType,
+            payment_method: state.selectedPaymentMethod,
+            payment_details: state.selectedPaymentMethod === 'Mobile Money' ? 
+                { transaction_id: 'SIMULATED_TXN_ID' } : {},
+            cart: cart,
+            table_number: state.deliveryType === 'restaurant' ? state.tableNumber : null,
+            delivery_details: state.deliveryType === 'home' ? {
+                address: state.homeDeliveryAddress.address,
+                special_instructions: elements.orderNotes.val().trim()
+            } : null,
+            customer_details: state.deliveryType === 'home' ? {
+                full_name: state.homeDeliveryAddress.full_name,
+                phone_number: elements.confirmPhone.val().trim()
+            } : null
+        };
+
+        console.log('Order payload:', payload);
+
+        // SIMULATED SUCCESS - Replace with actual API call in production
+        setTimeout(() => {
+            localStorage.removeItem('cart');
+            elements.loadingOverlay.removeClass('active');
+            alert('Order Placed Successfully! (Simulated)');
+            window.location.reload();
+        }, 1000); // Reduced time for better UX
     });
 
     // ── Initialization ──
-    setDeliveryType();
-    updateOrderDetails();
-    updatePaymentOptions();
-    updateCheckoutButtonState();
+    // Initialize on page load in a way that doesn't block rendering
+    setTimeout(() => {
+        // Load and render cart first (for perceived performance)
+        updateOrderDetails();
+        
+        // Then determine location/delivery type (potentially slower operation)
+        setDeliveryType();
+        
+        // Check for turf.js (optional dependency check)
+        if (typeof turf === 'undefined') {
+            console.warn("Turf.js is not loaded. Distance calculations will use fallbacks.");
+        }
+    }, 0);
 });
-</script>
+   </script>
 
 
 

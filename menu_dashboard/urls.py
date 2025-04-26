@@ -15,6 +15,8 @@ urlpatterns = [
 	path('create-menu/', views.create_restaurant_menu, name='create_menu'),
 	path('<slug:restaurant_name_slug>/<slug:hashed_slug>/', views.restaurant_menu, name='restaurant_menu'),
 
+	path('link/<slug:restaurant_name_slug>/<slug:hashed_slug>/', views.restaurant_link, name='restaurant_menu'),
+
 	path('restaurant_menu_list/', views.restaurant_menu_list, name='restaurant-menu-list'),
 	path('delete_product/<int:product_id>/', views.delete_product, name='delete_product'),
 	path('contact/', views.contact, name='contact'),
@@ -24,6 +26,7 @@ urlpatterns = [
         views.restaurant_checkout,
         name='restaurant_checkout'
     ),
+
     path(
         '<slug:restaurant_name_slug>/<slug:hashed_slug>/<int:order_id>/order_success/',
         views.order_success,
