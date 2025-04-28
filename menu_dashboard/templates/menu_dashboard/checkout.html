@@ -1932,11 +1932,32 @@ textarea.form-control {
         }, 500);
     });
 
-    // Place Order Handler
-    elements.checkoutButton.on('click', function(e) {
+    // ── 0) CSRF setup (Django recommends) ──
+function getCookie(name) {
+  let cookieValue = null;
+  if (document.cookie && document.cookie !== '') {
+    document.cookie.split(';').forEach(function(cookie) {
+      const [key, val] = cookie.trim().split('=');
+      if (key === name) cookieValue = decodeURIComponent(val);
+    });
+  }
+  return cookieValue;
+}
+
+$.ajaxSetup({
+  beforeSend: function(xhr, settings) {
+    // Only send the token to same-origin, relative URLs
+    if (!(/^http:.*/.test(settings.url) || /^https:.*/.test(settings.url))) {
+      xhr.setRequestHeader("X-CSRFToken", getCookie('csrftoken'));
+    }
+  }
+});
+
+// ── Place Order Handler ──
+elements.checkoutButton.on('click', function(e) {
     e.preventDefault();
 
-    // ── 1) Final validation checks ──
+    // 1) Final validation
     const cart = JSON.parse(localStorage.getItem('cart') || '{}');
     if (Object.keys(cart).length === 0) {
         alert('Your cart is empty.');
@@ -1969,30 +1990,28 @@ textarea.form-control {
         }
     }
 
-    // ── 2) Show loading overlay ──
+    // 2) Show loading
     elements.loadingOverlay.addClass('active');
 
-    // ── 3) Build the form data to match your checkout view ──
+    // 3) Build form data
     const formData = {
         cart: JSON.stringify(cart),
         payment_method: state.selectedPaymentMethod
-        // add any additional fields your view expects here
+        // add additional fields here if you extend your view
     };
 
-    // ── 4) Grab your slugs & CSRF token ──
+    // 4) Grab slugs
     const restaurantSlug = elements.checkoutButton.attr('data-restaurant-name-slug');
     const hashedSlug     = elements.checkoutButton.attr('data-restaurant-hashed-slug');
-    const csrfToken      = $('meta[name="csrf-token"]').attr('content');
 
-    // ── 5) Point at your existing checkout endpoint ──
+    // 5) Point at your checkout view
     const checkoutUrl = `/menu/${restaurantSlug}/${hashedSlug}/checkout/`;
 
-    // ── 6) Send form-encoded POST ──
+    // 6) Send POST (CSRF header auto-added)
     $.ajax({
         url: checkoutUrl,
         type: 'POST',
         data: formData,
-        headers: { 'X-CSRFToken': csrfToken },
 
         success: function(response) {
             elements.loadingOverlay.removeClass('active');
@@ -2001,7 +2020,7 @@ textarea.form-control {
                 const orderId    = response.order_id;
                 const successUrl = `/menu/${restaurantSlug}/${hashedSlug}/${orderId}/order_success/`;
 
-                // ── 7) Show the success modal ──
+                // 7) Show modal
                 const successMessage = `
                     <div class="order-success-modal">
                       <div class="order-success-content">
@@ -2020,13 +2039,13 @@ textarea.form-control {
                 `;
                 $('body').append(successMessage);
 
-                // ── 8) Redirect on modal button click ──
+                // 8) Redirect on click
                 $('#closeSuccessModal').on('click', function() {
                     $('.order-success-modal').remove();
                     window.location.href = successUrl;
                 });
 
-                // ── 9) Clear local cart ──
+                // 9) Clear cart
                 localStorage.removeItem('cart');
             } else {
                 alert('Order placement failed: ' + (response.message || 'Unknown error'));
