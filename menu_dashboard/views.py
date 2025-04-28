@@ -268,129 +268,129 @@ def restaurant_menu(request, restaurant_name_slug, hashed_slug):
     return render(request, 'menu_dashboard/index.html', context)
 
 
-# @cache_control(max_age=3600)  # Cache for 1 hour
-# def restaurant_link(request, restaurant_name_slug, hashed_slug):
-#     # Fetch the restaurant
-#     restaurant = get_object_or_404(Restaurant, hashed_slug=hashed_slug)
+@cache_control(max_age=3600)  # Cache for 1 hour
+def restaurant_link(request, restaurant_name_slug, hashed_slug):
+    # Fetch the restaurant
+    restaurant = get_object_or_404(Restaurant, hashed_slug=hashed_slug)
 
-#     # Log menu visit
-#     ip_address = request.META.get('REMOTE_ADDR')
-#     user_agent_str = request.META.get('HTTP_USER_AGENT', '')
-#     parsed_user_agent = getattr(request, 'user_agent', None)
-#     device = parsed_user_agent.device.family if parsed_user_agent and hasattr(parsed_user_agent, 'device') else "Unknown Device"
-#     MenuVisit.objects.create(
-#         restaurant=restaurant,
-#         ip_address=ip_address,
-#         user_agent=user_agent_str,
-#         device=device
-#     )
+    # Log menu visit
+    ip_address = request.META.get('REMOTE_ADDR')
+    user_agent_str = request.META.get('HTTP_USER_AGENT', '')
+    parsed_user_agent = getattr(request, 'user_agent', None)
+    device = parsed_user_agent.device.family if parsed_user_agent and hasattr(parsed_user_agent, 'device') else "Unknown Device"
+    MenuVisit.objects.create(
+        restaurant=restaurant,
+        ip_address=ip_address,
+        user_agent=user_agent_str,
+        device=device
+    )
 
-#     # Cache categories + products
-#     cache_key = f"restaurant_{restaurant.id}_categories"
-#     categories = cache.get(cache_key)
-#     if not categories:
-#         product_queryset = Product.objects.filter(restaurant=restaurant).prefetch_related('variations')
-#         categories = list(
-#             Category.objects
-#                 .filter(products__restaurant=restaurant)
-#                 .distinct()
-#                 .order_by('order')
-#                 .prefetch_related(Prefetch('products', queryset=product_queryset))
-#         )
-#         cache.set(cache_key, categories, 300)  # 5 minutes
+    # Cache categories + products
+    cache_key = f"restaurant_{restaurant.id}_categories"
+    categories = cache.get(cache_key)
+    if not categories:
+        product_queryset = Product.objects.filter(restaurant=restaurant).prefetch_related('variations')
+        categories = list(
+            Category.objects
+                .filter(products__restaurant=restaurant)
+                .distinct()
+                .order_by('order')
+                .prefetch_related(Prefetch('products', queryset=product_queryset))
+        )
+        cache.set(cache_key, categories, 300)  # 5 minutes
 
-#     # Build categorized_products
-#     today = datetime.today().weekday()  # 0 = Monday, …, 6 = Sunday
-#     categorized_products = []
-#     for category in categories:
-#         category_products = list(category.products.all())
-#         for product in category_products:
-#             # variations
-#             product.variations_list = list(product.variations.all()) if product.variations.exists() else None
-#             default_variation = product.variations.filter(name='S').first() or product.variations.first()
-#             product.display_price = default_variation.price if default_variation else product.get_display_price()
-#             product.has_description = bool(product.description and product.description.strip())
+    # Build categorized_products
+    today = datetime.today().weekday()  # 0 = Monday, …, 6 = Sunday
+    categorized_products = []
+    for category in categories:
+        category_products = list(category.products.all())
+        for product in category_products:
+            # variations
+            product.variations_list = list(product.variations.all()) if product.variations.exists() else None
+            default_variation = product.variations.filter(name='S').first() or product.variations.first()
+            product.display_price = default_variation.price if default_variation else product.get_display_price()
+            product.has_description = bool(product.description and product.description.strip())
 
-#             # Wednesday wings discount example
-#             product.is_discounted = (today == 2 and 'wings' in product.name.lower())
-#             if product.is_discounted and product.display_price and not product.price_by_percentage:
-#                 # ── START PATCH: coerce to float before dividing
-#                 try:
-#                     price = float(product.display_price)
-#                 except (TypeError, ValueError):
-#                     price = 0.0
-#                 product.display_price = price / 2
-#                 # ── END PATCH
-#             product.gst_note = "12% GST will be added" if product.charge_gst else ""
-#         if category_products:
-#             categorized_products.append(category_products)
+            # Wednesday wings discount example
+            product.is_discounted = (today == 2 and 'wings' in product.name.lower())
+            if product.is_discounted and product.display_price and not product.price_by_percentage:
+                # ── START PATCH: coerce to float before dividing
+                try:
+                    price = float(product.display_price)
+                except (TypeError, ValueError):
+                    price = 0.0
+                product.display_price = price / 2
+                # ── END PATCH
+            product.gst_note = "12% GST will be added" if product.charge_gst else ""
+        if category_products:
+            categorized_products.append(category_products)
 
-#     # Uncategorized products
-#     uncategorized_products = list(
-#         Product.objects
-#             .filter(restaurant=restaurant, category__isnull=True)
-#             .prefetch_related('variations')
-#     )
-#     for product in uncategorized_products:
-#         product.variations_list = list(product.variations.all()) if product.variations.exists() else None
-#         default_variation = product.variations.filter(name='S').first() or product.variations.first()
-#         product.display_price = default_variation.price if default_variation else product.get_display_price()
+    # Uncategorized products
+    uncategorized_products = list(
+        Product.objects
+            .filter(restaurant=restaurant, category__isnull=True)
+            .prefetch_related('variations')
+    )
+    for product in uncategorized_products:
+        product.variations_list = list(product.variations.all()) if product.variations.exists() else None
+        default_variation = product.variations.filter(name='S').first() or product.variations.first()
+        product.display_price = default_variation.price if default_variation else product.get_display_price()
 
-#         product.is_discounted = (today == 2 and 'wings' in product.name.lower())
-#         if product.is_discounted and product.display_price and not product.price_by_percentage:
-#             # ── START PATCH: coerce to float before dividing
-#             try:
-#                 price = float(product.display_price)
-#             except (TypeError, ValueError):
-#                 price = 0.0
-#             product.display_price = price / 2
-#             # ── END PATCH
-#         product.gst_note = "12% GST will be added" if product.charge_gst else ""
-#     if uncategorized_products:
-#         categorized_products.append(uncategorized_products)
+        product.is_discounted = (today == 2 and 'wings' in product.name.lower())
+        if product.is_discounted and product.display_price and not product.price_by_percentage:
+            # ── START PATCH: coerce to float before dividing
+            try:
+                price = float(product.display_price)
+            except (TypeError, ValueError):
+                price = 0.0
+            product.display_price = price / 2
+            # ── END PATCH
+        product.gst_note = "12% GST will be added" if product.charge_gst else ""
+    if uncategorized_products:
+        categorized_products.append(uncategorized_products)
 
-#     if not categorized_products:
-#         categorized_products = [[]]
+    if not categorized_products:
+        categorized_products = [[]]
 
-#     # Assign restaurant to customer if logged in
-#     if request.user.is_authenticated:
-#         customer, _ = Customer.objects.get_or_create(user=request.user)
-#         customer.assign_restaurant(restaurant)
-#     else:
-#         messages.info(request, "To place an order, please log in or continue as a guest.")
+    # Assign restaurant to customer if logged in
+    if request.user.is_authenticated:
+        customer, _ = Customer.objects.get_or_create(user=request.user)
+        customer.assign_restaurant(restaurant)
+    else:
+        messages.info(request, "To place an order, please log in or continue as a guest.")
 
-#     # --- Dynamic Open Graph / Twitter Card metadata ---
-#     if restaurant.logo_pic:
-#         logo_url = request.build_absolute_uri(restaurant.logo_pic.url)
-#     else:
-#         logo_url = request.build_absolute_uri('/static/images/default_restaurant.png')
+    # --- Dynamic Open Graph / Twitter Card metadata ---
+    if restaurant.logo_pic:
+        logo_url = request.build_absolute_uri(restaurant.logo_pic.url)
+    else:
+        logo_url = request.build_absolute_uri('/static/images/default_restaurant.png')
 
-#     canonical_url   = request.build_absolute_uri()
-#     og_title        = restaurant.restaurant_name or "Delvrr - QR Code Digital Menu"
-#     og_description  = restaurant.address or "Scan the QR code to access the digital menu."
+    canonical_url   = request.build_absolute_uri()
+    og_title        = restaurant.restaurant_name or "Delvrr - QR Code Digital Menu"
+    og_description  = restaurant.address or "Scan the QR code to access the digital menu."
 
-#     # Brand colors
-#     brand_colors = restaurant.brand_colors.all()
-#     primary_brand_color   = brand_colors[0].color if brand_colors.count() > 0 else "#f7c028"
-#     secondary_brand_color = brand_colors[1].color if brand_colors.count() > 1 else "#000000"
-#     third_brand_color     = brand_colors[2].color if brand_colors.count() > 2 else "#ffffff"
+    # Brand colors
+    brand_colors = restaurant.brand_colors.all()
+    primary_brand_color   = brand_colors[0].color if brand_colors.count() > 0 else "#f7c028"
+    secondary_brand_color = brand_colors[1].color if brand_colors.count() > 1 else "#000000"
+    third_brand_color     = brand_colors[2].color if brand_colors.count() > 2 else "#ffffff"
 
-#     context = {
-#         'restaurant': restaurant,
-#         'allProds': categorized_products,
-#         'categories': categories,
-#         'primary_brand_color': primary_brand_color,
-#         'secondary_brand_color': secondary_brand_color,
-#         'third_brand_color': third_brand_color,
-#         'hide_all_category': restaurant.id == 9,
-#         # OG/Twitter context:
-#         'logo_url': logo_url,
-#         'canonical_url': canonical_url,
-#         'og_title': og_title,
-#         'og_description': og_description,
-#     }
+    context = {
+        'restaurant': restaurant,
+        'allProds': categorized_products,
+        'categories': categories,
+        'primary_brand_color': primary_brand_color,
+        'secondary_brand_color': secondary_brand_color,
+        'third_brand_color': third_brand_color,
+        'hide_all_category': restaurant.id == 9,
+        # OG/Twitter context:
+        'logo_url': logo_url,
+        'canonical_url': canonical_url,
+        'og_title': og_title,
+        'og_description': og_description,
+    }
 
-#     return render(request, 'menu_dashboard/index1.html', context)
+    return render(request, 'menu_dashboard/index1.html', context)
 
 
 logger = logging.getLogger(__name__)
