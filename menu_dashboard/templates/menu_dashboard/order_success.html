@@ -293,60 +293,67 @@
 </head>
 <body>
     <div class="card">
-        <div class="progress-bar">
-            <div class="progress-fill"></div>
-        </div>
-        <div class="header">
-            <div class="success-animation">
-                <div class="outer-circle">
-                    <div class="check-icon">
-                        <i class="fas fa-check"></i>
-                    </div>
-                </div>
-            </div>
-            <h1>Order Confirmed!</h1>
-            <div class="status-badge">
-                <span class="pulse-dot"></span>
-                Preparing your order
-            </div>
-        </div>
+  <div class="progress-bar">
+    <div class="progress-fill"></div>
+  </div>
 
-        <div class="content">
-            <div class="order-info">
-                <div class="info-item">
-                    <div class="info-label">Order ID</div>
-                    <div class="info-value">{{ order_id }}</div>
-                </div>
-                <div class="info-item">
-                    <div class="info-label">Table</div>
-                    <div class="info-value">{{ table_number }}</div>
-                </div>
-                <div class="info-item">
-                    <div class="info-label">Time</div>
-                    <div class="info-value">{{ order_time|date:"g:i A" }}</div>
-                </div>
-                <div class="info-item">
-                    <div class="info-label">Payment</div>
-                    <div class="info-value">{{ payment_method }}</div>
-                </div>
-            </div>
-
-            <div class="total-section">
-                <div class="total-label">Total Amount</div>
-                <div class="total-amount">${{ amount }}</div>
-            </div>
-
-            <a href="{% url 'restaurant_menu' restaurant_name_slug=restaurant.slug hashed_slug=restaurant.hashed_slug %}" class="primary-button">
-                <i class="fas fa-utensils"></i>
-                Back to Menu
-            </a>
+  <div class="header">
+    <div class="success-animation">
+      <div class="outer-circle">
+        <div class="check-icon">
+          <i class="fas fa-check"></i>
         </div>
+      </div>
+    </div>
+    <h1>Order Confirmed!</h1>
+    <div class="status-badge">
+      <span class="pulse-dot"></span>
+      Preparing your order
+    </div>
+  </div>
+
+  <div class="content">
+    <div class="order-info">
+      <div class="info-item">
+        <div class="info-label">Order ID</div>
+        <div class="info-value">{{ order_id }}</div>
+      </div>
+      <div class="info-item">
+        <div class="info-label">Table</div>
+        <div class="info-value">{{ table_number }}</div>
+      </div>
+      <div class="info-item">
+        <div class="info-label">Time</div>
+        <div class="info-value">{{ order_time|date:"g:i A" }}</div>
+      </div>
+      <div class="info-item">
+        <div class="info-label">Payment</div>
+        <div class="info-value">{{ payment_method }}</div>
+      </div>
     </div>
 
-    <div class="toast" id="successToast">
-        <i class="fas fa-check-circle"></i>
-        Order placed successfully
+    <div class="total-section">
+      <div class="total-label">Total Amount</div>
+      <div class="total-amount">${{ amount }}</div>
     </div>
+
+    <a
+      href="{% url 'restaurant_menu'
+                 restaurant_name_slug=restaurant.slug
+                 hashed_slug=restaurant.hashed_slug %}"
+      class="primary-button"
+    >
+      <i class="fas fa-utensils"></i>
+      Back to Menu
+    </a>
+  </div>
+</div>
+
+<div class="toast" id="successToast">
+  <i class="fas fa-check-circle"></i>
+  Order placed successfully
+</div>
+
 
     <script>
         setTimeout(() => {
