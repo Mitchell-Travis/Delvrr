@@ -22,7 +22,7 @@ urlpatterns = [
 	path('contact/', views.contact, name='contact'),
 
 	path(
-        '/<slug:restaurant_name_slug>/<slug:hashed_slug>/checkout/',
+        '<slug:restaurant_name_slug>/<slug:hashed_slug>/checkout/',
         views.restaurant_checkout,
         name='restaurant_checkout'
     ),
