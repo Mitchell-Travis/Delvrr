@@ -1113,15 +1113,17 @@ textarea.form-control {
         <p>To Pay</p>
         <span id="cartTotal" style="font-size:1.1rem; font-weight:600;">$0.00</span>
       </div>
-      <button
+     <button
         id="checkoutButton"
         class="checkout-button"
-        data-restaurant-lat="{{ restaurant_lat }}"
-        data-restaurant-lon="{{ restaurant_lon }}"
+        data-restaurant-lat="{{ restaurant.latitude }}"
+        data-restaurant-lon="{{ restaurant.longitude }}"
+        data-restaurant-name-slug="{{ restaurant.slug }}"
+        data-restaurant-hashed-slug="{{ restaurant.hashed_slug }}"
         disabled
-      >
+    >
         <i class="fas fa-check-circle"></i> Place Order
-      </button>
+    </button>
     </div>
 
     <div class="loading-overlay" id="loading-overlay">
