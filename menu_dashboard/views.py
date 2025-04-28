@@ -415,7 +415,8 @@ def order_success(request, restaurant_name_slug, hashed_slug, order_id):
         # 3) Confirm the logged-in user owns this order
         if not hasattr(request.user, 'customer') or request.user.customer != order.customer:
             messages.error(request, "You are not authorized to view this order.")
-            return redirect('customer_dashboard')
+            # Redirect to menu page instead of customer_dashboard
+            return redirect('restaurant_menu', restaurant_name_slug=restaurant_name_slug, hashed_slug=hashed_slug)
         
         # 4) Clear any session-based cart
         if 'cart' in request.session:
@@ -450,7 +451,8 @@ def order_success(request, restaurant_name_slug, hashed_slug, order_id):
         # Log the error
         logger.error(f"Error in order_success view: {str(e)}")
         messages.error(request, "Something went wrong. Please contact support.")
-        return redirect('customer_dashboard')
+        # Redirect to menu page instead of customer_dashboard
+        return redirect('restaurant_menu', restaurant_name_slug=restaurant_name_slug, hashed_slug=hashed_slug)
 
 
 
