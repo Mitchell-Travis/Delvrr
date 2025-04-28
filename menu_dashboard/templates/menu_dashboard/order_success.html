@@ -168,6 +168,12 @@
         font-size: 24px;
     }
 
+    .item-image img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+    }
+
     .item-details {
         flex: 1;
     }
@@ -259,6 +265,31 @@
         text-decoration: none;
     }
 
+    .status-badge {
+        display: inline-flex;
+        align-items: center;
+        background: rgba(255, 255, 255, 0.2);
+        padding: 6px 12px;
+        border-radius: 100px;
+        margin-top: 12px;
+    }
+
+    .pulse-dot {
+        width: 6px;
+        height: 6px;
+        background: white;
+        border-radius: 50%;
+        margin-right: 8px;
+        animation: blink 1.5s infinite;
+    }
+
+    .no-items {
+        text-align: center;
+        padding: 16px;
+        color: var(--text-light);
+        font-style: italic;
+    }
+
     @keyframes fadeIn {
         0% { opacity: 0; }
         100% { opacity: 1; }
@@ -269,11 +300,19 @@
         50% { opacity: 1; }
         100% { opacity: 0.4; }
     }
+
+    /* Responsiveness */
+    @media (min-width: 500px) {
+        .container {
+            max-width: 480px;
+            margin: 0 auto;
+        }
+    }
     </style>
 </head>
 <body>
     <div class="container">
-        <a href="#" class="back-button">
+        <a href="{% url 'restaurant_menu' restaurant_name_slug=restaurant.slug hashed_slug=restaurant.hashed_slug %}" class="back-button">
             <i class="fas fa-arrow-left"></i>
         </a>
         
@@ -283,6 +322,10 @@
             </div>
             <h1 class="header-title">Order Confirmed</h1>
             <p class="header-subtitle">Your order will be ready in 15-20 minutes</p>
+            <div class="status-badge">
+                <span class="pulse-dot"></span>
+                {{ order.status }}
+            </div>
         </div>
         
         <div class="content">
@@ -311,34 +354,51 @@
                 </div>
             </div>
             
-            <!-- Simulated order items based on your template -->
             <div class="section-title">
                 <i class="fas fa-utensils"></i>
                 Order List
             </div>
             
             <div class="item-list">
+                {% if order_items %}
+                    {% for item in order_items %}
+                    <div class="item">
+                        <div class="item-image">
+                            {% if item.food_item.image %}
+                            <img src="{{ item.food_item.image.url }}" alt="{{ item.food_item.name }}">
+                            {% else %}
+                            <i class="fas fa-utensils"></i>
+                            {% endif %}
+                        </div>
+                        <div class="item-details">
+                            <div class="item-name">{{ item.food_item.name }}</div>
+                            <div class="item-variant">
+                                {% if item.variant %}
+                                    {{ item.variant.name }}
+                                {% else %}
+                                    Regular
+                                {% endif %}
+                                {% if item.quantity > 1 %}
+                                    × {{ item.quantity }}
+                                {% endif %}
+                            </div>
+                        </div>
+                        <div class="item-price">${{ item.price }}</div>
+                    </div>
+                    {% endfor %}
+                {% else %}
+                <!-- Fallback until we get the proper order items -->
                 <div class="item">
                     <div class="item-image">
                         <i class="fas fa-utensils"></i>
                     </div>
                     <div class="item-details">
-                        <div class="item-name">Item 1</div>
-                        <div class="item-variant">Regular</div>
+                        <div class="item-name">Your order</div>
+                        <div class="item-variant">Total {{ order.amount }} items</div>
                     </div>
-                    <div class="item-price">$12.99</div>
+                    <div class="item-price">${{ amount }}</div>
                 </div>
-                
-                <div class="item">
-                    <div class="item-image">
-                        <i class="fas fa-utensils"></i>
-                    </div>
-                    <div class="item-details">
-                        <div class="item-name">Item 2</div>
-                        <div class="item-variant">Large</div>
-                    </div>
-                    <div class="item-price">$15.99</div>
-                </div>
+                {% endif %}
             </div>
             
             <div class="section-title">
@@ -346,21 +406,7 @@
                 Bill Summary
             </div>
             
-            <div class="total-row">
-                <span class="total-label">Subtotal</span>
-                <span class="total-value">$28.98</span>
-            </div>
-            
-            <div class="total-row">
-                <span class="total-label">Tax</span>
-                <span class="total-value">$2.32</span>
-            </div>
-            
-            <div class="total-row">
-                <span class="total-label">Service Fee</span>
-                <span class="total-value">$1.50</span>
-            </div>
-            
+            <!-- Since we don't have subtotal, tax, and service fee information, we'll just show the total -->
             <div class="grand-total">
                 <span class="grand-total-label">Total</span>
                 <span class="grand-total-value">${{ amount }}</span>

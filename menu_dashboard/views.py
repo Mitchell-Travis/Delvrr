@@ -415,8 +415,12 @@ def order_success(request, restaurant_name_slug, hashed_slug, order_id):
     # 4) (Optional) clear any session-based cart
     if 'cart' in request.session:
         del request.session['cart']
-    # 5) Get order items/products
-    order_items = order.orderitem_set.all()  # Assuming you have a related_name or default relation
+        
+    # 5) Get order items/products - we need to find how they're related
+    # Assuming you have an OrderItem model with a foreign key to Orders
+    # This will depend on your model structure
+    order_items = OrderItem.objects.filter(order=order)  # This assumes OrderItem has an "order" field
+    
     # 6) Convert to local timezone (for accuracy) and build context
     local_order_time = timezone.localtime(order.order_date)
     context = {
@@ -432,7 +436,6 @@ def order_success(request, restaurant_name_slug, hashed_slug, order_id):
     }
     # 7) Render the success page
     return render(request, 'menu_dashboard/order_success.html', context)
-
 
 
 # @login_required(login_url='customer_signin')
