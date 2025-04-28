@@ -397,62 +397,43 @@ logger = logging.getLogger(__name__)
 
 @login_required(login_url='customer_signin')
 def order_success(request, restaurant_name_slug, hashed_slug, order_id):
-    try:
-        # 1) Verify the restaurant via both slugs
-        restaurant = get_object_or_404(
-            Restaurant,
-            slug=restaurant_name_slug,
-            hashed_slug=hashed_slug
-        )
-        
-        # 2) Fetch the order and ensure it belongs to that restaurant
-        order = get_object_or_404(
-            Orders,
-            id=order_id,
-            restaurant=restaurant
-        )
-        
-        # 3) Confirm the logged-in user owns this order
-        if not hasattr(request.user, 'customer') or request.user.customer != order.customer:
-            messages.error(request, "You are not authorized to view this order.")
-            # Redirect to menu page instead of customer_dashboard
-            return redirect('restaurant_menu', restaurant_name_slug=restaurant_name_slug, hashed_slug=hashed_slug)
-        
-        # 4) Clear any session-based cart
-        if 'cart' in request.session:
-            del request.session['cart']
-            request.session.modified = True  # Ensure the session is saved
-        
-        # 5) Convert to local timezone and build context
-        local_order_time = timezone.localtime(order.order_date)
-        
-        # Format time for better display
-        formatted_date = local_order_time.strftime('%d %b %Y')  # e.g., "25 Apr 2025"
-        formatted_time = local_order_time.strftime('%I:%M %p')  # e.g., "07:30 PM"
-        
-        context = {
-            'restaurant': restaurant,
-            'order': order,
-            'order_id': order.id,
-            'order_time': local_order_time,
-            'formatted_date': formatted_date,
-            'formatted_time': formatted_time,
-            'customer_name': f"{order.customer.user.first_name} {order.customer.user.last_name}",
-            'payment_method': order.payment_method,
-            'table_number': order.table_number,
-            'amount': order.amount,
-            'order_items': order.orderitem_set.all(),  # Add items for detailed display
-        }
-        
-        # 6) Render the success page
-        return render(request, 'menu_dashboard/order_success.html', context)
-    
-    except Exception as e:
-        # Log the error
-        logger.error(f"Error in order_success view: {str(e)}")
-        messages.error(request, "Something went wrong. Please contact support.")
-        # Redirect to menu page instead of customer_dashboard
-        return redirect('restaurant_menu', restaurant_name_slug=restaurant_name_slug, hashed_slug=hashed_slug)
+    # 1) Verify the restaurant via both slugs
+    restaurant = get_object_or_404(
+        Restaurant,
+        slug=restaurant_name_slug,
+        hashed_slug=hashed_slug
+    )
+
+    # 2) Fetch the order and ensure it belongs to that restaurant
+    order = get_object_or_404(
+        Orders,
+        id=order_id,
+        restaurant=restaurant
+    )
+
+    # 3) Confirm the logged-in user owns this order
+    if request.user.customer != order.customer:
+        return HttpResponseForbidden("You are not authorized to view this order.")
+
+    # 4) (Optional) clear any session-based cart
+    if 'cart' in request.session:
+        del request.session['cart']
+
+    # 5) Convert to local timezone (for accuracy) and build context
+    local_order_time = timezone.localtime(order.order_date)
+    context = {
+        'restaurant':    restaurant,
+        'order':         order,
+        'order_id':      order.id,                        # <-- new
+        'order_time':    local_order_time,                # <-- timezone-aware
+        'customer_name': f"{order.customer.user.first_name} {order.customer.user.last_name}",
+        'payment_method': order.payment_method,
+        'table_number':   order.table_number,
+        'amount':         order.amount,
+    }
+
+    # 6) Render the success page
+    return render(request, 'menu_dashboard/order_success.html', context)
 
 
 
