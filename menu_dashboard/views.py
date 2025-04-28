@@ -403,36 +403,34 @@ def order_success(request, restaurant_name_slug, hashed_slug, order_id):
         slug=restaurant_name_slug,
         hashed_slug=hashed_slug
     )
-
     # 2) Fetch the order and ensure it belongs to that restaurant
     order = get_object_or_404(
         Orders,
         id=order_id,
         restaurant=restaurant
     )
-
     # 3) Confirm the logged-in user owns this order
     if request.user.customer != order.customer:
         return HttpResponseForbidden("You are not authorized to view this order.")
-
     # 4) (Optional) clear any session-based cart
     if 'cart' in request.session:
         del request.session['cart']
-
-    # 5) Convert to local timezone (for accuracy) and build context
+    # 5) Get order items/products
+    order_items = order.orderitem_set.all()  # Assuming you have a related_name or default relation
+    # 6) Convert to local timezone (for accuracy) and build context
     local_order_time = timezone.localtime(order.order_date)
     context = {
         'restaurant':    restaurant,
         'order':         order,
-        'order_id':      order.id,                        # <-- new
-        'order_time':    local_order_time,                # <-- timezone-aware
+        'order_id':      order.id,
+        'order_time':    local_order_time,
         'customer_name': f"{order.customer.user.first_name} {order.customer.user.last_name}",
         'payment_method': order.payment_method,
         'table_number':   order.table_number,
         'amount':         order.amount,
+        'order_items':    order_items,  # Add order items to context
     }
-
-    # 6) Render the success page
+    # 7) Render the success page
     return render(request, 'menu_dashboard/order_success.html', context)
 
 
