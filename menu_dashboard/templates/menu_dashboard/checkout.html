@@ -1067,11 +1067,6 @@ textarea.form-control {
       <input type="tel" id="confirmPhone" class="form-control" placeholder="Enter your number" required>
     </div>
     
-    <div class="form-group">
-      <label for="orderNotes">Special Instructions (Optional)</label>
-      <textarea id="orderNotes" class="form-control" placeholder="Delivery instructions, landmarks, etc." rows="2"></textarea>
-    </div>
-    
     <div class="transaction-verification">
       <button id="verifyOrder" class="btn btn-verify">
         <i class="fas fa-check-circle"></i> Verify Order
@@ -1080,7 +1075,6 @@ textarea.form-control {
     </div>
   </div>
 </section>
-
 <!-- Order Verification Modal -->
 <div id="paymentModal" class="modal">
   <div class="modal-content">
@@ -1171,12 +1165,13 @@ textarea.form-control {
 
     <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
    <script>
-    $(document).ready(function () {
+   $(document).ready(function () {
     // ── Constants & State ──
-    const SERVICE_FEE = 0.51;
+    const SERVICE_FEE = 0.25;
     const DELIVERY_FEE = 0.00;
     const THRESHOLD_DISTANCE = 100; // meters
     const RESTAURANT_MOBILE_MONEY = "0123456789";
+    const ADMIN_CONFIRMATION_TIMEOUT = 60000; // 60 seconds timeout for admin confirmation
 
     // Read & round restaurant coords once
     const restaurantLat = parseFloat(parseFloat($('#checkoutButton').attr('data-restaurant-lat')).toFixed(8));
@@ -1189,6 +1184,9 @@ textarea.form-control {
         deliveryType: 'unknown',
         homeDeliveryAddress: {},
         paymentVerified: false,
+        adminConfirmed: false,
+        adminConfirmationInProgress: false,
+        orderReferenceId: null,
         tableNumber: '1',
         userLocation: null,
         isMapInitialized: false,
@@ -1216,7 +1214,7 @@ textarea.form-control {
         verificationStatus: $('#verificationStatus'),
         totalAmount: $('#mobileMoneyAmount'),
         confirmPhone: $('#confirmPhone'),
-        orderNotes: $('#orderNotes'),
+       
         modalFullName: $('#modal-full-name'),
         modalPhoneNumber: $('#modal-phone-number'),
         modalAddress: $('#modal-address'),
@@ -1228,10 +1226,24 @@ textarea.form-control {
         itemTotal: $('#itemTotal'),
         cartTotal: $('#cartTotal'),
         deliverySwitchLabels: $('.delivery-switch-label'),
-        paymentOptions: $('.payment-option')
+        paymentOptions: $('.payment-option'),
+        adminConfirmationModal: $('#adminConfirmationModal'),
+        adminConfirmationStatus: $('#adminConfirmationStatus'),
+        adminConfirmationProgress: $('#adminConfirmationProgress'),
+        closeAdminConfirmation: $('#closeAdminConfirmation'),
+        tryAgainAdminConfirmation: $('#tryAgainAdminConfirmation'),
+        orderReferenceDisplay: $('#orderReferenceDisplay'),
+        confirmationTimeRemaining: $('#confirmationTimeRemaining')
     };
 
     // ── Helper Functions ──
+
+    // Generate a unique reference ID for orders
+    function generateOrderReferenceId() {
+        const timestamp = new Date().getTime().toString().slice(-6);
+        const random = Math.floor(Math.random() * 10000).toString().padStart(4, '0');
+        return `ORD-${timestamp}-${random}`;
+    }
 
     // Calculate straight-line distance
     function calculateDistance(userLoc, restLoc) {
@@ -1417,6 +1429,7 @@ textarea.form-control {
                 
                 // No verification needed for eat-in orders
                 state.paymentVerified = true;
+                state.adminConfirmed = true; // No admin confirmation needed for eat-in
                 elements.orderVerificationForm.hide();
                 $('#cashDeliveryOption .order-verification-badge').remove();
                 elements.verificationStatus.empty();
@@ -1435,6 +1448,7 @@ textarea.form-control {
                 
                 // Show verification form for home delivery
                 state.paymentVerified = false;
+                state.adminConfirmed = false;
                 elements.orderVerificationForm.show();
                 
                 // Update total amount for verification form
@@ -1476,6 +1490,75 @@ textarea.form-control {
             
             updatePaymentOptions();
         }
+    }
+
+    // ── Admin Confirmation Logic ──
+    
+    // Request admin confirmation for cash-on-delivery orders
+    function requestAdminConfirmation() {
+        if (state.adminConfirmationInProgress) return;
+        
+        state.adminConfirmationInProgress = true;
+        state.adminConfirmed = false;
+        state.orderReferenceId = generateOrderReferenceId();
+        
+        // Show admin confirmation modal
+        elements.adminConfirmationModal.css('display', 'flex');
+        elements.adminConfirmationProgress.show();
+        elements.adminConfirmationStatus.html('<span>Waiting for restaurant to confirm your order...</span>');
+        elements.orderReferenceDisplay.text(state.orderReferenceId);
+        elements.tryAgainAdminConfirmation.hide();
+        
+        let timeRemaining = ADMIN_CONFIRMATION_TIMEOUT / 1000;
+        elements.confirmationTimeRemaining.text(timeRemaining);
+        
+        // Update countdown timer
+        const countdownInterval = setInterval(() => {
+            timeRemaining--;
+            elements.confirmationTimeRemaining.text(timeRemaining);
+            
+            if (timeRemaining <= 0) {
+                clearInterval(countdownInterval);
+            }
+        }, 1000);
+
+        // In a real app, you would make an API call to notify the restaurant admin
+        // and set up a websocket or polling to check for confirmation
+        // For demo purposes, we'll simulate the admin response
+        
+        const simulateAdminResponse = () => {
+            // 80% chance of approval in this demo
+            const isApproved = Math.random() < 0.8;
+            
+            clearInterval(countdownInterval);
+            elements.adminConfirmationProgress.hide();
+            
+            if (isApproved) {
+                elements.adminConfirmationStatus.html('<span style="color: #4caf50;"><i class="fas fa-check-circle"></i> Restaurant confirmed your order! You can now proceed.</span>');
+                state.adminConfirmed = true;
+                $('#cashDeliveryOption').append('<span class="admin-confirmation-badge"><i class="fas fa-check-circle"></i> Confirmed by Restaurant</span>');
+                elements.tryAgainAdminConfirmation.hide();
+                
+                // Add a "Continue" button that closes the modal
+                const continueButton = $('<button id="continueAfterConfirmation" class="primary-button">Continue to Checkout</button>');
+                elements.adminConfirmationStatus.append(continueButton);
+                
+                $('#continueAfterConfirmation').on('click', function() {
+                    elements.adminConfirmationModal.hide();
+                    state.adminConfirmationInProgress = false;
+                    updateCheckoutButtonState();
+                });
+            } else {
+                elements.adminConfirmationStatus.html('<span style="color: #f44336;"><i class="fas fa-times-circle"></i> Restaurant could not confirm your order at this time. Please try again or contact the restaurant.</span>');
+                state.adminConfirmed = false;
+                elements.tryAgainAdminConfirmation.show();
+            }
+            
+            updateCheckoutButtonState();
+        };
+        
+        // Simulate admin response after a random time between 5-15 seconds
+        setTimeout(simulateAdminResponse, 5000 + Math.random() * 10000);
     }
 
     // ── Cart Management ──
@@ -1534,7 +1617,7 @@ textarea.form-control {
                         <button class="quantity-button increment-item">+</button>
                     </div>
                     <button class="delete-item"><i class="fas fa-trash-alt"></i></button>
-                    <div class="item-price">$${total.toFixed(2)}</div>
+                    
                 </div>
             `;
         });
@@ -1599,6 +1682,7 @@ textarea.form-control {
             state.selectedPaymentMethod = 'Cash on Delivery';
             elements.orderVerificationForm.hide();
             state.paymentVerified = true;
+            state.adminConfirmed = true; // No admin confirmation needed for eat-in
             $('#cashDeliveryOption .order-verification-badge').remove();
             elements.verificationStatus.empty();
         } else {
@@ -1608,6 +1692,7 @@ textarea.form-control {
             state.selectedPaymentMethod = 'Cash on Delivery';
             elements.orderVerificationForm.show();
             state.paymentVerified = false;
+            state.adminConfirmed = false;
             
             // Update total amount in verification form
             updateOrderTotalAmountDisplay(calculateCartTotal());
@@ -1632,13 +1717,19 @@ textarea.form-control {
                state.homeDeliveryAddress.phone_number && 
                state.homeDeliveryAddress.address);
 
+        // For home delivery cash orders, we need admin confirmation
+        const needsAdminConfirmation = state.deliveryType === 'home' && 
+                                     state.selectedPaymentMethod === 'Cash on Delivery' && 
+                                     !state.adminConfirmed;
+
         // Determine if button should be disabled
         const disableButton = cartEmpty || !paymentSelected || 
-                             (state.deliveryType === 'home' && !addressEntered);
+                             (state.deliveryType === 'home' && !addressEntered) ||
+                             needsAdminConfirmation;
 
         elements.checkoutButton.prop('disabled', disableButton);
 
-        // Update button text based on verification status for Home Delivery
+        // Update button text based on verification and confirmation status
         if (state.deliveryType === 'home') {
             if (!addressEntered) {
                 elements.checkoutButton.text('Enter Delivery Address');
@@ -1648,6 +1739,10 @@ textarea.form-control {
                 elements.checkoutButton.text('Verify Order First');
                 elements.verifyOrder.prop('disabled', false);
                 elements.confirmPhone.prop('disabled', false);
+            } else if (needsAdminConfirmation && !state.adminConfirmationInProgress) {
+                elements.checkoutButton.text('Request Restaurant Confirmation');
+            } else if (state.adminConfirmationInProgress) {
+                elements.checkoutButton.text('Waiting for Restaurant Confirmation...');
             } else {
                 elements.checkoutButton.text('Place Order');
                 elements.verifyOrder.prop('disabled', true);
@@ -1733,10 +1828,11 @@ textarea.form-control {
         $(this).addClass('selected');
         state.selectedPaymentMethod = $(this).data('method');
 
-        // Reset verification for home delivery
+        // Reset verification and admin confirmation for home delivery
         if (state.deliveryType === 'home') {
             state.paymentVerified = false;
-            $('#cashDeliveryOption .order-verification-badge').remove();
+            state.adminConfirmed = false;
+            $('#cashDeliveryOption .order-verification-badge, #cashDeliveryOption .admin-confirmation-badge').remove();
             elements.verificationStatus.empty();
         }
 
@@ -1785,7 +1881,7 @@ textarea.form-control {
             if (isValid) {
                 $('#paymentVerificationSuccess, #continueToCheckout').show();
                 state.paymentVerified = true;
-                elements.verificationStatus.html('<span style="color: #4caf50;">Verification successful.</span>');
+                elements.verificationStatus.html('<span style="color: #4caf50;">Verification successful. Restaurant confirmation required next.</span>');
             } else {
                 $('#paymentVerificationFailed, #tryAgainPayment').show();
                 state.paymentVerified = false;
@@ -1813,6 +1909,28 @@ textarea.form-control {
         updateCheckoutButtonState();
     });
 
+    // Admin Confirmation Modal Handlers
+    elements.closeAdminConfirmation.on('click', function() {
+        if (state.adminConfirmed) {
+            elements.adminConfirmationModal.hide();
+            state.adminConfirmationInProgress = false;
+            updateCheckoutButtonState();
+        } else {
+            alert("You cannot close this window until the restaurant confirms your order or you cancel the confirmation request.");
+        }
+    });
+
+    elements.tryAgainAdminConfirmation.on('click', function() {
+        // Reset and try again
+        state.adminConfirmationInProgress = false;
+        elements.adminConfirmationModal.hide();
+        
+        // Small delay before requesting again for better UX
+        setTimeout(() => {
+            requestAdminConfirmation();
+        }, 500);
+    });
+
     // Place Order Handler
     elements.checkoutButton.on('click', function(e) {
         e.preventDefault();
@@ -1830,7 +1948,8 @@ textarea.form-control {
             return;
         }
         
-        if (state.deliveryType === 'home') {
+        // For home delivery with Cash on Delivery
+        if (state.deliveryType === 'home' && state.selectedPaymentMethod === 'Cash on Delivery') {
             if (!state.homeDeliveryAddress.full_name || 
                 !state.homeDeliveryAddress.phone_number || 
                 !state.homeDeliveryAddress.address) {
@@ -1844,6 +1963,18 @@ textarea.form-control {
                 elements.verifyOrder.focus();
                 return;
             }
+            
+            // If admin hasn't confirmed yet and not in progress already, start confirmation
+            if (!state.adminConfirmed && !state.adminConfirmationInProgress) {
+                requestAdminConfirmation();
+                return;
+            }
+            
+            // If admin confirmation is in progress, don't proceed
+            if (state.adminConfirmationInProgress && !state.adminConfirmed) {
+                alert('Please wait for the restaurant to confirm your order.');
+                return;
+            }
         }
 
         // Show loading overlay
@@ -1851,6 +1982,7 @@ textarea.form-control {
 
         // Build the payload
         const payload = {
+            order_reference: state.orderReferenceId || generateOrderReferenceId(),
             delivery_type: state.deliveryType,
             payment_method: state.selectedPaymentMethod,
             payment_details: state.selectedPaymentMethod === 'Mobile Money' ? 
@@ -1858,13 +1990,15 @@ textarea.form-control {
             cart: cart,
             table_number: state.deliveryType === 'restaurant' ? state.tableNumber : null,
             delivery_details: state.deliveryType === 'home' ? {
-                address: state.homeDeliveryAddress.address,
-                special_instructions: elements.orderNotes.val().trim()
+                address: state.homeDeliveryAddress.address
             } : null,
+
             customer_details: state.deliveryType === 'home' ? {
                 full_name: state.homeDeliveryAddress.full_name,
                 phone_number: elements.confirmPhone.val().trim()
-            } : null
+            } : null,
+            admin_confirmed: state.adminConfirmed,
+            admin_confirmation_timestamp: state.adminConfirmed ? new Date().toISOString() : null
         };
 
         console.log('Order payload:', payload);
@@ -1873,10 +2007,67 @@ textarea.form-control {
         setTimeout(() => {
             localStorage.removeItem('cart');
             elements.loadingOverlay.removeClass('active');
-            alert('Order Placed Successfully! (Simulated)');
-            window.location.reload();
-        }, 1000); // Reduced time for better UX
+            
+            // Show order success message with reference number
+            const successMessage = `
+                <div class="order-success-modal">
+                    <div class="order-success-content">
+                        <i class="fas fa-check-circle success-icon"></i>
+                        <h2>Order Placed Successfully!</h2>
+                        <p>Your order reference number: <strong>${payload.order_reference}</strong></p>
+                        <p>${state.deliveryType === 'restaurant' ? 
+                            'Please wait at your table, your order will be served soon.' : 
+                            'Your order will be delivered to the address you provided.'}</p>
+                        <button id="closeSuccessModal" class="primary-button">Close</button>
+                    </div>
+                </div>
+            `;
+            
+            $('body').append(successMessage);
+            
+            $('#closeSuccessModal').on('click', function() {
+                $('.order-success-modal').remove();
+                window.location.reload();
+            });
+        }, 1500);
     });
+
+    // ── Initialize HTML for Admin Confirmation Modal ──
+    // This would normally be in your HTML file, but added here for completeness
+    if (!document.getElementById('adminConfirmationModal')) {
+        const adminConfirmationHTML = `
+            <div id="adminConfirmationModal" class="modal">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h2>Restaurant Confirmation</h2>
+                        <button id="closeAdminConfirmation" class="close-modal">&times;</button>
+                    </div>
+                    <div class="modal-body">
+                        <div id="adminConfirmationProgress" class="verification-progress">
+                            <div class="spinner"></div>
+                            <p>Requesting confirmation from the restaurant...</p>
+                            <p class="countdown">Time remaining: <span id="confirmationTimeRemaining">60</span> seconds</p>
+                        </div>
+                        <div id="adminConfirmationStatus" class="verification-status">
+                            <p>Your order reference: <strong id="orderReferenceDisplay"></strong></p>
+                        </div>
+                        <button id="tryAgainAdminConfirmation" class="primary-button">Try Again</button>
+                    </div>
+                </div>
+            </div>
+        `;
+        
+        $('body').append(adminConfirmationHTML);
+        
+        // Re-cache the newly added elements
+        elements.adminConfirmationModal = $('#adminConfirmationModal');
+        elements.adminConfirmationStatus = $('#adminConfirmationStatus');
+        elements.adminConfirmationProgress = $('#adminConfirmationProgress');
+        elements.closeAdminConfirmation = $('#closeAdminConfirmation');
+        elements.tryAgainAdminConfirmation = $('#tryAgainAdminConfirmation');
+        elements.orderReferenceDisplay = $('#orderReferenceDisplay');
+        elements.confirmationTimeRemaining = $('#confirmationTimeRemaining');
+    }
 
     // ── Initialization ──
     // Initialize on page load in a way that doesn't block rendering
@@ -1891,6 +2082,57 @@ textarea.form-control {
         if (typeof turf === 'undefined') {
             console.warn("Turf.js is not loaded. Distance calculations will use fallbacks.");
         }
+        
+        // Add some CSS for the new admin confirmation elements
+        $('<style>')
+            .text(`
+                .admin-confirmation-badge {
+                    display: inline-block;
+                    background-color: #4caf50;
+                    color: white;
+                    padding: 3px 8px;
+                    border-radius: 15px;
+                    font-size: 0.75em;
+                    margin-left: 10px;
+                    vertical-align: middle;
+                }
+                
+                .countdown {
+                    color: #f57c00;
+                    font-weight: bold;
+                    margin-top: 10px;
+                }
+                
+                .order-success-modal {
+                    position: fixed;
+                    top: 0;
+                    left: 0;
+                    width: 100%;
+                    height: 100%;
+                    background-color: rgba(0, 0, 0, 0.7);
+                    display: flex;
+                    justify-content: center;
+                    align-items: center;
+                    z-index: 9999;
+                }
+                
+                .order-success-content {
+                    background-color: white;
+                    padding: 30px;
+                    border-radius: 10px;
+                    max-width: 500px;
+                    width: 90%;
+                    text-align: center;
+                    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+                }
+                
+                .success-icon {
+                    font-size: 60px;
+                    color: #4caf50;
+                    margin-bottom: 20px;
+                }
+            `)
+            .appendTo('head');
     }, 0);
 });
    </script>
