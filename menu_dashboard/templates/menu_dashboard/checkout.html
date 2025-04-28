@@ -1617,7 +1617,6 @@ textarea.form-control {
                         <button class="quantity-button increment-item">+</button>
                     </div>
                     <button class="delete-item"><i class="fas fa-trash-alt"></i></button>
-                    
                 </div>
             `;
         });
@@ -1992,7 +1991,6 @@ textarea.form-control {
             delivery_details: state.deliveryType === 'home' ? {
                 address: state.homeDeliveryAddress.address
             } : null,
-
             customer_details: state.deliveryType === 'home' ? {
                 full_name: state.homeDeliveryAddress.full_name,
                 phone_number: elements.confirmPhone.val().trim()
@@ -2003,50 +2001,56 @@ textarea.form-control {
 
         console.log('Order payload:', payload);
 
-        // SIMULATED SUCCESS - Replace with actual API call in production
-setTimeout(() => {
-    localStorage.removeItem('cart');
-    elements.loadingOverlay.removeClass('active');
-    
-    // Show order success message with reference number
-    const successMessage = `
-        <div class="order-success-modal">
-            <div class="order-success-content">
-                <i class="fas fa-check-circle success-icon"></i>
-                <h2>Order Placed Successfully!</h2>
-                <p>Your order reference number: <strong>${payload.order_reference}</strong></p>
-                <p>${state.deliveryType === 'restaurant' ? 
-                    'Please wait at your table, your order will be served soon.' : 
-                    'Your order will be delivered to the address you provided.'}</p>
-                <button id="closeSuccessModal" class="primary-button">Close</button>
-            </div>
-        </div>
-    `;
-    
-    $('body').append(successMessage);
-    
-    $('#closeSuccessModal').on('click', function() {
-        $('.order-success-modal').remove();
-        
-        // Extract required parameters from the current URL
-        const urlPath = window.location.pathname;
-        const pathSegments = urlPath.split('/').filter(segment => segment.length > 0);
-        
-        // Get restaurant_name_slug and hashed_slug from the current URL
-        const restaurantNameSlug = pathSegments[0]; 
-        const hashedSlug = pathSegments[1];
-        
-        // For this simulation, use the order reference to create a numeric ID
-        // In production, you would get the actual order_id from the server response
-        const orderId = payload.order_reference.replace(/\D/g, '').slice(0, 9);
-        
-        // Construct the redirect URL
-        const redirectUrl = `/${restaurantNameSlug}/${hashedSlug}/${orderId}/order_success/`;
-        
-        // Redirect to the order success page
-        window.location.href = redirectUrl;
+        // Get restaurant slugs and CSRF token
+        const restaurantNameSlug = elements.checkoutButton.attr('data-restaurant-name-slug');
+        const hashedSlug = elements.checkoutButton.attr('data-restaurant-hashed-slug');
+        const placeOrderUrl = `/restaurant/${restaurantNameSlug}/${hashedSlug}/place_order/`;
+        const csrfToken = $('meta[name="csrf-token"]').attr('content');
+
+        // Make AJAX request to place order
+        $.ajax({
+            url: placeOrderUrl,
+            type: 'POST',
+            data: JSON.stringify(payload),
+            contentType: 'application/json',
+            headers: {
+                'X-CSRFToken': csrfToken
+            },
+            success: function(response) {
+                elements.loadingOverlay.removeClass('active');
+                if (response.success) {
+                    const orderId = response.order_id;
+                    const successUrl = `/restaurant/${restaurantNameSlug}/${hashedSlug}/${orderId}/order_success/`;
+                    // Show success modal
+                    const successMessage = `
+                        <div class="order-success-modal">
+                            <div class="order-success-content">
+                                <i class="fas fa-check-circle success-icon"></i>
+                                <h2>Order Placed Successfully!</h2>
+                                <p>${state.deliveryType === 'restaurant' ? 
+                                    'Please wait at your table, your order will be served soon.' : 
+                                    'Your order will be delivered to the address you provided.'}</p>
+                                <button id="closeSuccessModal" class="primary-button">View Order Details</button>
+                            </div>
+                        </div>
+                    `;
+                    $('body').append(successMessage);
+                    $('#closeSuccessModal').on('click', function() {
+                        $('.order-success-modal').remove();
+                        window.location.href = successUrl;
+                    });
+                    // Clear cart
+                    localStorage.removeItem('cart');
+                } else {
+                    alert('Order placement failed: ' + (response.message || 'Unknown error'));
+                }
+            },
+            error: function(xhr, status, error) {
+                elements.loadingOverlay.removeClass('active');
+                alert('An error occurred while placing the order: ' + error);
+            }
+        });
     });
-}, 1500);
 
     // ── Initialize HTML for Admin Confirmation Modal ──
     // This would normally be in your HTML file, but added here for completeness
@@ -2056,7 +2060,7 @@ setTimeout(() => {
                 <div class="modal-content">
                     <div class="modal-header">
                         <h2>Restaurant Confirmation</h2>
-                        <button id="closeAdminConfirmation" class="close-modal">&times;</button>
+                        <button id="closeAdminConfirmation" class="close-modal">×</button>
                     </div>
                     <div class="modal-body">
                         <div id="adminConfirmationProgress" class="verification-progress">
