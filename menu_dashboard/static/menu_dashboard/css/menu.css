@@ -26,6 +26,18 @@
     /* Shadows */
     --shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.05);
     --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.08);
+
+    /* Sublime Text Theme */
+    --sublime-bg: #1e1e1e;
+    --sublime-sidebar: #252526;
+    --sublime-text: #d4d4d4;
+    --sublime-selection: #264f78;
+    --sublime-accent: #569cd6;
+    --sublime-string: #ce9178;
+    --sublime-number: #b5cea8;
+    --sublime-keyword: #569cd6;
+    --sublime-comment: #6a9955;
+    --sublime-border: #3c3c3c;
 }
 
 /* Base Styles */
@@ -42,6 +54,10 @@ body {
     color: var(--text-primary);
     -webkit-font-smoothing: antialiased;
     padding-bottom: 84px;
+    background-color: var(--sublime-bg);
+    color: var(--sublime-text);
+    font-family: 'Consolas', 'Monaco', 'Courier New', monospace;
+    line-height: 1.5;
 }
 
 /* Modal Styles */

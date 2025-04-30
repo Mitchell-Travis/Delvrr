@@ -1,0 +1,54 @@
+/* Sublime Text Cursor Styling */
+:root {
+    --cursor-color: #569cd6;
+    --cursor-width: 2px;
+    --cursor-blink-speed: 1s;
+}
+
+/* Main cursor style */
+.cursor {
+    display: inline-block;
+    width: var(--cursor-width);
+    height: 1.2em;
+    background-color: var(--cursor-color);
+    vertical-align: middle;
+    animation: blink var(--cursor-blink-speed) step-end infinite;
+}
+
+/* Cursor blink animation */
+@keyframes blink {
+    from, to {
+        opacity: 1;
+    }
+    50% {
+        opacity: 0;
+    }
+}
+
+/* Selection highlight */
+::selection {
+    background-color: #264f78;
+    color: #ffffff;
+}
+
+/* Text input cursor */
+input[type="text"],
+input[type="search"],
+textarea {
+    caret-color: var(--cursor-color);
+}
+
+/* Code editor cursor */
+.code-editor {
+    caret-color: var(--cursor-color);
+    cursor: text;
+}
+
+/* Sublime-like line highlight */
+.line-highlight {
+    background-color: rgba(86, 156, 214, 0.1);
+    position: absolute;
+    left: 0;
+    right: 0;
+    pointer-events: none;
+} 

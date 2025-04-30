@@ -1,0 +1,145 @@
+:root {
+    /* Sublime Text Color Palette */
+    --sublime-bg: #1e1e1e;
+    --sublime-sidebar: #252526;
+    --sublime-text: #d4d4d4;
+    --sublime-selection: #264f78;
+    --sublime-accent: #569cd6;
+    --sublime-string: #ce9178;
+    --sublime-number: #b5cea8;
+    --sublime-keyword: #569cd6;
+    --sublime-comment: #6a9955;
+    --sublime-border: #3c3c3c;
+}
+
+/* Base Styles */
+body {
+    background-color: var(--sublime-bg);
+    color: var(--sublime-text);
+    font-family: 'Consolas', 'Monaco', 'Courier New', monospace;
+    line-height: 1.5;
+    margin: 0;
+    padding: 0;
+}
+
+/* Menu Container */
+.menu-container {
+    background-color: var(--sublime-bg);
+    border: 1px solid var(--sublime-border);
+    border-radius: 4px;
+    margin: 20px;
+    padding: 20px;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
+}
+
+/* Category Headers */
+.category-header {
+    color: var(--sublime-accent);
+    font-size: 1.2em;
+    font-weight: bold;
+    margin: 20px 0 10px;
+    padding-bottom: 5px;
+    border-bottom: 1px solid var(--sublime-border);
+}
+
+/* Product Items */
+.product-item {
+    background-color: var(--sublime-sidebar);
+    border: 1px solid var(--sublime-border);
+    border-radius: 4px;
+    margin: 10px 0;
+    padding: 15px;
+    transition: all 0.2s ease;
+}
+
+.product-item:hover {
+    background-color: var(--sublime-selection);
+    transform: translateX(5px);
+}
+
+/* Product Name */
+.product-name {
+    color: var(--sublime-text);
+    font-weight: bold;
+    margin-bottom: 5px;
+}
+
+/* Product Description */
+.product-description {
+    color: var(--sublime-comment);
+    font-size: 0.9em;
+    margin-bottom: 10px;
+}
+
+/* Product Price */
+.product-price {
+    color: var(--sublime-number);
+    font-weight: bold;
+}
+
+/* Buttons */
+.btn {
+    background-color: var(--sublime-accent);
+    color: var(--sublime-bg);
+    border: none;
+    border-radius: 4px;
+    padding: 8px 15px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.btn:hover {
+    background-color: var(--sublime-keyword);
+}
+
+/* Search Bar */
+.search-bar {
+    background-color: var(--sublime-sidebar);
+    border: 1px solid var(--sublime-border);
+    border-radius: 4px;
+    color: var(--sublime-text);
+    padding: 8px 15px;
+    margin-bottom: 20px;
+    width: 100%;
+}
+
+/* Scrollbar */
+::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+}
+
+::-webkit-scrollbar-track {
+    background: var(--sublime-sidebar);
+}
+
+::-webkit-scrollbar-thumb {
+    background: var(--sublime-border);
+    border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background: var(--sublime-accent);
+}
+
+/* Animations */
+@keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+}
+
+.product-item {
+    animation: fadeIn 0.3s ease-in-out;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+    .menu-container {
+        margin: 10px;
+        padding: 10px;
+    }
+    
+    .product-item {
+        padding: 10px;
+    }
+} 
