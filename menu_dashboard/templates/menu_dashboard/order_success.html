@@ -430,6 +430,79 @@
             margin: 0 auto;
         }
     }
+
+    /* More compact styles */
+    .header {
+        padding: 40px 24px 30px;
+    }
+
+    .status-icon {
+        width: 60px;
+        height: 60px;
+        margin: 0 auto 16px;
+    }
+
+    .header-title {
+        font-size: 26px;
+        margin-bottom: 8px;
+    }
+
+    .header-subtitle {
+        font-size: 15px;
+        padding: 6px 12px;
+    }
+
+    .content-inner {
+        padding: 16px;
+    }
+
+    .delivery-section {
+        padding: 16px;
+        margin-bottom: 16px;
+    }
+
+    .delivery-tracking {
+        padding: 12px;
+        margin-top: 12px;
+    }
+
+    .info-card {
+        padding: 14px;
+        margin-bottom: 16px;
+    }
+
+    .section-heading {
+        margin-bottom: 12px;
+        font-size: 18px;
+    }
+
+    .item {
+        margin-bottom: 14px;
+        padding: 10px;
+    }
+
+    .item-image {
+        width: 60px;
+        height: 60px;
+        margin-right: 12px;
+    }
+
+    .item-name {
+        font-size: 15px;
+    }
+
+    .item-variant {
+        font-size: 13px;
+    }
+
+    .summary-section {
+        padding: 16px;
+        margin-bottom: 16px;
+    }
+
+    .button {
+        padding: 14px;
+    }
     </style>
 </head>
 <body>
@@ -497,25 +570,25 @@
                 </div>
                 {% endif %}
                 
-                <!-- Order Info Card -->
+                <!-- Order Info Card (Combined with Bill Summary for compactness) -->
                 <div class="info-card">
-                    <div class="section-heading">Order Details</div>
+                    <div class="section-heading">Order Information</div>
                     <div class="info-row">
                         <div class="info-item">
                             <span class="info-label">Order ID</span>
                             <span class="info-value">{{ order_id }}</span>
                         </div>
                         <div class="info-item">
-                            <span class="info-label">Date & Time</span>
-                            <span class="info-value">{{ order_time|date:"d M, g:i A" }}</span>
+                            <span class="info-label">Time</span>
+                            <span class="info-value">{{ order_time|date:"g:i A" }}</span>
                         </div>
                         <div class="info-item">
-                            <span class="info-label">Payment Method</span>
+                            <span class="info-label">Payment</span>
                             <span class="info-value">{{ payment_method }}</span>
                         </div>
                         <div class="info-item">
-                            <span class="info-label">Customer</span>
-                            <span class="info-value">{{ customer_name }}</span>
+                            <span class="info-label">Status</span>
+                            <span class="info-value">{{ order.status }}</span>
                         </div>
                     </div>
                 </div>
@@ -527,8 +600,8 @@
                         {% for item in order_items %}
                         <div class="item">
                             <div class="item-image">
-                                {% if item.product.image %}
-                                <img src="{{ item.product.image.url }}" alt="{{ item.product.name }}">
+                                {% if item.product.product_image %}
+                                <img src="{{ item.product.product_image.url }}" alt="{{ item.product.name }}">
                                 {% else %}
                                 <i class="fas fa-utensils"></i>
                                 {% endif %}
@@ -566,37 +639,11 @@
                     {% endif %}
                 </div>
                 
-                <!-- Bill Summary -->
-                <div class="section-heading">Bill Summary</div>
+                <!-- Bill Summary (More compact) -->
                 <div class="summary-section">
-                    <div class="summary-row">
-                        <span class="summary-label">Item Total</span>
-                        <span class="summary-value">${{ amount }}</span>
-                    </div>
-                    
-                    {% if order.tax %}
-                    <div class="summary-row">
-                        <span class="summary-label">Tax</span>
-                        <span class="summary-value">${{ order.tax }}</span>
-                    </div>
-                    {% endif %}
-                    
-                    {% if order.delivery_fee %}
-                    <div class="summary-row">
-                        <span class="summary-label">Delivery Fee</span>
-                        <span class="summary-value">${{ order.delivery_fee }}</span>
-                    </div>
-                    {% endif %}
-                    
-                    {% if order.service_fee %}
-                    <div class="summary-row">
-                        <span class="summary-label">Service Fee</span>
-                        <span class="summary-value">${{ order.service_fee }}</span>
-                    </div>
-                    {% endif %}
-                    
-                    <div class="grand-total">
-                        <span class="grand-total-label">Total</span>
+                    <div class="section-heading" style="margin-top:0; padding-top:0; border:none;">Bill Summary</div>
+                    <div class="grand-total" style="margin-top:0; padding-top:0; border:none;">
+                        <span class="grand-total-label">Total Amount</span>
                         <span class="grand-total-value">${{ amount }}</span>
                     </div>
                 </div>
