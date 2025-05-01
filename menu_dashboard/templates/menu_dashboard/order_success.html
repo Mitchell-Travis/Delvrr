@@ -14,6 +14,7 @@
         --text: #333333;
         --text-light: #666666;
         --shadow: rgba(0, 0, 0, 0.1);
+        --accent: #FCF4EA;
     }
 
     * {
@@ -48,71 +49,294 @@
     }
 
     .status-icon {
-        width: 72px;
-        height: 72px;
+        width: 80px;
+        height: 80px;
         background: white;
         border-radius: 50%;
         display: flex;
         align-items: center;
         justify-content: center;
-        margin: 0 auto 16px;
-        box-shadow: 0 8px 16px rgba(0, 0, 0, 0.15);
+        margin: 0 auto 20px;
+        box-shadow: 0 8px 20px rgba(0, 0, 0, 0.15);
         position: relative;
         z-index: 1;
     }
 
     .status-icon i {
         color: var(--primary);
-        font-size: 36px;
+        font-size: 40px;
     }
 
     .header-title {
-        font-size: 28px;
+        font-size: 32px;
         font-weight: 700;
-        margin-bottom: 8px;
+        margin-bottom: 12px;
     }
 
     .header-subtitle {
-        font-size: 16px;
-        opacity: 0.85;
-        font-weight: 400;
-        max-width: 260px;
+        font-size: 17px;
+        opacity: 0.9;
+        font-weight: 500;
+        max-width: 280px;
         margin: 0 auto;
         line-height: 1.4;
+        padding: 8px 16px;
+        background: rgba(255, 255, 255, 0.15);
+        border-radius: 100px;
+        display: inline-block;
     }
 
     .content {
         background: white;
-        padding: 24px;
         position: relative;
         z-index: 5;
         flex: 1;
         border-radius: 24px 24px 0 0;
         margin-top: -20px;
+        overflow: hidden;
     }
 
-    .info-section {
-        padding: 16px;
-        background: #F9F9F9;
+    .content-inner {
+        padding: 24px;
+    }
+
+    .delivery-section {
+        background: #F9FCFA;
         border-radius: 16px;
+        padding: 20px;
+        margin-bottom: 24px;
+        border: 1px solid rgba(19, 166, 88, 0.1);
+    }
+
+    .delivery-header {
+        display: flex;
+        align-items: center;
+        margin-bottom: 12px;
+    }
+
+    .delivery-icon {
+        width: 40px;
+        height: 40px;
+        background: var(--primary);
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin-right: 12px;
+        color: white;
+    }
+
+    .delivery-title {
+        font-size: 18px;
+        font-weight: 700;
+        color: var(--text);
+    }
+
+    .delivery-address {
+        font-size: 14px;
+        color: var(--text-light);
+        line-height: 1.5;
+        margin-left: 52px;
+    }
+
+    .delivery-tracking {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        background: #FFFFFF;
+        border-radius: 12px;
+        padding: 16px;
+        margin-top: 16px;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+    }
+
+    .tracking-left {
+        display: flex;
+        align-items: center;
+    }
+
+    .tracking-icon {
+        color: var(--primary);
+        margin-right: 12px;
+        font-size: 20px;
+    }
+
+    .tracking-status {
+        font-weight: 600;
+        font-size: 15px;
+    }
+
+    .tracking-button {
+        color: var(--primary);
+        font-weight: 600;
+        font-size: 15px;
+        text-decoration: none;
+    }
+
+    .section-heading {
+        font-size: 20px;
+        font-weight: 700;
+        color: var(--text);
+        margin-bottom: 16px;
+        padding-bottom: 8px;
+        border-bottom: 1px solid #F0F0F0;
+    }
+
+    .order-items {
+        margin-bottom: 28px;
+    }
+
+    .item {
+        display: flex;
+        margin-bottom: 20px;
+        background: #FFFFFF;
+        border-radius: 12px;
+        padding: 12px;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+    }
+
+    .item-image {
+        width: 80px;
+        height: 80px;
+        border-radius: 12px;
+        overflow: hidden;
+        margin-right: 16px;
+        background: #F5F5F5;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .item-image i {
+        color: var(--primary);
+        font-size: 28px;
+    }
+
+    .item-image img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+    }
+
+    .item-details {
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+    }
+
+    .item-name {
+        font-weight: 600;
+        font-size: 16px;
+        margin-bottom: 4px;
+        color: var(--text);
+    }
+
+    .item-variant {
+        font-size: 14px;
+        color: var(--text-light);
+        margin-bottom: 4px;
+    }
+
+    .item-price-container {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-top: 4px;
+    }
+
+    .item-original-price {
+        font-size: 14px;
+        text-decoration: line-through;
+        color: var(--text-light);
+        margin-right: 8px;
+    }
+
+    .item-price {
+        font-weight: 700;
+        font-size: 16px;
+        color: var(--text);
+    }
+
+    .summary-section {
+        background: #F9FCFA;
+        border-radius: 16px;
+        padding: 20px;
         margin-bottom: 24px;
     }
 
-    .section-title {
-        font-size: 18px;
-        font-weight: 600;
-        color: var(--text);
-        margin-bottom: 16px;
+    .summary-row {
         display: flex;
-        align-items: center;
-        gap: 8px;
+        justify-content: space-between;
+        margin-bottom: 12px;
     }
 
-    .section-title i {
+    .summary-label {
+        font-size: 15px;
+        color: var(--text-light);
+    }
+
+    .summary-value {
+        font-size: 15px;
+        font-weight: 500;
+        color: var(--text);
+    }
+
+    .grand-total {
+        display: flex;
+        justify-content: space-between;
+        padding-top: 16px;
+        border-top: 1px dashed #DDDDDD;
+        margin-top: 12px;
+    }
+
+    .grand-total-label {
+        font-size: 18px;
+        font-weight: 700;
+        color: var(--text);
+    }
+
+    .grand-total-value {
+        font-size: 20px;
+        font-weight: 700;
         color: var(--primary);
     }
 
-    .info-grid {
+    .button {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+        background: var(--primary);
+        color: white;
+        padding: 18px;
+        border-radius: 14px;
+        font-size: 16px;
+        font-weight: 600;
+        text-decoration: none;
+        transition: all 0.3s ease;
+        margin-top: 8px;
+        text-align: center;
+    }
+
+    .button:hover {
+        background: var(--primary-dark);
+        transform: translateY(-2px);
+    }
+
+    .button i {
+        font-size: 18px;
+    }
+
+    .info-card {
+        background: #FFFFFF;
+        border-radius: 12px;
+        padding: 16px;
+        margin-bottom: 20px;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+    }
+
+    .info-row {
         display: grid;
         grid-template-columns: 1fr 1fr;
         gap: 16px;
@@ -121,6 +345,7 @@
     .info-item {
         display: flex;
         flex-direction: column;
+        margin-bottom: 12px;
     }
 
     .info-label {
@@ -135,134 +360,37 @@
         color: var(--text);
     }
 
-    .divider {
-        height: 1px;
-        background: #EEEEEE;
-        margin: 16px 0;
-    }
-
-    .item-list {
-        margin-bottom: 24px;
-    }
-
-    .item {
-        display: flex;
-        align-items: center;
-        margin-bottom: 16px;
-    }
-
-    .item-image {
-        width: 48px;
-        height: 48px;
-        border-radius: 12px;
-        overflow: hidden;
-        margin-right: 12px;
-        background: #F0F0F0;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-    }
-
-    .item-image i {
-        color: var(--primary);
-        font-size: 24px;
-    }
-
-    .item-image img {
-        width: 100%;
-        height: 100%;
-        object-fit: cover;
-    }
-
-    .item-details {
-        flex: 1;
-    }
-
-    .item-name {
-        font-weight: 600;
-        font-size: 15px;
-        margin-bottom: 2px;
-    }
-
-    .item-variant {
-        font-size: 13px;
-        color: var(--text-light);
-    }
-
-    .item-price {
-        font-weight: 600;
-        font-size: 15px;
-        color: var(--text);
-    }
-
-    .total-row {
-        display: flex;
-        justify-content: space-between;
-        margin-bottom: 8px;
-    }
-
-    .total-label {
-        font-size: 14px;
-        color: var(--text-light);
-    }
-
-    .total-value {
-        font-size: 14px;
-        font-weight: 500;
-    }
-
-    .grand-total {
-        display: flex;
-        justify-content: space-between;
-        padding-top: 12px;
-        border-top: 1px dashed #DDDDDD;
-        margin-top: 12px;
-    }
-
-    .grand-total-label {
-        font-size: 16px;
-        font-weight: 600;
-    }
-
-    .grand-total-value {
-        font-size: 18px;
-        font-weight: 700;
-        color: var(--primary);
-    }
-
-    .button {
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        gap: 8px;
-        background: var(--primary);
-        color: white;
-        padding: 16px;
-        border-radius: 12px;
-        font-size: 16px;
-        font-weight: 600;
-        text-decoration: none;
-        transition: all 0.3s ease;
-        margin-top: 24px;
-    }
-
-    .button:hover {
-        background: var(--primary-dark);
-        transform: translateY(-2px);
-    }
-
-    .button i {
-        font-size: 18px;
-    }
-
     .back-button {
         position: absolute;
         top: 24px;
         left: 24px;
+        width: 40px;
+        height: 40px;
+        background: rgba(255, 255, 255, 0.2);
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
         color: white;
-        font-size: 24px;
-        z-index: 10;
         text-decoration: none;
+        font-size: 18px;
+    }
+
+    .view-summary-button {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        background: #F9F9F9;
+        padding: 16px;
+        border-radius: 12px;
+        text-decoration: none;
+        color: var(--text);
+        font-weight: 600;
+        margin: 16px 0;
+    }
+
+    .view-summary-button i {
+        color: #999;
     }
 
     .status-badge {
@@ -272,22 +400,16 @@
         padding: 6px 12px;
         border-radius: 100px;
         margin-top: 12px;
+        font-weight: 500;
     }
 
     .pulse-dot {
-        width: 6px;
-        height: 6px;
+        width: 8px;
+        height: 8px;
         background: white;
         border-radius: 50%;
         margin-right: 8px;
         animation: blink 1.5s infinite;
-    }
-
-    .no-items {
-        text-align: center;
-        padding: 16px;
-        color: var(--text-light);
-        font-style: italic;
     }
 
     @keyframes fadeIn {
@@ -312,107 +434,179 @@
 </head>
 <body>
     <div class="container">
-    <a href="{% url 'restaurant_menu' restaurant_name_slug=restaurant.slug hashed_slug=restaurant.hashed_slug %}" class="back-button">
-        <i class="fas fa-arrow-left"></i>
-    </a>
-    
-    <div class="header">
-        <div class="status-icon">
-            <i class="fas fa-check"></i>
-        </div>
-        <h1 class="header-title">Order Confirmed</h1>
-        <p class="header-subtitle">Your order will be ready in 15-20 minutes</p>
-        <div class="status-badge">
-            <span class="pulse-dot"></span>
-            {{ order.status }}
-        </div>
-    </div>
-    
-    <div class="content">
-        <div class="info-section">
-            <div class="section-title">
-                <i class="fas fa-receipt"></i>
-                Order Details
+        <a href="{% url 'restaurant_menu' restaurant_name_slug=restaurant.slug hashed_slug=restaurant.hashed_slug %}" class="back-button">
+            <i class="fas fa-arrow-left"></i>
+        </a>
+        
+        <div class="header">
+            <div class="status-icon">
+                <i class="fas fa-check"></i>
             </div>
-            <div class="info-grid">
-                <div class="info-item">
-                    <span class="info-label">Order ID</span>
-                    <span class="info-value">{{ order_id }}</span>
-                </div>
-                <div class="info-item">
-                    <span class="info-label">Table</span>
-                    <span class="info-value">{{ table_number }}</span>
-                </div>
-                <div class="info-item">
-                    <span class="info-label">Time</span>
-                    <span class="info-value">{{ order_time|date:"g:i A" }}</span>
-                </div>
-                <div class="info-item">
-                    <span class="info-label">Payment</span>
-                    <span class="info-value">{{ payment_method }}</span>
-                </div>
+            <h1 class="header-title">Order Confirmed</h1>
+            <div class="header-subtitle">
+                Your order will be ready in 15-20 minutes
+            </div>
+            <div class="status-badge">
+                <span class="pulse-dot"></span>
+                {{ order.status }}
             </div>
         </div>
         
-        <div class="section-title">
-            <i class="fas fa-utensils"></i>
-            Order List
-        </div>
-        
-        <div class="item-list">
-            {% if order_items %}
-                {% for item in order_items %}
-                <div class="item">
-                    <div class="item-image">
-                        {% if item.product.image %}
-                        <img src="{{ item.product.image.url }}" alt="{{ item.product.name }}">
-                        {% else %}
-                        <i class="fas fa-utensils"></i>
-                        {% endif %}
+        <div class="content">
+            <div class="content-inner">
+                {% if table_number %}
+                <!-- Restaurant Pickup Section -->
+                <div class="delivery-section">
+                    <div class="delivery-header">
+                        <div class="delivery-icon">
+                            <i class="fas fa-utensils"></i>
+                        </div>
+                        <div class="delivery-title">Table {{ table_number }}</div>
                     </div>
-                    <div class="item-details">
-                        <div class="item-name">{{ item.product.name }}</div>
-                        <div class="item-variant">
-                            Regular
-                            {% if item.quantity > 1 %}
-                                × {{ item.quantity }}
-                            {% endif %}
+                    <div class="delivery-address">
+                        {{ restaurant.name }}<br>
+                        {{ restaurant.address }}
+                    </div>
+                    <div class="delivery-tracking">
+                        <div class="tracking-left">
+                            <i class="fas fa-clock tracking-icon"></i>
+                            <span class="tracking-status">Ready in 15-20 minutes</span>
+                        </div>
+                        <a href="#" class="tracking-button">Details</a>
+                    </div>
+                </div>
+                {% else %}
+                <!-- Delivery Section -->
+                <div class="delivery-section">
+                    <div class="delivery-header">
+                        <div class="delivery-icon">
+                            <i class="fas fa-location-dot"></i>
+                        </div>
+                        <div class="delivery-title">Delivery To Home</div>
+                    </div>
+                    <div class="delivery-address">
+                        {{ order.delivery_address|default:"Your delivery address will appear here" }}
+                    </div>
+                    <div class="delivery-tracking">
+                        <div class="tracking-left">
+                            <i class="fas fa-motorcycle tracking-icon"></i>
+                            <span class="tracking-status">Arriving in 15-20 minutes</span>
+                        </div>
+                        <a href="#" class="tracking-button">Track</a>
+                    </div>
+                </div>
+                {% endif %}
+                
+                <!-- Order Info Card -->
+                <div class="info-card">
+                    <div class="section-heading">Order Details</div>
+                    <div class="info-row">
+                        <div class="info-item">
+                            <span class="info-label">Order ID</span>
+                            <span class="info-value">{{ order_id }}</span>
+                        </div>
+                        <div class="info-item">
+                            <span class="info-label">Date & Time</span>
+                            <span class="info-value">{{ order_time|date:"d M, g:i A" }}</span>
+                        </div>
+                        <div class="info-item">
+                            <span class="info-label">Payment Method</span>
+                            <span class="info-value">{{ payment_method }}</span>
+                        </div>
+                        <div class="info-item">
+                            <span class="info-label">Customer</span>
+                            <span class="info-value">{{ customer_name }}</span>
                         </div>
                     </div>
-                    <div class="item-price">${{ item.price }}</div>
                 </div>
-                {% endfor %}
-            {% else %}
-            <!-- Fallback until we get the proper order items -->
-            <div class="item">
-                <div class="item-image">
+                
+                <!-- Order Items -->
+                <div class="section-heading">Order Items</div>
+                <div class="order-items">
+                    {% if order_items %}
+                        {% for item in order_items %}
+                        <div class="item">
+                            <div class="item-image">
+                                {% if item.product.image %}
+                                <img src="{{ item.product.image.url }}" alt="{{ item.product.name }}">
+                                {% else %}
+                                <i class="fas fa-utensils"></i>
+                                {% endif %}
+                            </div>
+                            <div class="item-details">
+                                <div class="item-name">{{ item.product.name }}</div>
+                                <div class="item-variant">
+                                    {% if item.variant %}{{ item.variant }}{% else %}Regular{% endif %}
+                                    {% if item.quantity > 1 %}
+                                        × {{ item.quantity }}
+                                    {% endif %}
+                                </div>
+                                <div class="item-price-container">
+                                    {% if item.product.original_price and item.product.original_price > item.price %}
+                                    <span class="item-original-price">${{ item.product.original_price }}</span>
+                                    {% endif %}
+                                    <span class="item-price">${{ item.price }}</span>
+                                </div>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    {% else %}
+                    <div class="item">
+                        <div class="item-image">
+                            <i class="fas fa-receipt"></i>
+                        </div>
+                        <div class="item-details">
+                            <div class="item-name">Your complete order</div>
+                            <div class="item-variant">Total {{ order.amount }} items</div>
+                            <div class="item-price-container">
+                                <span class="item-price">${{ amount }}</span>
+                            </div>
+                        </div>
+                    </div>
+                    {% endif %}
+                </div>
+                
+                <!-- Bill Summary -->
+                <div class="section-heading">Bill Summary</div>
+                <div class="summary-section">
+                    <div class="summary-row">
+                        <span class="summary-label">Item Total</span>
+                        <span class="summary-value">${{ amount }}</span>
+                    </div>
+                    
+                    {% if order.tax %}
+                    <div class="summary-row">
+                        <span class="summary-label">Tax</span>
+                        <span class="summary-value">${{ order.tax }}</span>
+                    </div>
+                    {% endif %}
+                    
+                    {% if order.delivery_fee %}
+                    <div class="summary-row">
+                        <span class="summary-label">Delivery Fee</span>
+                        <span class="summary-value">${{ order.delivery_fee }}</span>
+                    </div>
+                    {% endif %}
+                    
+                    {% if order.service_fee %}
+                    <div class="summary-row">
+                        <span class="summary-label">Service Fee</span>
+                        <span class="summary-value">${{ order.service_fee }}</span>
+                    </div>
+                    {% endif %}
+                    
+                    <div class="grand-total">
+                        <span class="grand-total-label">Total</span>
+                        <span class="grand-total-value">${{ amount }}</span>
+                    </div>
+                </div>
+                
+                <a href="{% url 'restaurant_menu' restaurant_name_slug=restaurant.slug hashed_slug=restaurant.hashed_slug %}" class="button">
                     <i class="fas fa-utensils"></i>
-                </div>
-                <div class="item-details">
-                    <div class="item-name">Your order</div>
-                    <div class="item-variant">Total {{ order.amount }} items</div>
-                </div>
-                <div class="item-price">${{ amount }}</div>
+                    Back to Menu
+                </a>
             </div>
-            {% endif %}
         </div>
-        
-        <div class="section-title">
-            <i class="fas fa-file-invoice-dollar"></i>
-            Bill Summary
-        </div>
-        
-        <!-- Since we don't have subtotal, tax, and service fee information, we'll just show the total -->
-        <div class="grand-total">
-            <span class="grand-total-label">Total</span>
-            <span class="grand-total-value">${{ amount }}</span>
-        </div>
-        
-        <a href="{% url 'restaurant_menu' restaurant_name_slug=restaurant.slug hashed_slug=restaurant.hashed_slug %}" class="button">
-            <i class="fas fa-utensils"></i>
-            Back to Menu
-        </a>
     </div>
-</div>
 </body>
 </html>
