@@ -514,20 +514,29 @@ from django.contrib import messages
 def restaurant_checkout(request, restaurant_name_slug, hashed_slug):
     # Fetch the restaurant using the correct parameters
     restaurant = get_object_or_404(
-        Restaurant,
+        Restaurant.objects.prefetch_related('brand_colors'),
         slug=restaurant_name_slug,
         hashed_slug=hashed_slug
     )
-
     is_logged_in = request.user.is_authenticated
+    
+    # Get brand colors with fallbacks
+    brand_colors = restaurant.brand_colors.all()
+    primary_brand_color = brand_colors[0].color if brand_colors.count() > 0 else "#f7c028"
+    secondary_brand_color = brand_colors[1].color if brand_colors.count() > 1 else "#000000"
+    third_brand_color = brand_colors[2].color if brand_colors.count() > 2 else "#ffffff"
     
     if request.method == 'GET':
         return render(request, 'menu_dashboard/checkout.html', {
-            'restaurant':     restaurant,
-            'is_logged_in':   is_logged_in,
+            'restaurant': restaurant,
+            'is_logged_in': is_logged_in,
             # pass the exact model fields
             'restaurant_lat': restaurant.latitude,
             'restaurant_lon': restaurant.longitude,
+            # Add brand colors to context
+            'primary_brand_color': primary_brand_color,
+            'secondary_brand_color': secondary_brand_color,
+            'third_brand_color': third_brand_color,
         })
     
     if request.method == 'POST':
@@ -556,7 +565,7 @@ def restaurant_checkout(request, restaurant_name_slug, hashed_slug):
                 amount=0
             )
             
-            total_amount   = Decimal('0.00')
+            total_amount = Decimal('0.00')
             service_charge = Decimal('0.25')
             
             for product_id, item_data in cart.items():
@@ -581,8 +590,8 @@ def restaurant_checkout(request, restaurant_name_slug, hashed_slug):
                 del request.session['cart']
             
             return JsonResponse({
-                'message':      'Order placed successfully',
-                'order_id':     order.id,
+                'message': 'Order placed successfully',
+                'order_id': order.id,
                 'total_amount': str(total_amount)
             })
             

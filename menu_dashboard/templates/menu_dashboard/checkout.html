@@ -10,25 +10,46 @@
     <script src='https://api.mapbox.com/mapbox-gl-js/v2.3.1/mapbox-gl.js'></script>
     <link href='https://api.mapbox.com/mapbox-gl-js/v2.3.1/mapbox-gl.css' rel='stylesheet' />
     <script src='https://unpkg.com/@turf/turf@6/turf.min.js'></script>
-    <style>
+    {% load product_extras %}
+     <style>
         :root {
-            --primary: #2e7d32;
-            --primary-gradient: linear-gradient(135deg, #2e7d32, #1b5e20);
+            /* Dynamic Brand Colors - These will be overridden with inline style or JavaScript */
+            --primary: {{ primary_brand_color }};
+            --primary-rgb: {{ primary_brand_color|rgb_values }};
+            --secondary: {{ secondary_brand_color }};
+            --secondary-rgb: {{ secondary_brand_color|rgb_values }};
+            --tertiary: {{ third_brand_color }};
+            
+            /* Derived colors based on primary brand color */
+            --primary-gradient: linear-gradient(135deg, {{ primary_brand_color }}, {{ primary_brand_color|darken:10 }});
+            --primary-light: {{ primary_brand_color|lighten:40 }};
+            --primary-very-light: {{ primary_brand_color|lighten:60 }};
+            
+            /* Surface colors - can be adjusted to complement brand colors */
             --surface: #ffffff;
-            --surface-alt: #f1f8e9;
+            --surface-alt: {{ primary_brand_color|lighten:80 }};
+            
+            /* Text colors - can be adjusted for brand contrast */
             --text: #212121;
             --text-secondary: #757575;
-            --radius-sm: 6px;
-            --radius-md: 10px;
-            --radius-lg: 14px;
-            --safe-area-top: env(safe-area-inset-top, 0px);
-            --safe-area-bottom: env(safe-area-inset-bottom, 0px);
-            --accent: #03a9f4;
+            --text-on-primary: {% if primary_brand_color|is_light %}#212121{% else %}#ffffff{% endif %};
+            
+            /* Other UI elements */
+            --accent: {{ secondary_brand_color }};
             --input-border: #ced4da;
             --input-focus-border: var(--primary);
             --input-bg: #f8f9fa;
             --modal-bg: rgba(0, 0, 0, 0.5);
             --modal-inner-bg: var(--surface);
+            
+            /* Radius values */
+            --radius-sm: 6px;
+            --radius-md: 10px;
+            --radius-lg: 14px;
+            
+            /* Safe areas */
+            --safe-area-top: env(safe-area-inset-top, 0px);
+            --safe-area-bottom: env(safe-area-inset-bottom, 0px);
         }
 
         * {
@@ -59,9 +80,10 @@
         }
 
         .header {
-            background-color: var(--surface);
+            background-color: var(--primary);
+            color: var(--text-on-primary);
             padding: calc(0.8rem + var(--safe-area-top)) 1rem 0.8rem;
-            border-bottom: 1px solid #e0e0e0;
+            border-bottom: 1px solid rgba(0, 0, 0, 0.1);
             display: flex;
             align-items: center;
             justify-content: space-between;
@@ -73,7 +95,7 @@
         .back-button {
             background: none;
             border: none;
-            color: var(--text-secondary);
+            color: var(--text-on-primary);
             font-size: 1rem;
             cursor: pointer;
             padding: 6px;
@@ -88,6 +110,7 @@
             font-size: 1.1rem;
             font-weight: 500;
             margin: 0;
+            color: var(--text-on-primary);
         }
 
         .delivery-options {
@@ -104,7 +127,7 @@
 
         .delivery-switch-container {
             display: flex;
-            background-color: #f9f9f9;
+            background-color: var(--surface-alt);
             border-radius: var(--radius-md);
             overflow: hidden;
             border: 1px solid #e0e0e0;
@@ -123,7 +146,7 @@
 
         .delivery-switch-label.active {
             background-color: var(--primary);
-            color: white;
+            color: var(--text-on-primary);
         }
 
         .delivery-details {
@@ -153,13 +176,13 @@
             margin-bottom: 0.8rem;
             font-size: 0.9rem;
             color: var(--text-secondary);
-            background-color: #f0f7f2;
+            background-color: var(--primary-very-light);
             padding: 0.8rem;
             border-radius: var(--radius-sm);
         }
 
         .table-info i {
-            color: var(--accent);
+            color: var(--primary);
             font-size: 1rem;
         }
 
@@ -289,7 +312,7 @@
 
         .address-actions .save-address {
             background-color: var(--primary);
-            color: white;
+            color: var(--text-on-primary);
         }
 
         .address-actions .cancel-address {
@@ -300,7 +323,7 @@
 
         .estimated-delivery {
             font-size: 0.75rem;
-            color: #558b2f;
+            color: var(--primary);
             font-style: italic;
             margin-top: 0.6rem;
         }
@@ -397,127 +420,127 @@
         }
 
         /* Enhanced Payment Methods CSS */
-.payment-methods {
-  padding: 1.25rem;
-  border-top: 1px solid #e0e0e0;
-  background-color: #f9f9f9;
-  border-radius: 8px;
-  box-shadow: 0 2px 4px rgba(0,0,0,0.05);
-}
+        .payment-methods {
+            padding: 1.25rem;
+            border-top: 1px solid #e0e0e0;
+            
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+        }
 
-.payment-methods-title {
-  font-size: 1.1rem;
-  font-weight: 600;
-  margin-bottom: 1rem;
-  color: var(--text);
-  position: relative;
-  padding-bottom: 0.5rem;
-}
+        .payment-methods-title {
+            font-size: 1.1rem;
+            font-weight: 600;
+            margin-bottom: 1rem;
+            color: var(--text);
+            position: relative;
+            padding-bottom: 0.5rem;
+        }
 
-.payment-methods-title:after {
-  content: '';
-  position: absolute;
-  left: 0;
-  bottom: 0;
-  width: 40px;
-  height: 3px;
-  background-color: var(--primary);
-  border-radius: 3px;
-}
+        .payment-methods-title:after {
+            content: '';
+            position: absolute;
+            left: 0;
+            bottom: 0;
+            width: 40px;
+            height: 3px;
+            background-color: var(--primary);
+            border-radius: 3px;
+        }
 
-.payment-option {
-  display: none; /* Hidden by default */
-  background-color: var(--surface);
-  border-radius: 8px;
-  padding: 1rem;
-  margin-bottom: 0.75rem;
-  align-items: center;
-  gap: 1rem;
-  cursor: pointer;
-  border: 2px solid #e0e0e0;
-  transition: all 0.3s ease;
-  position: relative;
-  overflow: hidden;
-}
+        .payment-option {
+            display: none; /* Hidden by default */
+            background-color: var(--surface);
+            border-radius: 8px;
+            padding: 1rem;
+            margin-bottom: 0.75rem;
+            align-items: center;
+            gap: 1rem;
+            cursor: pointer;
+            border: 2px solid #e0e0e0;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
 
-.payment-option.active {
-  display: flex; /* Shown when active */
-}
+        .payment-option.active {
+            display: flex; /* Shown when active */
+        }
 
-.payment-option.selected {
-  border-color: var(--primary);
-  background-color: rgba(var(--primary-rgb, 46, 125, 50), 0.08);
-  transform: translateY(-2px);
-  box-shadow: 0 4px 8px rgba(0,0,0,0.1);
-}
+        .payment-option.selected {
+            border-color: var(--primary);
+            background-color: rgba(var(--primary-rgb), 0.08);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+        }
 
-.payment-option:hover:not(.selected) {
-  border-color: #bdbdbd;
-  background-color: #f5f5f5;
-}
+        .payment-option:hover:not(.selected) {
+            border-color: #bdbdbd;
+            background-color: #f5f5f5;
+        }
 
-.payment-icon {
-  background-color: #e8f5e9;
-  color: var(--primary);
-  width: 40px;
-  height: 40px;
-  border-radius: 50%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 1.1rem;
-  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-  transition: all 0.3s ease;
-}
+        .payment-icon {
+            background-color: var(--primary-light);
+            color: var(--primary);
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.1rem;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            transition: all 0.3s ease;
+        }
 
-.payment-option.selected .payment-icon {
-  transform: scale(1.1);
-  background-color: var(--primary);
-  color: white;
-}
+        .payment-option.selected .payment-icon {
+            transform: scale(1.1);
+            background-color: var(--primary);
+            color: var(--text-on-primary);
+        }
 
-.payment-details {
-  flex: 1;
-}
+        .payment-details {
+            flex: 1;
+        }
 
-.payment-details h3 {
-  font-size: 0.95rem;
-  margin-bottom: 0.25rem;
-  font-weight: 600;
-  color: var(--text);
-}
+        .payment-details h3 {
+            font-size: 0.95rem;
+            margin-bottom: 0.25rem;
+            font-weight: 600;
+            color: var(--text);
+        }
 
-.payment-details p {
-  font-size: 0.8rem;
-  color: var(--text-secondary);
-  margin: 0;
-}
+        .payment-details p {
+            font-size: 0.8rem;
+            color: var(--text-secondary);
+            margin: 0;
+        }
 
-/* Mobile Money Form Styling */
-.mobile-money-form {
-  display: none;
-  padding: 1rem;
-  margin-top: 1rem;
-  background-color: white;
-  border-radius: 8px;
-  border: 1px solid #e0e0e0;
-  animation: slideDown 0.3s ease-out;
-}
+        /* Mobile Money Form Styling */
+        .mobile-money-form {
+            display: none;
+            padding: 1rem;
+            margin-top: 1rem;
+            background-color: white;
+            border-radius: 8px;
+            border: 1px solid #e0e0e0;
+            animation: slideDown 0.3s ease-out;
+        }
 
-@keyframes slideDown {
-  from { opacity: 0; transform: translateY(-10px); }
-  to { opacity: 1; transform: translateY(0); }
-}
+        @keyframes slideDown {
+            from { opacity: 0; transform: translateY(-10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
 
-.payment-info-box {
-  background-color: #f0f7ff;
-  border: 1px solid #cce0ff;
-  border-radius: 8px;
-  margin-bottom: 1.25rem;
-  overflow: hidden;
-}
+        .payment-info-box {
+          background-color: #f0f7ff;
+          border: 1px solid #cce0ff;
+          border-radius: 8px;
+          margin-bottom: 1.25rem;
+          overflow: hidden;
+        }
 
-.payment-header {
+        .payment-header {
   background-color: #e6f0ff;
   padding: 0.75rem 1rem;
   font-weight: 600;
@@ -528,256 +551,261 @@
   gap: 0.5rem;
 }
 
-.payment-info-content {
-  padding: 1rem;
-}
+        .payment-info-content {
+            padding: 1rem;
+        }
 
-.restaurant-number {
-  font-size: 0.9rem;
-  margin-bottom: 0.75rem;
-  color: #333;
-}
+        .restaurant-number {
+            font-size: 0.9rem;
+            margin-bottom: 0.75rem;
+            color: #333;
+        }
 
-.payment-note {
-  font-size: 0.8rem;
-  color: #555;
-  margin-bottom: 0.75rem;
-}
+        .payment-note {
+            font-size: 0.8rem;
+            color: #555;
+            margin-bottom: 0.75rem;
+        }
 
-.amount-box {
-  background-color: white;
-  border: 1px dashed #aaa;
-  border-radius: 6px;
-  padding: 0.75rem;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-top: 0.75rem;
-}
+        .amount-box {
+            background-color: white;
+            border: 1px dashed #aaa;
+            border-radius: 6px;
+            padding: 0.75rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-top: 0.75rem;
+        }
 
-.amount {
-  font-weight: 700;
-  font-size: 1.1rem;
-  color: var(--primary);
-}
+        .amount {
+            font-weight: 700;
+            font-size: 1.1rem;
+            color: var(--primary);
+        }
 
-.form-group {
-  margin-bottom: 1rem;
-}
+        .form-group {
+            margin-bottom: 1rem;
+        }
 
-.form-group label {
-  display: block;
-  margin-bottom: 0.4rem;
-  font-size: 0.85rem;
-  color: #555;
-  font-weight: 500;
-}
+        .form-group label {
+            display: block;
+            margin-bottom: 0.4rem;
+            font-size: 0.85rem;
+            color: #555;
+            font-weight: 500;
+        }
 
-.form-control {
-  width: 100%;
-  padding: 0.75rem;
-  border: 1px solid #ddd;
-  border-radius: 6px;
-  font-size: 0.9rem;
-  transition: border-color 0.2s ease;
-}
+        .form-control {
+            width: 100%;
+            padding: 0.75rem;
+            border: 1px solid #ddd;
+            border-radius: 6px;
+            font-size: 0.9rem;
+            transition: border-color 0.2s ease;
+        }
 
-.form-control:focus {
-  border-color: var(--primary);
-  outline: none;
-  box-shadow: 0 0 0 2px rgba(var(--primary-rgb, 46, 125, 50), 0.2);
-}
+        .form-control:focus {
+            border-color: var(--primary);
+            outline: none;
+            box-shadow: 0 0 0 2px rgba(var(--primary-rgb), 0.2);
+        }
 
-.transaction-verification {
-  margin-top: 1.5rem;
-  display: flex;
-  flex-direction: column;
-  gap: 0.75rem;
-}
+        .transaction-verification {
+            margin-top: 1.5rem;
+            display: flex;
+            flex-direction: column;
+            gap: 0.75rem;
+        }
 
-.btn {
-  padding: 0.75rem 1rem;
-  border: none;
-  border-radius: 6px;
-  font-size: 0.9rem;
-  font-weight: 600;
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 0.5rem;
-  transition: all 0.2s ease;
-}
+        .btn {
+            padding: 0.75rem 1rem;
+            border: none;
+            border-radius: 6px;
+            font-size: 0.9rem;
+            font-weight: 600;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+            transition: all 0.2s ease;
+        }
 
-.btn-verify {
-  background-color: var(--primary);
-  color: white;
-}
+        .btn-verify {
+            background-color: var(--primary);
+            color: var(--text-on-primary);
+        }
 
-.btn-verify:hover {
-  background-color: rgba(var(--primary-rgb, 46, 125, 50), 0.9);
-  transform: translateY(-2px);
-}
+        .btn-verify:hover {
+            background-color: rgba(var(--primary-rgb), 0.9);
+            transform: translateY(-2px);
+        }
 
-.btn-success {
-  background-color: #4caf50;
-  color: white;
-}
+        .btn-success {
+            background-color: var(--primary);
+            color: var(--text-on-primary);
+        }
 
-.btn-secondary {
-  background-color: #f5f5f5;
-  color: #333;
-}
+        .btn-secondary {
+            background-color: #f5f5f5;
+            color: #333;
+        }
 
-.verification-status {
-  min-height: 24px;
-  font-size: 0.85rem;
-  text-align: center;
-  padding: 0.25rem;
-}
+        .verification-status {
+            min-height: 24px;
+            font-size: 0.85rem;
+            text-align: center;
+            padding: 0.25rem;
+        }
 
-/* Payment Modal */
-.modal {
-  display: none;
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  background-color: rgba(0,0,0,0.5);
-  z-index: 1000;
-  justify-content: center;
-  align-items: center;
-}
+        /* Payment Modal */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0,0,0,0.5);
+            z-index: 1000;
+            justify-content: center;
+            align-items: center;
+        }
 
-.modal-content {
-  background-color: white;
-  width: 90%;
-  max-width: 420px;
-  border-radius: 12px;
-  box-shadow: 0 5px 15px rgba(0,0,0,0.3);
-  animation: modalFadeIn 0.3s ease-out;
-}
+        .modal-content {
+            background-color: white;
+            width: 90%;
+            max-width: 420px;
+            border-radius: 12px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+            animation: modalFadeIn 0.3s ease-out;
+        }
 
-@keyframes modalFadeIn {
-  from { opacity: 0; transform: translateY(-20px); }
-  to { opacity: 1; transform: translateY(0); }
-}
+        @keyframes modalFadeIn {
+            from { opacity: 0; transform: translateY(-20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
 
-.modal-header {
-  padding: 1rem 1.5rem;
-  border-bottom: 1px solid #eee;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-}
+        .modal-header {
+            padding: 1rem 1.5rem;
+            border-bottom: 1px solid #eee;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background-color: var(--primary);
+            color: var(--text-on-primary);
+            border-radius: 12px 12px 0 0;
+        }
 
-.modal-header h2 {
-  font-size: 1.1rem;
-  font-weight: 600;
-  margin: 0;
-}
+        .modal-header h2 {
+            font-size: 1.1rem;
+            font-weight: 600;
+            margin: 0;
+            color: var(--text-on-primary);
+        }
 
-.close-modal {
-  background: none;
-  border: none;
-  font-size: 1.5rem;
-  cursor: pointer;
-  color: #777;
-}
+        .close-modal {
+            background: none;
+            border: none;
+            font-size: 1.5rem;
+            cursor: pointer;
+            color: var(--text-on-primary);
+        }
 
-.modal-body {
-  padding: 1.5rem;
-}
+        .modal-body {
+            padding: 1.5rem;
+        }
 
-.verification-progress {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 1rem;
-  padding: 1rem 0;
-}
+        .verification-progress {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 1rem;
+            padding: 1rem 0;
+        }
 
-.spinner {
-  width: 40px;
-  height: 40px;
-  border: 4px solid rgba(var(--primary-rgb, 46, 125, 50), 0.2);
-  border-top: 4px solid var(--primary);
-  border-radius: 50%;
-  animation: spin 1s linear infinite;
-}
+        .spinner {
+            width: 40px;
+            height: 40px;
+            border: 4px solid rgba(var(--primary-rgb), 0.2);
+            border-top: 4px solid var(--primary);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
 
-@keyframes spin {
-  0% { transform: rotate(0deg); }
-  100% { transform: rotate(360deg); }
-}
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
 
-.verification-result {
-  display: none;
-  flex-direction: column;
-  align-items: center;
-  gap: 1rem;
-  padding: 1rem 0;
-  text-align: center;
-}
+        .verification-result {
+            display: none;
+            flex-direction: column;
+            align-items: center;
+            gap: 1rem;
+            padding: 1rem 0;
+            text-align: center;
+        }
 
-.verification-result i {
-  font-size: 3rem;
-}
+        .verification-result i {
+            font-size: 3rem;
+        }
 
-.verification-result.success i {
-  color: #4caf50;
-}
+        .verification-result.success i {
+            color: var(--primary);
+        }
 
-.verification-result.failed i {
-  color: #f44336;
-}
+        .verification-result.failed i {
+            color: #f44336;
+        }
 
-.modal-footer {
-  padding: 1rem 1.5rem;
-  border-top: 1px solid #eee;
-  display: flex;
-  justify-content: flex-end;
-  gap: 0.75rem;
-}
-/* Additional CSS for the new Cash on Delivery verification system */
-.order-verification-badge {
-  position: absolute;
-  top: -8px;
-  right: -8px;
-  background-color: #4caf50;
-  color: white;
-  font-size: 0.7rem;
-  padding: 3px 8px;
-  border-radius: 12px;
-  display: flex;
-  align-items: center;
-  gap: 4px;
-}
+        .modal-footer {
+            padding: 1rem 1.5rem;
+            border-top: 1px solid #eee;
+            display: flex;
+            justify-content: flex-end;
+            gap: 0.75rem;
+        }
+        
+        /* Additional CSS for the new Cash on Delivery verification system */
+        .order-verification-badge {
+            position: absolute;
+            top: -8px;
+            right: -8px;
+            background-color: var(--primary);
+            color: var(--text-on-primary);
+            font-size: 0.7rem;
+            padding: 3px 8px;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            gap: 4px;
+        }
 
-textarea.form-control {
-  resize: vertical;
-  min-height: 60px;
-}
+        textarea.form-control {
+            resize: vertical;
+            min-height: 60px;
+        }
 
-.form-check {
-  display: flex;
-  align-items: center;
-  margin-bottom: 1rem;
-  gap: 8px;
-}
+        .form-check {
+            display: flex;
+            align-items: center;
+            margin-bottom: 1rem;
+            gap: 8px;
+        }
 
-.form-check input {
-  margin: 0;
-  width: 18px;
-  height: 18px;
-}
+        .form-check input {
+            margin: 0;
+            width: 18px;
+            height: 18px;
+        }
 
-.form-check label {
-  margin: 0;
-  font-size: 0.85rem;
-  color: #555;
-}
+        .form-check label {
+            margin: 0;
+            font-size: 0.85rem;
+            color: #555;
+        }
 
 
         .checkout-bar {
@@ -812,8 +840,8 @@ textarea.form-control {
         }
 
         .checkout-button {
-            background-color: var(--primary);
-            color: white;
+            background: var(--primary-gradient);
+            color: var(--text-on-primary);
             border: none;
             border-radius: var(--radius-md);
             padding: 0.8rem 1.2rem;
@@ -821,7 +849,7 @@ textarea.form-control {
             font-weight: 500;
             width: 100%;
             cursor: pointer;
-            transition: background-color 0.2s ease;
+            transition: opacity 0.2s ease, transform 0.2s ease;
             display: flex;
             align-items: center;
             justify-content: center;
@@ -868,11 +896,6 @@ textarea.form-control {
             animation: spin 1.2s linear infinite;
         }
 
-        @keyframes spin {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
-        }
-
         .empty-cart {
             padding: 1.5rem;
             text-align: center;
@@ -882,6 +905,7 @@ textarea.form-control {
         .empty-cart i {
             font-size: 1.5rem;
             margin-bottom: 0.6rem;
+            color: var(--primary);
         }
 
         html {
@@ -902,58 +926,76 @@ textarea.form-control {
             font-size: 16px !important;
             line-height: 1.4;
         }
-        /* Add these styles to your existing CSS */
- #map-container {
-      height: 0;
-      overflow: hidden;
-      transition: height 0.3s ease;
-      margin-top: 10px;
-      border-radius: var(--radius-md);
-      box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
-    }
-    #map-container.active {
-      height: 200px;
-      margin-bottom: 15px;
-    }
-    #map {
-      width: 100%;
-      height: 100%;
-    }
-    .map-toggle {
-      background: none;
-      border: none;
-      color: var(--accent);
-      font-size: 0.85rem;
-      display: flex;
-      align-items: center;
-      gap: 5px;
-      padding: 5px 0;
-      margin-top: 5px;
-      cursor: pointer;
-    }
-    .distance-indicator {
-      display: flex;
-      align-items: center;
-      gap: 0.5rem;
-      margin: 10px 0;
-      padding: 10px;
-      background-color: #f0f7f2;
-      border-radius: var(--radius-sm);
-      font-size: 0.85rem;
-    }
-    .distance-indicator i { color: var(--accent); }
-    .distance-status { font-weight: 500; }
-    .distance-status.nearby { color: #2e7d32; }
-    .distance-status.far    { color: #ff6f00; }
-    .mapboxgl-popup {
-      max-width: 200px;
-    }
-    .mapboxgl-popup-content {
-      text-align: center;
-      padding: 10px;
-      font-family: 'Poppins', sans-serif;
-    }
-
+        
+        /* Map related styles */
+        #map-container {
+            height: 0;
+            overflow: hidden;
+            transition: height 0.3s ease;
+            margin-top: 10px;
+            border-radius: var(--radius-md);
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+        }
+        
+        #map-container.active {
+            height: 200px;
+            margin-bottom: 15px;
+        }
+        
+        #map {
+            width: 100%;
+            height: 100%;
+        }
+        
+        .map-toggle {
+            background: none;
+            border: none;
+            color: var(--accent);
+            font-size: 0.85rem;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            padding: 5px 0;
+            margin-top: 5px;
+            cursor: pointer;
+        }
+        
+        .distance-indicator {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            margin: 10px 0;
+            padding: 10px;
+            background-color: var(--primary-very-light);
+            border-radius: var(--radius-sm);
+            font-size: 0.85rem;
+        }
+        
+        .distance-indicator i { 
+            color: var(--accent); 
+        }
+        
+        .distance-status { 
+            font-weight: 500; 
+        }
+        
+        .distance-status.nearby { 
+            color: var(--primary); 
+        }
+        
+        .distance-status.far { 
+            color: var(--secondary); 
+        }
+        
+        .mapboxgl-popup {
+            max-width: 200px;
+        }
+        
+        .mapboxgl-popup-content {
+            text-align: center;
+            padding: 10px;
+            font-family: 'Poppins', sans-serif;
+        }
     </style>
 </head>
 <body>
