@@ -541,15 +541,15 @@
         }
 
         .payment-header {
-  background-color: #e6f0ff;
-  padding: 0.75rem 1rem;
-  font-weight: 600;
-  color: #0056b3;
-  font-size: 0.9rem;
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-}
+          background-color: #e6f0ff;
+          padding: 0.75rem 1rem;
+          font-weight: 600;
+          color: #0056b3;
+          font-size: 0.9rem;
+          display: flex;
+          align-items: center;
+          gap: 0.5rem;
+        }
 
         .payment-info-content {
             padding: 1rem;
@@ -1206,10 +1206,9 @@
   <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
   <script src="https://api.mapbox.com/mapbox-gl-js/v2.15.0/mapbox-gl.js"></script>
   <script src="https://unpkg.com/@turf/turf/turf.min.js"></script>
-
-    <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
-   <script>
-   $(document).ready(function () {
+  <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+  <script>
+      $(document).ready(function () {
     // ── Constants & State ──
     const SERVICE_FEE = 0.25;
     const DELIVERY_FEE = 0.00;
@@ -1258,7 +1257,6 @@
         verificationStatus: $('#verificationStatus'),
         totalAmount: $('#mobileMoneyAmount'),
         confirmPhone: $('#confirmPhone'),
-       
         modalFullName: $('#modal-full-name'),
         modalPhoneNumber: $('#modal-phone-number'),
         modalAddress: $('#modal-address'),
@@ -1321,9 +1319,8 @@
             .toggleClass('far', dist > THRESHOLD_DISTANCE);
     }
 
-    // Get user location as a Promise - with caching
-    function getUserLocation() {
-        // Return cached location if available
+    // Get user location as a Promise - with caching and retry
+    function getUserLocation(retries = 1) {
         if (state.userLocation) {
             return Promise.resolve(state.userLocation);
         }
@@ -1334,15 +1331,44 @@
             } else {
                 navigator.geolocation.getCurrentPosition(
                     p => {
-                        // Cache the user location
                         state.userLocation = [p.coords.longitude, p.coords.latitude];
                         res(state.userLocation);
                     },
-                    e => rej(e),
-                    // Add options for faster response
-                    { maximumAge: 60000, timeout: 5000, enableHighAccuracy: false }
+                    e => {
+                        if (e.code === 3 && retries > 0) {
+                            // Timeout, try again after 1 second
+                            setTimeout(() => {
+                                getUserLocation(retries - 1).then(res).catch(rej);
+                            }, 1000);
+                        } else {
+                            rej(e);
+                        }
+                    },
+                    { maximumAge: 60000, timeout: 10000, enableHighAccuracy: true }
                 );
             }
+        });
+    }
+
+    // Function to ask user for location confirmation
+    function askUserForLocationConfirmation() {
+        return new Promise((resolve) => {
+            $('#locationConfirmationModal').addClass('active');
+            
+            $('#confirmAtRestaurant').one('click', () => {
+                resolve('restaurant');
+                $('#locationConfirmationModal').removeClass('active');
+            });
+            
+            $('#confirmNotAtRestaurant').one('click', () => {
+                resolve('home');
+                $('#locationConfirmationModal').removeClass('active');
+            });
+            
+            $('#closeLocationConfirmation').one('click', () => {
+                resolve('home');
+                $('#locationConfirmationModal').removeClass('active');
+            });
         });
     }
 
@@ -1351,7 +1377,6 @@
         if (state.isMapInitialized) return Promise.resolve();
         
         return new Promise((resolve, reject) => {
-            // Defer map initialization to not block page loading
             requestAnimationFrame(() => {
                 try {
                     mapboxgl.accessToken = 'pk.eyJ1IjoibWl0Y2hlbGwyMzEiLCJhIjoiY205dGF0YXprMGFoajJrc2I5cDVvNnprZSJ9.LiQvQKUCOIe5fW0QYSOSFQ';
@@ -1363,7 +1388,6 @@
                     });
                     
                     state.map.on('load', () => {
-                        // Add restaurant marker
                         const restaurantEl = document.createElement('div');
                         restaurantEl.innerHTML = '<i class="fas fa-utensils fa-2x"></i>';
                         restaurantEl.style.color = '#d32f2f';
@@ -1376,8 +1400,6 @@
                             
                         state.isMapInitialized = true;
                         resolve();
-                        
-                        // Get user location for map and add user marker/route
                         updateMapWithUserLocation();
                     });
                     
@@ -1393,14 +1415,13 @@
         });
     }
 
-    // Update map with user location (separated from initialization)
+    // Update map with user location
     async function updateMapWithUserLocation() {
         if (!state.isMapInitialized) return;
         
         try {
             const userLoc = await getUserLocation();
             
-            // Add/update user marker
             const userEl = document.createElement('div');
             userEl.innerHTML = '<i class="fas fa-user fa-2x"></i>';
             userEl.style.color = '#1976d2';
@@ -1413,14 +1434,12 @@
                 .setPopup(new mapboxgl.Popup().setHTML('<strong>Your Location</strong>'))
                 .addTo(state.map);
 
-            // Fit map bounds to include both markers
             const bounds = new mapboxgl.LngLatBounds()
                 .extend(userLoc)
                 .extend(restaurantLocation);
                 
             state.map.fitBounds(bounds, { padding: 70 });
 
-            // Draw route line - efficiently update existing or create new
             const routeGeoJSON = {
                 type: 'Feature',
                 geometry: {
@@ -1442,7 +1461,6 @@
                 });
             }
 
-            // Calculate and cache distance
             state.distanceToRestaurant = calculateDistance(userLoc, restaurantLocation);
             updateDistanceDisplay(state.distanceToRestaurant);
 
@@ -1453,10 +1471,9 @@
         }
     }
 
-    // Determine and set delivery type based on user location
+    // Determine and set delivery type based on user location or user input
     async function setDeliveryType() {
         try {
-            // Get user location (cached if available)
             const userLoc = await getUserLocation();
             const dist = calculateDistance(userLoc, restaurantLocation);
             state.distanceToRestaurant = dist;
@@ -1464,16 +1481,14 @@
             const isAtRestaurant = dist < THRESHOLD_DISTANCE;
             state.deliveryType = isAtRestaurant ? 'restaurant' : 'home';
 
-            // Update UI based on delivery type
             if (isAtRestaurant) {
                 $('.delivery-details-restaurant').show();
                 $('.delivery-details-home').hide();
                 elements.mapContainer.classList.remove('active');
                 elements.toggleMapButton.innerHTML = '<i class="fas fa-map"></i> Show map';
                 
-                // No verification needed for eat-in orders
                 state.paymentVerified = true;
-                state.adminConfirmed = true; // No admin confirmation needed for eat-in
+                state.adminConfirmed = true;
                 elements.orderVerificationForm.hide();
                 $('#cashDeliveryOption .order-verification-badge').remove();
                 elements.verificationStatus.empty();
@@ -1481,7 +1496,6 @@
                 $('.delivery-details-home').show();
                 $('.delivery-details-restaurant').hide();
                 
-                // Initialize map asynchronously without blocking UI
                 setTimeout(() => {
                     if (!elements.mapContainer.classList.contains('active')) {
                         elements.mapContainer.classList.add('active');
@@ -1490,55 +1504,61 @@
                     initializeMap();
                 }, 100);
                 
-                // Show verification form for home delivery
                 state.paymentVerified = false;
                 state.adminConfirmed = false;
                 elements.orderVerificationForm.show();
-                
-                // Update total amount for verification form
                 updateOrderTotalAmountDisplay(calculateCartTotal());
             }
 
-            // Update switch labels UI
             elements.deliverySwitchLabels.removeClass('active');
             $(`.delivery-switch-label[data-delivery-type="${state.deliveryType}"]`).addClass('active');
-
-            // Update other UI elements (without unnecessary duplicate calls)
             updatePaymentOptions();
-            
-            // Update distance display if we have distance information
             if (state.distanceToRestaurant !== null) {
                 updateDistanceDisplay(state.distanceToRestaurant);
             }
             
         } catch (err) {
-            console.warn('Could not get user location, defaulting to Home delivery.', err);
-            // Fallback to home delivery
-            state.deliveryType = 'home';
-            $('.delivery-details-home').show();
-            $('.delivery-details-restaurant').hide();
+            console.warn('Could not get user location, asking user to confirm.', err);
+            const userChoice = await askUserForLocationConfirmation();
+            state.deliveryType = userChoice;
             
-            // Initialize map centered on restaurant
-            setTimeout(() => {
-                if (!elements.mapContainer.classList.contains('active')) {
-                    elements.mapContainer.classList.add('active');
-                    elements.toggleMapButton.innerHTML = '<i class="fas fa-map"></i> Hide map';
-                }
-                initializeMap();
-                updateDistanceDisplay(Infinity);
-            }, 100);
+            if (state.deliveryType === 'restaurant') {
+                $('.delivery-details-restaurant').show();
+                $('.delivery-details-home').hide();
+                elements.mapContainer.classList.remove('active');
+                elements.toggleMapButton.innerHTML = '<i class="fas fa-map"></i> Show map';
+                
+                state.paymentVerified = true;
+                state.adminConfirmed = true;
+                elements.orderVerificationForm.hide();
+                $('#cashDeliveryOption .order-verification-badge').remove();
+                elements.verificationStatus.empty();
+            } else {
+                $('.delivery-details-home').show();
+                $('.delivery-details-restaurant').hide();
+                
+                setTimeout(() => {
+                    if (!elements.mapContainer.classList.contains('active')) {
+                        elements.mapContainer.classList.add('active');
+                        elements.toggleMapButton.innerHTML = '<i class="fas fa-map"></i> Hide map';
+                    }
+                    initializeMap();
+                    updateDistanceDisplay(Infinity);
+                }, 100);
+                
+                state.paymentVerified = false;
+                state.adminConfirmed = false;
+                elements.orderVerificationForm.show();
+                updateOrderTotalAmountDisplay(calculateCartTotal());
+            }
             
-            // Update UI for home delivery
             elements.deliverySwitchLabels.removeClass('active');
             $(`.delivery-switch-label[data-delivery-type="${state.deliveryType}"]`).addClass('active');
-            
             updatePaymentOptions();
         }
     }
 
     // ── Admin Confirmation Logic ──
-    
-    // Request admin confirmation for cash-on-delivery orders
     function requestAdminConfirmation() {
         if (state.adminConfirmationInProgress) return;
         
@@ -1546,7 +1566,6 @@
         state.adminConfirmed = false;
         state.orderReferenceId = generateOrderReferenceId();
         
-        // Show admin confirmation modal
         elements.adminConfirmationModal.css('display', 'flex');
         elements.adminConfirmationProgress.show();
         elements.adminConfirmationStatus.html('<span>Waiting for restaurant to confirm your order...</span>');
@@ -1556,24 +1575,14 @@
         let timeRemaining = ADMIN_CONFIRMATION_TIMEOUT / 1000;
         elements.confirmationTimeRemaining.text(timeRemaining);
         
-        // Update countdown timer
         const countdownInterval = setInterval(() => {
             timeRemaining--;
             elements.confirmationTimeRemaining.text(timeRemaining);
-            
-            if (timeRemaining <= 0) {
-                clearInterval(countdownInterval);
-            }
+            if (timeRemaining <= 0) clearInterval(countdownInterval);
         }, 1000);
 
-        // In a real app, you would make an API call to notify the restaurant admin
-        // and set up a websocket or polling to check for confirmation
-        // For demo purposes, we'll simulate the admin response
-        
         const simulateAdminResponse = () => {
-            // 80% chance of approval in this demo
             const isApproved = Math.random() < 0.8;
-            
             clearInterval(countdownInterval);
             elements.adminConfirmationProgress.hide();
             
@@ -1583,7 +1592,6 @@
                 $('#cashDeliveryOption').append('<span class="admin-confirmation-badge"><i class="fas fa-check-circle"></i> Confirmed by Restaurant</span>');
                 elements.tryAgainAdminConfirmation.hide();
                 
-                // Add a "Continue" button that closes the modal
                 const continueButton = $('<button id="continueAfterConfirmation" class="primary-button">Continue to Checkout</button>');
                 elements.adminConfirmationStatus.append(continueButton);
                 
@@ -1601,13 +1609,10 @@
             updateCheckoutButtonState();
         };
         
-        // Simulate admin response after a random time between 5-15 seconds
         setTimeout(simulateAdminResponse, 5000 + Math.random() * 10000);
     }
 
     // ── Cart Management ──
-    
-    // Calculate cart total (extracted to be reusable)
     function calculateCartTotal() {
         const cart = JSON.parse(localStorage.getItem('cart') || '{}');
         let subtotal = 0;
@@ -1619,12 +1624,10 @@
         return subtotal + SERVICE_FEE + DELIVERY_FEE;
     }
 
-    // Update cart display and totals - with optimized DOM updates
     function updateOrderDetails() {
         const cart = JSON.parse(localStorage.getItem('cart') || '{}');
         const items = Object.entries(cart);
         
-        // Handle empty cart case
         if (!items.length) {
             elements.orderDetailsList.html(`
                 <div class="empty-cart">
@@ -1638,7 +1641,6 @@
             return;
         }
 
-        // Prepare HTML for all items at once (single DOM update)
         let html = '';
         let subtotal = 0;
 
@@ -1665,14 +1667,11 @@
             `;
         });
 
-        // Single DOM update for entire cart
         elements.orderDetailsList.html(html);
-
         const totalDue = subtotal + SERVICE_FEE + DELIVERY_FEE;
         elements.itemTotal.text(`$${subtotal.toFixed(2)}`);
         elements.cartTotal.text(`$${totalDue.toFixed(2)}`);
 
-        // Update payment modal if visible
         if (elements.orderVerificationForm.is(':visible')) {
             updateOrderTotalAmountDisplay(totalDue);
         }
@@ -1680,99 +1679,78 @@
         updateCheckoutButtonState();
     }
 
-    // Update cart logic (handles increment, decrement, delete internally)
     function updateCart(id, delta) {
         const cart = JSON.parse(localStorage.getItem('cart') || '{}');
         if (!cart[id]) return;
 
-        cart[id][0] += delta; // Update quantity
-        if (cart[id][0] < 1) {
-            delete cart[id]; // Remove item if quantity is less than 1
-        }
+        cart[id][0] += delta;
+        if (cart[id][0] < 1) delete cart[id];
 
         localStorage.setItem('cart', JSON.stringify(cart));
-        
-        // Provide haptic feedback if available 
         if ('vibrate' in navigator) navigator.vibrate(30);
-        
-        // Update UI after cart change
         updateOrderDetails();
     }
 
-    // Delete item from cart
     function deleteCartItem(id) {
         const cart = JSON.parse(localStorage.getItem('cart') || '{}');
         if (!cart[id]) return;
 
         delete cart[id];
         localStorage.setItem('cart', JSON.stringify(cart));
-        
         if ('vibrate' in navigator) navigator.vibrate(50);
-        
         updateOrderDetails();
     }
 
-    // Update visibility and selection of payment options
     function updatePaymentOptions() {
-        // Reset selected method first
         state.selectedPaymentMethod = '';
         elements.paymentOptions.removeClass('selected active');
 
         if (state.deliveryType === 'restaurant') {
             $('.payment-option.restaurant-only').addClass('active');
-            // Auto-select Cash for restaurant orders
             $('.payment-option[data-method="Cash on Delivery"].restaurant-only').addClass('selected');
             state.selectedPaymentMethod = 'Cash on Delivery';
             elements.orderVerificationForm.hide();
             state.paymentVerified = true;
-            state.adminConfirmed = true; // No admin confirmation needed for eat-in
+            state.adminConfirmed = true;
             $('#cashDeliveryOption .order-verification-badge').remove();
             elements.verificationStatus.empty();
         } else {
             $('.payment-option.home-only').addClass('active');
-            // Auto-select Cash on Delivery for home delivery
             $('.payment-option[data-method="Cash on Delivery"].home-only').addClass('selected');
             state.selectedPaymentMethod = 'Cash on Delivery';
             elements.orderVerificationForm.show();
             state.paymentVerified = false;
             state.adminConfirmed = false;
-            
-            // Update total amount in verification form
             updateOrderTotalAmountDisplay(calculateCartTotal());
         }
         
         updateCheckoutButtonState();
     }
 
-    // Update the total amount displayed in the payment verification section
     function updateOrderTotalAmountDisplay(amount) {
         elements.totalAmount.text(`$${amount.toFixed(2)}`);
     }
 
-    // Update the state (enabled/disabled) and text of the checkout button
     function updateCheckoutButtonState() {
         const cart = JSON.parse(localStorage.getItem('cart') || '{}');
         const cartEmpty = !Object.keys(cart).length;
         const paymentSelected = !!state.selectedPaymentMethod;
         const addressEntered = state.deliveryType === 'restaurant' ? 
-            true : // Address not needed for restaurant
+            true : 
             !!(state.homeDeliveryAddress.full_name && 
                state.homeDeliveryAddress.phone_number && 
                state.homeDeliveryAddress.address);
 
-        // For home delivery cash orders, we need admin confirmation
         const needsAdminConfirmation = state.deliveryType === 'home' && 
                                      state.selectedPaymentMethod === 'Cash on Delivery' && 
                                      !state.adminConfirmed;
 
-        // Determine if button should be disabled
         const disableButton = cartEmpty || !paymentSelected || 
                              (state.deliveryType === 'home' && !addressEntered) ||
                              needsAdminConfirmation;
 
         elements.checkoutButton.prop('disabled', disableButton);
 
-        // Update button text based on verification and confirmation status
         if (state.deliveryType === 'home') {
             if (!addressEntered) {
                 elements.checkoutButton.text('Enter Delivery Address');
@@ -1797,22 +1775,14 @@
     }
 
     // ── Event Handlers ──
-
-    // Map Toggle - with lazy initialization
     elements.toggleMapButton.addEventListener('click', () => {
         const isMapActive = elements.mapContainer.classList.toggle('active');
-        
         elements.toggleMapButton.innerHTML = isMapActive
             ? '<i class="fas fa-map"></i> Hide map'
             : '<i class="fas fa-map"></i> Show map';
-            
-        if (isMapActive && !state.isMapInitialized) {
-            // Lazy load map when needed
-            initializeMap();
-        }
+        if (isMapActive && !state.isMapInitialized) initializeMap();
     });
 
-    // Prevent manual delivery switch and alert
     elements.deliverySwitchLabels.on('click', function () {
         const wanted = $(this).data('delivery-type');
         if (state.deliveryType === wanted) return;
@@ -1823,14 +1793,11 @@
             alert("Delivery type is determined by your location relative to the restaurant. You cannot manually switch to 'Eat-in' if you are not detected nearby.");
         }
         
-        // Keep UI reflecting actual delivery type
         elements.deliverySwitchLabels.removeClass('active');
         $(`.delivery-switch-label[data-delivery-type="${state.deliveryType}"]`).addClass('active');
     });
 
-    // Address Modal Handlers
     elements.openAddressModal.on('click', () => {
-        // Populate modal with existing address data
         elements.modalFullName.val(state.homeDeliveryAddress.full_name || '');
         elements.modalPhoneNumber.val(state.homeDeliveryAddress.phone_number || '');
         elements.modalAddress.val(state.homeDeliveryAddress.address || '');
@@ -1853,7 +1820,6 @@
         state.homeDeliveryAddress = { full_name: full, phone_number: phone, address: addr };
         elements.addressModal.removeClass('active');
 
-        // Auto-fill confirmation phone if empty
         if (elements.confirmPhone.val().trim() === '') {
             elements.confirmPhone.val(phone);
         }
@@ -1861,17 +1827,13 @@
         updateCheckoutButtonState();
     });
 
-    // Payment Option Selection
     elements.paymentOptions.on('click', function () {
-        // Only allow selecting active options
         if (!$(this).hasClass('active')) return;
 
-        // Deselect others and select this one
         elements.paymentOptions.removeClass('selected');
         $(this).addClass('selected');
         state.selectedPaymentMethod = $(this).data('method');
 
-        // Reset verification and admin confirmation for home delivery
         if (state.deliveryType === 'home') {
             state.paymentVerified = false;
             state.adminConfirmed = false;
@@ -1883,7 +1845,6 @@
         if ('vibrate' in navigator) navigator.vibrate(50);
     });
 
-    // Event Delegation for Cart Item Quantity and Delete
     elements.orderDetailsList.on('click', '.increment-item', function() {
         const itemId = $(this).closest('.order-item').data('item-id');
         updateCart(itemId, +1);
@@ -1899,26 +1860,21 @@
         deleteCartItem(itemId);
     });
 
-    // Verify Order Button Handler
     elements.verifyOrder.on('click', function() {
         const phoneNumber = elements.confirmPhone.val().trim();
 
-        // Validate phone number
         if (!phoneNumber || phoneNumber.length < 8 || !/^\d+$/.test(phoneNumber)) {
             elements.verificationStatus.html('<span style="color: #f44336;">Please enter a valid phone number (at least 8 digits).</span>');
             return;
         }
 
-        // Show verification modal
         elements.paymentModal.css('display', 'flex');
         $('#paymentVerificationProgress').show();
         $('#paymentVerificationSuccess, #paymentVerificationFailed').hide();
         $('#continueToCheckout, #tryAgainPayment').hide();
 
-        // Simulate verification (use setTimeout to not block UI)
         setTimeout(() => {
-            const isValid = true; // Always succeed for demo
-            
+            const isValid = true;
             $('#paymentVerificationProgress').hide();
 
             if (isValid) {
@@ -1932,10 +1888,9 @@
             }
             
             updateCheckoutButtonState();
-        }, 1000); // Reduce simulation time for better UX
+        }, 1000);
     });
 
-    // Payment Modal Handlers
     elements.closePaymentModal.on('click', function() {
         elements.paymentModal.hide();
         updateCheckoutButtonState();
@@ -1952,7 +1907,6 @@
         updateCheckoutButtonState();
     });
 
-    // Admin Confirmation Modal Handlers
     elements.closeAdminConfirmation.on('click', function() {
         if (state.adminConfirmed) {
             elements.adminConfirmationModal.hide();
@@ -1964,147 +1918,118 @@
     });
 
     elements.tryAgainAdminConfirmation.on('click', function() {
-        // Reset and try again
         state.adminConfirmationInProgress = false;
         elements.adminConfirmationModal.hide();
-        
-        // Small delay before requesting again for better UX
-        setTimeout(() => {
-            requestAdminConfirmation();
-        }, 500);
+        setTimeout(() => requestAdminConfirmation(), 500);
     });
 
-    // ── 0) CSRF setup (Django recommends) ──
-function getCookie(name) {
-  let cookieValue = null;
-  if (document.cookie && document.cookie !== '') {
-    document.cookie.split(';').forEach(function(cookie) {
-      const [key, val] = cookie.trim().split('=');
-      if (key === name) cookieValue = decodeURIComponent(val);
-    });
-  }
-  return cookieValue;
-}
-
-$.ajaxSetup({
-  beforeSend: function(xhr, settings) {
-    // Only send the token to same-origin, relative URLs
-    if (!(/^http:.*/.test(settings.url) || /^https:.*/.test(settings.url))) {
-      xhr.setRequestHeader("X-CSRFToken", getCookie('csrftoken'));
-    }
-  }
-});
-
-// ── Place Order Handler ──
-elements.checkoutButton.on('click', function(e) {
-    e.preventDefault();
-
-    // 1) Final validation
-    const cart = JSON.parse(localStorage.getItem('cart') || '{}');
-    if (Object.keys(cart).length === 0) {
-        alert('Your cart is empty.');
-        return;
-    }
-    if (!state.selectedPaymentMethod) {
-        alert('Please select a payment method.');
-        return;
-    }
-    if (state.deliveryType === 'home' && state.selectedPaymentMethod === 'Cash on Delivery') {
-        if (!state.homeDeliveryAddress.full_name ||
-            !state.homeDeliveryAddress.phone_number ||
-            !state.homeDeliveryAddress.address) {
-            alert('Please enter your full delivery address details.');
-            elements.openAddressModal.focus();
-            return;
+    // ── CSRF Setup ──
+    function getCookie(name) {
+        let cookieValue = null;
+        if (document.cookie && document.cookie !== '') {
+            document.cookie.split(';').forEach(function(cookie) {
+                const [key, val] = cookie.trim().split('=');
+                if (key === name) cookieValue = decodeURIComponent(val);
+            });
         }
-        if (!state.paymentVerified) {
-            alert('Please verify your order details first.');
-            elements.verifyOrder.focus();
-            return;
-        }
-        if (!state.adminConfirmed && !state.adminConfirmationInProgress) {
-            requestAdminConfirmation();
-            return;
-        }
-        if (state.adminConfirmationInProgress && !state.adminConfirmed) {
-            alert('Please wait for the restaurant to confirm your order.');
-            return;
-        }
+        return cookieValue;
     }
 
-    // 2) Show loading
-    elements.loadingOverlay.addClass('active');
-
-    // 3) Build form data
-    const formData = {
-        cart: JSON.stringify(cart),
-        payment_method: state.selectedPaymentMethod
-        // add additional fields here if you extend your view
-    };
-
-    // 4) Grab slugs
-    const restaurantSlug = elements.checkoutButton.attr('data-restaurant-name-slug');
-    const hashedSlug     = elements.checkoutButton.attr('data-restaurant-hashed-slug');
-
-    // 5) Point at your checkout view
-    const checkoutUrl = `/menu/${restaurantSlug}/${hashedSlug}/checkout/`;
-
-    // 6) Send POST (CSRF header auto-added)
-    $.ajax({
-        url: checkoutUrl,
-        type: 'POST',
-        data: formData,
-
-        success: function(response) {
-            elements.loadingOverlay.removeClass('active');
-
-            if (response.order_id) {
-                const orderId    = response.order_id;
-                const successUrl = `/menu/${restaurantSlug}/${hashedSlug}/${orderId}/order_success/`;
-
-                // 7) Show modal
-                const successMessage = `
-                    <div class="order-success-modal">
-                      <div class="order-success-content">
-                        <i class="fas fa-check-circle success-icon"></i>
-                        <h2>Order Placed Successfully!</h2>
-                        <p>${
-                          state.deliveryType === 'restaurant'
-                            ? 'Please wait at your table, your order will be served soon.'
-                            : 'Your order will be delivered to the address you provided.'
-                        }</p>
-                        <button id="closeSuccessModal" class="primary-button">
-                          View Order Details
-                        </button>
-                      </div>
-                    </div>
-                `;
-                $('body').append(successMessage);
-
-                // 8) Redirect on click
-                $('#closeSuccessModal').on('click', function() {
-                    $('.order-success-modal').remove();
-                    window.location.href = successUrl;
-                });
-
-                // 9) Clear cart
-                localStorage.removeItem('cart');
-            } else {
-                alert('Order placement failed: ' + (response.message || 'Unknown error'));
+    $.ajaxSetup({
+        beforeSend: function(xhr, settings) {
+            if (!(/^http:.*/.test(settings.url) || /^https:.*/.test(settings.url))) {
+                xhr.setRequestHeader("X-CSRFToken", getCookie('csrftoken'));
             }
-        },
-
-        error: function(xhr) {
-            elements.loadingOverlay.removeClass('active');
-            const msg = xhr.responseJSON?.message || xhr.statusText;
-            alert('An error occurred while placing the order: ' + msg);
         }
     });
-});
 
+    // ── Place Order Handler ──
+    elements.checkoutButton.on('click', function(e) {
+        e.preventDefault();
 
-    // ── Initialize HTML for Admin Confirmation Modal ──
-    // This would normally be in your HTML file, but added here for completeness
+        const cart = JSON.parse(localStorage.getItem('cart') || '{}');
+        if (Object.keys(cart).length === 0) {
+            alert('Your cart is empty.');
+            return;
+        }
+        if (!state.selectedPaymentMethod) {
+            alert('Please select a payment method.');
+            return;
+        }
+        if (state.deliveryType === 'home' && state.selectedPaymentMethod === 'Cash on Delivery') {
+            if (!state.homeDeliveryAddress.full_name ||
+                !state.homeDeliveryAddress.phone_number ||
+                !state.homeDeliveryAddress.address) {
+                alert('Please enter your full delivery address details.');
+                elements.openAddressModal.focus();
+                return;
+            }
+            if (!state.paymentVerified) {
+                alert('Please verify your order details first.');
+                elements.verifyOrder.focus();
+                return;
+            }
+            if (!state.adminConfirmed && !state.adminConfirmationInProgress) {
+                requestAdminConfirmation();
+                return;
+            }
+            if (state.adminConfirmationInProgress && !state.adminConfirmed) {
+                alert('Please wait for the restaurant to confirm your order.');
+                return;
+            }
+        }
+
+        elements.loadingOverlay.addClass('active');
+
+        const formData = {
+            cart: JSON.stringify(cart),
+            payment_method: state.selectedPaymentMethod
+        };
+
+        const restaurantSlug = elements.checkoutButton.attr('data-restaurant-name-slug');
+        const hashedSlug = elements.checkoutButton.attr('data-restaurant-hashed-slug');
+        const checkoutUrl = `/menu/${restaurantSlug}/${hashedSlug}/checkout/`;
+
+        $.ajax({
+            url: checkoutUrl,
+            type: 'POST',
+            data: formData,
+            success: function(response) {
+                elements.loadingOverlay.removeClass('active');
+                if (response.order_id) {
+                    const orderId = response.order_id;
+                    const successUrl = `/menu/${restaurantSlug}/${hashedSlug}/${orderId}/order_success/`;
+                    const successMessage = `
+                        <div class="order-success-modal">
+                          <div class="order-success-content">
+                            <i class="fas fa-check-circle success-icon"></i>
+                            <h2>Order Placed Successfully!</h2>
+                            <p>${state.deliveryType === 'restaurant' ? 'Please wait at your table, your order will be served soon.' : 'Your order will be delivered to the address you provided.'}</p>
+                            <button id="closeSuccessModal" class="primary-button">View Order Details</button>
+                          </div>
+                        </div>
+                    `;
+                    $('body').append(successMessage);
+
+                    $('#closeSuccessModal').on('click', function() {
+                        $('.order-success-modal').remove();
+                        window.location.href = successUrl;
+                    });
+
+                    localStorage.removeItem('cart');
+                } else {
+                    alert('Order placement failed: ' + (response.message || 'Unknown error'));
+                }
+            },
+            error: function(xhr) {
+                elements.loadingOverlay.removeClass('active');
+                const msg = xhr.responseJSON?.message || xhr.statusText;
+                alert('An error occurred while placing the order: ' + msg);
+            }
+        });
+    });
+
+    // ── Initialize HTML for Modals ──
     if (!document.getElementById('adminConfirmationModal')) {
         const adminConfirmationHTML = `
             <div id="adminConfirmationModal" class="modal">
@@ -2127,10 +2052,8 @@ elements.checkoutButton.on('click', function(e) {
                 </div>
             </div>
         `;
-        
         $('body').append(adminConfirmationHTML);
         
-        // Re-cache the newly added elements
         elements.adminConfirmationModal = $('#adminConfirmationModal');
         elements.adminConfirmationStatus = $('#adminConfirmationStatus');
         elements.adminConfirmationProgress = $('#adminConfirmationProgress');
@@ -2140,74 +2063,140 @@ elements.checkoutButton.on('click', function(e) {
         elements.confirmationTimeRemaining = $('#confirmationTimeRemaining');
     }
 
+    if (!document.getElementById('locationConfirmationModal')) {
+        const locationConfirmationHTML = `
+            <div id="locationConfirmationModal" class="modal">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h2>Confirm Your Location</h2>
+                        <button id="closeLocationConfirmation" class="close-modal">×</button>
+                    </div>
+                    <div class="modal-body">
+                        <p>We couldn't determine your location automatically. Are you currently at the restaurant?</p>
+                        <div class="location-confirmation-options">
+                            <button id="confirmAtRestaurant" class="primary-button">Yes, I'm at the restaurant</button>
+                            <button id="confirmNotAtRestaurant" class="secondary-button">No, I'm not at the restaurant</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        `;
+        $('body').append(locationConfirmationHTML);
+    }
+
     // ── Initialization ──
-    // Initialize on page load in a way that doesn't block rendering
     setTimeout(() => {
-        // Load and render cart first (for perceived performance)
         updateOrderDetails();
-        
-        // Then determine location/delivery type (potentially slower operation)
         setDeliveryType();
         
-        // Check for turf.js (optional dependency check)
         if (typeof turf === 'undefined') {
             console.warn("Turf.js is not loaded. Distance calculations will use fallbacks.");
         }
         
-        // Add some CSS for the new admin confirmation elements
-        $('<style>')
-            .text(`
-                .admin-confirmation-badge {
-                    display: inline-block;
-                    background-color: #4caf50;
-                    color: white;
-                    padding: 3px 8px;
-                    border-radius: 15px;
-                    font-size: 0.75em;
-                    margin-left: 10px;
-                    vertical-align: middle;
-                }
-                
-                .countdown {
-                    color: #f57c00;
-                    font-weight: bold;
-                    margin-top: 10px;
-                }
-                
-                .order-success-modal {
-                    position: fixed;
-                    top: 0;
-                    left: 0;
-                    width: 100%;
-                    height: 100%;
-                    background-color: rgba(0, 0, 0, 0.7);
-                    display: flex;
-                    justify-content: center;
-                    align-items: center;
-                    z-index: 9999;
-                }
-                
-                .order-success-content {
-                    background-color: white;
-                    padding: 30px;
-                    border-radius: 10px;
-                    max-width: 500px;
-                    width: 90%;
-                    text-align: center;
-                    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
-                }
-                
-                .success-icon {
-                    font-size: 60px;
-                    color: #4caf50;
-                    margin-bottom: 20px;
-                }
-            `)
-            .appendTo('head');
+        $('<style>').text(`
+            .admin-confirmation-badge {
+                display: inline-block;
+                background-color: #4caf50;
+                color: white;
+                padding: 3px 8px;
+                border-radius: 15px;
+                font-size: 0.75em;
+                margin-left: 10px;
+                vertical-align: middle;
+            }
+            .countdown {
+                color: #f57c00;
+                font-weight: bold;
+                margin-top: 10px;
+            }
+            .order-success-modal {
+                position: fixed;
+                top: 0;
+                left: 0;
+                width: 100%;
+                height: 100%;
+                background-color: rgba(0, 0, 0, 0.7);
+                display: flex;
+                justify-content: center;
+                align-items: center;
+                z-index: 9999;
+            }
+            .order-success-content {
+                background-color: white;
+                padding: 30px;
+                border-radius: 10px;
+                max-width: 500px;
+                width: 90%;
+                text-align: center;
+                box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+            }
+            .success-icon {
+                font-size: 60px;
+                color: #4caf50;
+                margin-bottom: 20px;
+            }
+            .modal {
+                display: none;
+                position: fixed;
+                top: 0;
+                left: 0;
+                width: 100%;
+                height: 100%;
+                background-color: rgba(0, 0, 0, 0.5);
+            }
+            .modal.active {
+                display: flex;
+                justify-content: center;
+                align-items: center;
+            }
+            .modal-content {
+                background-color: white;
+                padding: 20px;
+                border-radius: 5px;
+                width: 90%;
+                max-width: 400px;
+            }
+            .modal-header {
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+            }
+            .modal-body {
+                margin-top: 15px;
+            }
+            .location-confirmation-options {
+                margin-top: 20px;
+                display: flex;
+                gap: 10px;
+                justify-content: center;
+            }
+            .primary-button {
+                background-color: #4caf50;
+                color: white;
+                padding: 10px 20px;
+                border: none;
+                border-radius: 5px;
+                cursor: pointer;
+            }
+            .secondary-button {
+                background-color: #f44336;
+                color: white;
+                padding: 10px 20px;
+                border: none;
+                border-radius: 5px;
+                cursor: pointer;
+            }
+            .close-modal {
+                background: none;
+                border: none;
+                font-size: 24px;
+                cursor: pointer;
+            }
+        `).appendTo('head');
     }, 0);
 });
-   </script>
-
+  </script>
+   
 
 
 </body>
