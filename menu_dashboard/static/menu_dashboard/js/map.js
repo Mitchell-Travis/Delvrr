@@ -29,6 +29,109 @@ const state = {
 // DOM Elements cache - will be initialized when DOM is loaded
 let elements;
 
+// Add toast notification styles
+$('<style>')
+    .text(`
+        .toast-container {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            z-index: 9999;
+        }
+        .toast {
+            background: white;
+            border-radius: 12px;
+            padding: 16px;
+            margin-bottom: 10px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            display: flex;
+            align-items: center;
+            min-width: 300px;
+            max-width: 400px;
+            animation: slideIn 0.3s ease-out;
+            border-left: 4px solid;
+        }
+        .toast.nearby {
+            border-left-color: #4CAF50;
+        }
+        .toast.far {
+            border-left-color: #FF9800;
+        }
+        .toast.loading {
+            border-left-color: #1976D2;
+        }
+        .toast.error {
+            border-left-color: #F44336;
+        }
+        .toast i {
+            margin-right: 12px;
+            font-size: 20px;
+        }
+        .toast.nearby i {
+            color: #4CAF50;
+        }
+        .toast.far i {
+            color: #FF9800;
+        }
+        .toast.loading i {
+            color: #1976D2;
+        }
+        .toast.error i {
+            color: #F44336;
+        }
+        .toast-content {
+            flex: 1;
+        }
+        .toast-title {
+            font-weight: 600;
+            margin-bottom: 4px;
+        }
+        .toast-message {
+            color: #666;
+            font-size: 14px;
+        }
+        @keyframes slideIn {
+            from {
+                transform: translateX(100%);
+                opacity: 0;
+            }
+            to {
+                transform: translateX(0);
+                opacity: 1;
+            }
+        }
+    `)
+    .appendTo('head');
+
+// Add toast container to body
+$('body').append('<div class="toast-container"></div>');
+
+function showToast(title, message, type = 'info') {
+    const icon = {
+        nearby: '<i class="fas fa-check-circle"></i>',
+        far: '<i class="fas fa-truck"></i>',
+        loading: '<i class="fas fa-spinner fa-spin"></i>',
+        error: '<i class="fas fa-exclamation-circle"></i>'
+    }[type];
+
+    const toast = $(`
+        <div class="toast ${type}">
+            ${icon}
+            <div class="toast-content">
+                <div class="toast-title">${title}</div>
+                <div class="toast-message">${message}</div>
+            </div>
+        </div>
+    `);
+
+    $('.toast-container').append(toast);
+    
+    // Remove toast after 5 seconds
+    setTimeout(() => {
+        toast.fadeOut(300, () => toast.remove());
+    }, 5000);
+}
+
 // Map Functions
 async function initializeMap() {
     return new Promise((resolve, reject) => {
@@ -96,11 +199,12 @@ async function getUserLocation(retries = 1) {
     }
     
     state.locationLoading = true;
-    elements.distanceValue.html('<i class="fas fa-spinner fa-spin"></i> Detecting location...');
+    showToast('Location Detection', 'Detecting your location...', 'loading');
     
     return new Promise((resolve, reject) => {
         if (!navigator.geolocation) {
             state.locationLoading = false;
+            showToast('Error', 'Geolocation is not supported by your browser', 'error');
             reject(new Error('Geolocation is not supported by your browser'));
             return;
         }
@@ -119,7 +223,7 @@ async function getUserLocation(retries = 1) {
                         getUserLocation(retries - 1).then(resolve).catch(reject);
                     }, 1000);
                 } else {
-                    elements.distanceValue.html('<i class="fas fa-exclamation-circle"></i> Location detection failed');
+                    showToast('Error', 'Could not determine your location', 'error');
                     reject(error);
                 }
             },
@@ -138,16 +242,10 @@ async function updateMapWithUserLocation() {
     try {
         const userLoc = await getUserLocation();
         
-        const userEl = document.createElement('div');
-        userEl.innerHTML = '<i class="fas fa-user fa-2x"></i>';
-        userEl.style.color = '#1976d2';
-        userEl.style.textShadow = '0 0 3px #fff';
-        
         if (state.userMarker) state.userMarker.remove();
         
-        state.userMarker = new mapboxgl.Marker({ element: userEl })
+        state.userMarker = new mapboxgl.Marker()
             .setLngLat(userLoc)
-            .setPopup(new mapboxgl.Popup().setHTML('<strong>Your Location</strong>'))
             .addTo(state.map);
 
         const bounds = new mapboxgl.LngLatBounds()
@@ -178,21 +276,27 @@ async function updateMapWithUserLocation() {
         }
 
         state.distanceToRestaurant = calculateDistance(userLoc, state.restaurantLocation);
-        updateDistanceDisplay(state.distanceToRestaurant);
-
+        
         // Update delivery type based on distance
         const newDeliveryType = state.distanceToRestaurant <= THRESHOLD_DISTANCE ? 'restaurant' : 'home';
         if (state.deliveryType !== newDeliveryType) {
             state.deliveryType = newDeliveryType;
             elements.deliverySwitchLabels.removeClass('active');
             $(`.delivery-switch-label[data-delivery-type="${newDeliveryType}"]`).addClass('active');
+            
+            // Show appropriate toast message
+            if (newDeliveryType === 'restaurant') {
+                showToast('Welcome!', 'You\'re at the restaurant!', 'nearby');
+            } else {
+                showToast('Delivery Required', 'You\'re not at the restaurant. Home delivery will be arranged.', 'far');
+            }
+            
             updatePaymentOptions();
         }
 
     } catch (err) {
         console.error('Geo error for map:', err);
-        elements.distanceValue.html('<i class="fas fa-exclamation-circle"></i> Could not determine your location for map');
-        elements.distanceStatus.text('').removeClass('nearby far');
+        showToast('Error', 'Could not determine your location', 'error');
     }
 }
 
@@ -689,50 +793,12 @@ document.addEventListener('DOMContentLoaded', () => {
         paymentOptions: $('.payment-option')
     };
     
-    // Add loading indicator styles
-    $('<style>')
-        .text(`
-            .distance-value i {
-                margin-right: 8px;
-            }
-            .distance-value .fa-spinner {
-                color: #1976d2;
-            }
-            .distance-value .fa-exclamation-circle {
-                color: #f44336;
-            }
-            .distance-value .fa-location-arrow {
-                color: #4caf50;
-            }
-            .distance-status i {
-                margin-right: 8px;
-            }
-            .distance-status.nearby {
-                color: #4caf50;
-            }
-            .distance-status.far {
-                color: #ff9800;
-            }
-            .delivery-switch-label {
-                transition: all 0.3s ease;
-            }
-            .delivery-switch-label.active {
-                background-color: #4caf50;
-                color: white;
-            }
-            .delivery-switch-label i {
-                margin-right: 8px;
-            }
-        `)
-        .appendTo('head');
-    
     setupEventHandlers();
     updateOrderDetails();
     setDeliveryType();
     
-    // Automatically show map and start location detection
-    elements.mapContainer.classList.add('active');
-    elements.toggleMapButton.innerHTML = '<i class="fas fa-map"></i> Hide map';
+    // Initialize map but keep it hidden
+    elements.mapContainer.style.display = 'none';
     initializeMap();
     
     if (typeof turf === 'undefined') {
