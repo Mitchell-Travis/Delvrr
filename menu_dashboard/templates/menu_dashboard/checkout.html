@@ -6,13 +6,17 @@
     <title>Delvrr Checkout</title>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600&display=swap" rel="stylesheet">
+    <!-- jQuery first -->
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <!-- Mapbox Integration -->
     <script src='https://api.mapbox.com/mapbox-gl-js/v2.3.1/mapbox-gl.js'></script>
     <link href='https://api.mapbox.com/mapbox-gl-js/v2.3.1/mapbox-gl.css' rel='stylesheet' />
     <script src='https://unpkg.com/@turf/turf@6/turf.min.js'></script>
     {% load product_extras %}
     {% load static %}
+    <!-- map.js after jQuery -->
     <script src="{% static 'menu_dashboard/js/map.js' %}"></script>
+    {% csrf_token %}
     <style>
         :root {
             /* Dynamic Brand Colors - These will be overridden with inline style or JavaScript */
@@ -1175,6 +1179,7 @@
                     <button class="close-button" id="closeAddressModal">×</button>
                 </div>
                 <form class="address-form" id="deliveryAddressForm">
+                    {% csrf_token %}
                     <div>
                         <label for="full-name">Full Name:</label>
                         <input type="text" id="modal-full-name" placeholder="Your Full Name">
@@ -1197,6 +1202,5 @@
     </div>
 
     <div id="toast-container" class="toast-container"></div>
-    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 </body>
 </html>

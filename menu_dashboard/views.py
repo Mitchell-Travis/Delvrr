@@ -538,7 +538,7 @@ class RestaurantCheckoutView(View):
                 # If not in cache, fetch from database with optimized query
                 restaurant = get_object_or_404(
                     Restaurant.objects.select_related('user')
-                                    .prefetch_related('brand_colors', 'tables'),
+                                    .prefetch_related('brand_colors'),
                     slug=restaurant_name_slug,
                     hashed_slug=hashed_slug
                 )
@@ -551,9 +551,6 @@ class RestaurantCheckoutView(View):
             secondary_brand_color = brand_colors[1].color if brand_colors.count() > 1 else "#000000"
             third_brand_color = brand_colors[2].color if brand_colors.count() > 2 else "#ffffff"
             
-            # Get available tables
-            available_tables = restaurant.tables.filter(is_occupied=False)
-            
             context = {
                 'restaurant': restaurant,
                 'is_logged_in': request.user.is_authenticated,
@@ -562,7 +559,6 @@ class RestaurantCheckoutView(View):
                 'primary_brand_color': primary_brand_color,
                 'secondary_brand_color': secondary_brand_color,
                 'third_brand_color': third_brand_color,
-                'available_tables': available_tables,
             }
             
             return render(request, 'menu_dashboard/checkout.html', context)

@@ -23,37 +23,8 @@ const state = {
     tableNumber: '1'
 };
 
-// DOM Elements cache
-const elements = {
-    checkoutButton: $('#checkoutButton'),
-    openAddressModal: $('#openAddressModal'),
-    addressModal: $('#addressModal'),
-    closeAddressModal: $('#closeAddressModal'),
-    saveAddress: $('#saveAddress'),
-    cancelAddress: $('#cancelAddress'),
-    loadingOverlay: $('#loading-overlay'),
-    orderVerificationForm: $('#orderVerificationForm'),
-    paymentModal: $('#paymentModal'),
-    closePaymentModal: $('#closePaymentModal'),
-    continueToCheckout: $('#continueToCheckout'),
-    tryAgainPayment: $('#tryAgainPayment'),
-    verifyOrder: $('#verifyOrder'),
-    verificationStatus: $('#verificationStatus'),
-    totalAmount: $('#mobileMoneyAmount'),
-    confirmPhone: $('#confirmPhone'),
-    modalFullName: $('#modal-full-name'),
-    modalPhoneNumber: $('#modal-phone-number'),
-    modalAddress: $('#modal-address'),
-    mapContainer: document.getElementById('map-container'),
-    toggleMapButton: document.getElementById('toggleMap'),
-    distanceValue: $('.distance-value'),
-    distanceStatus: $('#distanceStatus'),
-    orderDetailsList: $('#orderDetailsList'),
-    itemTotal: $('#itemTotal'),
-    cartTotal: $('#cartTotal'),
-    deliverySwitchLabels: $('.delivery-switch-label'),
-    paymentOptions: $('.payment-option')
-};
+// DOM Elements cache - will be initialized when DOM is loaded
+let elements;
 
 // Map Functions
 async function initializeMap() {
@@ -391,6 +362,15 @@ function updateCheckoutButtonState() {
     }
 }
 
+// Set initial delivery type based on active class
+function setDeliveryType() {
+    const activeLabel = $('.delivery-switch-label.active');
+    if (activeLabel.length) {
+        state.deliveryType = activeLabel.data('delivery-type');
+        updatePaymentOptions();
+    }
+}
+
 // Event Handlers
 function setupEventHandlers() {
     elements.toggleMapButton.addEventListener('click', () => {
@@ -511,6 +491,7 @@ function setupEventHandlers() {
 
     elements.checkoutButton.on('click', function(e) {
         e.preventDefault();
+        console.log('Checkout button clicked');
 
         const cart = JSON.parse(localStorage.getItem('cart') || '{}');
         if (Object.keys(cart).length === 0) {
@@ -545,10 +526,12 @@ function setupEventHandlers() {
         }
 
         elements.loadingOverlay.addClass('active');
+        console.log('Sending order request...');
 
         const formData = {
             cart: JSON.stringify(cart),
-            payment_method: state.selectedPaymentMethod
+            payment_method: state.selectedPaymentMethod,
+            csrfmiddlewaretoken: $('input[name="csrfmiddlewaretoken"]').val()
         };
 
         const restaurantSlug = elements.checkoutButton.attr('data-restaurant-name-slug');
@@ -559,34 +542,79 @@ function setupEventHandlers() {
             url: checkoutUrl,
             type: 'POST',
             data: formData,
+            headers: {
+                'X-CSRFToken': $('input[name="csrfmiddlewaretoken"]').val()
+            },
             success: function(response) {
+                console.log('Order response:', response);
                 elements.loadingOverlay.removeClass('active');
                 if (response.order_id) {
                     const orderId = response.order_id;
                     const successUrl = `/menu/${restaurantSlug}/${hashedSlug}/${orderId}/order_success/`;
+                    console.log('Creating success modal...');
                     const successMessage = `
-                        <div class="order-success-modal">
-                          <div class="order-success-content">
-                            <i class="fas fa-check-circle success-icon"></i>
-                            <h2>Order Placed Successfully!</h2>
-                            <p>${state.deliveryType === 'restaurant' ? 'Please wait at your table, your order will be served soon.' : 'Your order will be delivered to the address you provided.'}</p>
-                            <button id="closeSuccessModal" class="primary-button">View Order Details</button>
+                        <div class="order-success-modal" style="
+                            position: fixed;
+                            top: 0;
+                            left: 0;
+                            width: 100%;
+                            height: 100%;
+                            background-color: rgba(0, 0, 0, 0.5);
+                            display: flex;
+                            justify-content: center;
+                            align-items: center;
+                            z-index: 1000;
+                        ">
+                          <div class="order-success-content" style="
+                            background-color: white;
+                            padding: 2rem;
+                            border-radius: 12px;
+                            text-align: center;
+                            max-width: 90%;
+                            width: 400px;
+                          ">
+                            <i class="fas fa-check-circle" style="
+                                color: #4CAF50;
+                                font-size: 3rem;
+                                margin-bottom: 1rem;
+                            "></i>
+                            <h2 style="
+                                margin-bottom: 1rem;
+                                color: #333;
+                            ">Order Placed Successfully!</h2>
+                            <p style="
+                                margin-bottom: 1.5rem;
+                                color: #666;
+                            ">${state.deliveryType === 'restaurant' ? 'Please wait at your table, your order will be served soon.' : 'Your order will be delivered to the address you provided.'}</p>
+                            <button id="closeSuccessModal" class="primary-button" style="
+                                background-color: #4CAF50;
+                                color: white;
+                                border: none;
+                                padding: 0.75rem 1.5rem;
+                                border-radius: 6px;
+                                font-size: 1rem;
+                                cursor: pointer;
+                            ">View Order Details</button>
                           </div>
                         </div>
                     `;
                     $('body').append(successMessage);
+                    console.log('Success modal added to DOM');
 
                     $('#closeSuccessModal').on('click', function() {
+                        console.log('Close success modal clicked');
                         $('.order-success-modal').remove();
                         window.location.href = successUrl;
                     });
 
                     localStorage.removeItem('cart');
                 } else {
+                    console.error('Order placement failed:', response);
                     alert('Order placement failed: ' + (response.message || 'Unknown error'));
                 }
             },
             error: function(xhr) {
+                console.error('Order placement error:', xhr);
                 elements.loadingOverlay.removeClass('active');
                 const msg = xhr.responseJSON?.message || xhr.statusText;
                 alert('An error occurred while placing the order: ' + msg);
@@ -597,6 +625,38 @@ function setupEventHandlers() {
 
 // Initialize
 document.addEventListener('DOMContentLoaded', () => {
+    // Initialize elements object after DOM is loaded
+    elements = {
+        checkoutButton: $('#checkoutButton'),
+        openAddressModal: $('#openAddressModal'),
+        addressModal: $('#addressModal'),
+        closeAddressModal: $('#closeAddressModal'),
+        saveAddress: $('#saveAddress'),
+        cancelAddress: $('#cancelAddress'),
+        loadingOverlay: $('#loading-overlay'),
+        orderVerificationForm: $('#orderVerificationForm'),
+        paymentModal: $('#paymentModal'),
+        closePaymentModal: $('#closePaymentModal'),
+        continueToCheckout: $('#continueToCheckout'),
+        tryAgainPayment: $('#tryAgainPayment'),
+        verifyOrder: $('#verifyOrder'),
+        verificationStatus: $('#verificationStatus'),
+        totalAmount: $('#mobileMoneyAmount'),
+        confirmPhone: $('#confirmPhone'),
+        modalFullName: $('#modal-full-name'),
+        modalPhoneNumber: $('#modal-phone-number'),
+        modalAddress: $('#modal-address'),
+        mapContainer: document.getElementById('map-container'),
+        toggleMapButton: document.getElementById('toggleMap'),
+        distanceValue: $('.distance-value'),
+        distanceStatus: $('#distanceStatus'),
+        orderDetailsList: $('#orderDetailsList'),
+        itemTotal: $('#itemTotal'),
+        cartTotal: $('#cartTotal'),
+        deliverySwitchLabels: $('.delivery-switch-label'),
+        paymentOptions: $('.payment-option')
+    };
+    
     setupEventHandlers();
     updateOrderDetails();
     setDeliveryType();
