@@ -166,6 +166,15 @@ async function updateMapWithUserLocation() {
         state.distanceToRestaurant = calculateDistance(userLoc, state.restaurantLocation);
         updateDistanceDisplay(state.distanceToRestaurant);
 
+        // Update delivery type based on distance
+        const newDeliveryType = state.distanceToRestaurant <= THRESHOLD_DISTANCE ? 'restaurant' : 'home';
+        if (state.deliveryType !== newDeliveryType) {
+            state.deliveryType = newDeliveryType;
+            elements.deliverySwitchLabels.removeClass('active');
+            $(`.delivery-switch-label[data-delivery-type="${newDeliveryType}"]`).addClass('active');
+            updatePaymentOptions();
+        }
+
     } catch (err) {
         console.error('Geo error for map:', err);
         elements.distanceValue.text('Could not determine your location for map');
