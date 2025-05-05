@@ -335,6 +335,13 @@ function updatePaymentOptions() {
         state.paymentVerified = false;
         state.adminConfirmed = false;
         updateOrderTotalAmountDisplay(calculateCartTotal());
+        
+        // Show the address modal if no address is entered
+        if (!state.homeDeliveryAddress.full_name || 
+            !state.homeDeliveryAddress.phone_number || 
+            !state.homeDeliveryAddress.address) {
+            elements.openAddressModal.trigger('click');
+        }
     }
     
     updateCheckoutButtonState();
@@ -722,6 +729,11 @@ document.addEventListener('DOMContentLoaded', () => {
     setupEventHandlers();
     updateOrderDetails();
     setDeliveryType();
+    
+    // Automatically show map and start location detection
+    elements.mapContainer.classList.add('active');
+    elements.toggleMapButton.innerHTML = '<i class="fas fa-map"></i> Hide map';
+    initializeMap();
     
     if (typeof turf === 'undefined') {
         console.warn("Turf.js is not loaded. Distance calculations will use fallbacks.");
