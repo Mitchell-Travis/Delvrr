@@ -32,8 +32,8 @@ class Restaurant(models.Model):
     logo_pic         = models.ImageField(upload_to='logo_pic/RestaurantLogo/', null=True, blank=True)
     address          = models.CharField(max_length=255, blank=True, null=True)
     mobile           = models.CharField(max_length=20)
-    latitude         = models.DecimalField(max_digits=11, decimal_places=8, null=True, blank=True)
-    longitude        = models.DecimalField(max_digits=11, decimal_places=8, null=True, blank=True)
+    latitude         = models.DecimalField(max_digits=10, decimal_places=5, null=True, blank=True)
+    longitude        = models.DecimalField(max_digits=10, decimal_places=5, null=True, blank=True)
     business_hours   = models.CharField(max_length=255, null=True, blank=True)
 
     class Meta:
@@ -53,12 +53,11 @@ class Restaurant(models.Model):
             raw = f"{self.id}your_secret_salt"
             self.hashed_slug = hashlib.sha256(raw.encode()).hexdigest()[:10]
 
-        # 3) Round latitude & longitude to 8 decimal places
-        quant = Decimal('0.00000001')
+        # 3) Ensure latitude and longitude are not rounded
         if self.latitude is not None:
-            self.latitude = Decimal(self.latitude).quantize(quant, rounding=ROUND_HALF_UP)
+            self.latitude = Decimal(str(self.latitude))
         if self.longitude is not None:
-            self.longitude = Decimal(self.longitude).quantize(quant, rounding=ROUND_HALF_UP)
+            self.longitude = Decimal(str(self.longitude))
 
         # 4) Save the final model
         super().save(*args, **kwargs)

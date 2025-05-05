@@ -81,6 +81,14 @@ admin.site.register(Notification, NotificationAdmin)
 class RestaurantAdmin(admin.ModelAdmin):
     list_display = ('restaurant_name', 'address', 'mobile', 'latitude', 'longitude', 'business_hours')
     search_fields = ('restaurant_name', 'address')
+    
+    def save_model(self, request, obj, form, change):
+        # Ensure no rounding occurs for latitude and longitude
+        if 'latitude' in form.changed_data:
+            obj.latitude = form.cleaned_data['latitude']
+        if 'longitude' in form.changed_data:
+            obj.longitude = form.cleaned_data['longitude']
+        super().save_model(request, obj, form, change)
 
 admin.site.register(Restaurant, RestaurantAdmin)
 

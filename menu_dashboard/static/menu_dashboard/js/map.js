@@ -40,8 +40,8 @@ async function initializeMap() {
             return;
         }
 
-        const restaurantLat = parseFloat(checkoutButton.getAttribute('data-restaurant-lat'));
-        const restaurantLon = parseFloat(checkoutButton.getAttribute('data-restaurant-lon'));
+        const restaurantLat = Number(checkoutButton.getAttribute('data-restaurant-lat'));
+        const restaurantLon = Number(checkoutButton.getAttribute('data-restaurant-lon'));
 
         if (isNaN(restaurantLat) || isNaN(restaurantLon)) {
             reject(new Error('Invalid restaurant coordinates'));
