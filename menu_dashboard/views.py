@@ -805,10 +805,23 @@ def admin_dashboard_view(request):
 
 class RestaurantMenuView(DetailView):
     model = Restaurant
-    template_name = 'menu_dashboard/index.html'  # Changed to match old template
+    template_name = 'menu_dashboard/index.html'
     context_object_name = 'restaurant'
-    slug_field = 'hashed_slug'
-    slug_url_kwarg = 'hashed_slug'
+
+    def get_object(self, queryset=None):
+        # Get both slugs from URL
+        restaurant_name_slug = self.kwargs.get('restaurant_name_slug')
+        hashed_slug = self.kwargs.get('hashed_slug')
+        
+        # Try to get restaurant by hashed_slug first
+        try:
+            restaurant = Restaurant.objects.get(hashed_slug=hashed_slug)
+            # Verify restaurant_name_slug matches
+            if restaurant.slug != restaurant_name_slug:
+                raise Restaurant.DoesNotExist
+            return restaurant
+        except Restaurant.DoesNotExist:
+            raise Http404("Restaurant not found")
 
     def get_queryset(self):
         return Restaurant.objects.select_related('user').prefetch_related('brand_colors')
