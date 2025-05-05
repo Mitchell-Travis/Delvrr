@@ -813,14 +813,20 @@ class RestaurantMenuView(DetailView):
         restaurant_name_slug = self.kwargs.get('restaurant_name_slug')
         hashed_slug = self.kwargs.get('hashed_slug')
         
+        print(f"Looking for restaurant with name_slug: {restaurant_name_slug} and hashed_slug: {hashed_slug}")  # Debug
+        
         # Try to get restaurant by hashed_slug first
         try:
             restaurant = Restaurant.objects.get(hashed_slug=hashed_slug)
+            print(f"Found restaurant: {restaurant.restaurant_name}")  # Debug
+            
             # Verify restaurant_name_slug matches
             if restaurant.slug != restaurant_name_slug:
+                print(f"Slug mismatch: {restaurant.slug} != {restaurant_name_slug}")  # Debug
                 raise Restaurant.DoesNotExist
             return restaurant
         except Restaurant.DoesNotExist:
+            print("Restaurant not found")  # Debug
             raise Http404("Restaurant not found")
 
     def get_queryset(self):
