@@ -3,6 +3,8 @@ const SERVICE_FEE = 0.25;
 const DELIVERY_FEE = 0.00;
 const THRESHOLD_DISTANCE = 100; // meters
 const ADMIN_CONFIRMATION_TIMEOUT = 60000; // 60 seconds
+const LOCATION_TIMEOUT = 5000; // 5 seconds
+const LOCATION_MAX_AGE = 30000; // 30 seconds
 
 // Map state management
 const state = {
@@ -20,7 +22,8 @@ const state = {
     adminConfirmed: false,
     adminConfirmationInProgress: false,
     orderReferenceId: null,
-    tableNumber: '1'
+    tableNumber: '1',
+    locationLoading: false
 };
 
 // DOM Elements cache - will be initialized when DOM is loaded
@@ -88,32 +91,43 @@ async function initializeMap() {
 }
 
 async function getUserLocation(retries = 1) {
-    if (state.userLocation) {
+    if (state.userLocation && !state.locationLoading) {
         return Promise.resolve(state.userLocation);
     }
     
+    state.locationLoading = true;
+    elements.distanceValue.html('<i class="fas fa-spinner fa-spin"></i> Detecting location...');
+    
     return new Promise((resolve, reject) => {
         if (!navigator.geolocation) {
+            state.locationLoading = false;
             reject(new Error('Geolocation is not supported by your browser'));
             return;
         }
 
         navigator.geolocation.getCurrentPosition(
             (position) => {
+                state.locationLoading = false;
                 const userLoc = [position.coords.longitude, position.coords.latitude];
                 state.userLocation = userLoc;
                 resolve(userLoc);
             },
             (error) => {
+                state.locationLoading = false;
                 if (error.code === 3 && retries > 0) {
                     setTimeout(() => {
                         getUserLocation(retries - 1).then(resolve).catch(reject);
                     }, 1000);
                 } else {
+                    elements.distanceValue.html('<i class="fas fa-exclamation-circle"></i> Location detection failed');
                     reject(error);
                 }
             },
-            { maximumAge: 60000, timeout: 10000, enableHighAccuracy: true }
+            { 
+                maximumAge: LOCATION_MAX_AGE, 
+                timeout: LOCATION_TIMEOUT, 
+                enableHighAccuracy: true 
+            }
         );
     });
 }
@@ -177,7 +191,7 @@ async function updateMapWithUserLocation() {
 
     } catch (err) {
         console.error('Geo error for map:', err);
-        elements.distanceValue.text('Could not determine your location for map');
+        elements.distanceValue.html('<i class="fas fa-exclamation-circle"></i> Could not determine your location for map');
         elements.distanceStatus.text('').removeClass('nearby far');
     }
 }
@@ -188,22 +202,24 @@ function calculateDistance(point1, point2) {
 
 function updateDistanceDisplay(dist) {
     if (dist === Infinity) {
-        elements.distanceValue.text('Could not calculate distance');
+        elements.distanceValue.html('<i class="fas fa-exclamation-circle"></i> Could not calculate distance');
         elements.distanceStatus.text('');
         elements.distanceStatus.removeClass('nearby far');
         return;
     }
     
-    elements.distanceValue.text(dist < 1000
-        ? `${Math.round(dist)} meters away`
-        : `${(dist / 1000).toFixed(1)} km away`
-    );
+    const distanceHtml = dist < 1000
+        ? `<i class="fas fa-location-arrow"></i> ${Math.round(dist)} meters away`
+        : `<i class="fas fa-location-arrow"></i> ${(dist / 1000).toFixed(1)} km away`;
+    
+    elements.distanceValue.html(distanceHtml);
+    
+    const statusText = dist <= THRESHOLD_DISTANCE
+        ? '<i class="fas fa-check-circle"></i> You\'re at the restaurant!'
+        : '<i class="fas fa-truck"></i> Delivery recommended';
     
     elements.distanceStatus
-        .text(dist <= THRESHOLD_DISTANCE
-            ? "You're at the restaurant!"
-            : "Delivery recommended"
-        )
+        .html(statusText)
         .toggleClass('nearby', dist <= THRESHOLD_DISTANCE)
         .toggleClass('far', dist > THRESHOLD_DISTANCE);
 }
@@ -665,6 +681,43 @@ document.addEventListener('DOMContentLoaded', () => {
         deliverySwitchLabels: $('.delivery-switch-label'),
         paymentOptions: $('.payment-option')
     };
+    
+    // Add loading indicator styles
+    $('<style>')
+        .text(`
+            .distance-value i {
+                margin-right: 8px;
+            }
+            .distance-value .fa-spinner {
+                color: #1976d2;
+            }
+            .distance-value .fa-exclamation-circle {
+                color: #f44336;
+            }
+            .distance-value .fa-location-arrow {
+                color: #4caf50;
+            }
+            .distance-status i {
+                margin-right: 8px;
+            }
+            .distance-status.nearby {
+                color: #4caf50;
+            }
+            .distance-status.far {
+                color: #ff9800;
+            }
+            .delivery-switch-label {
+                transition: all 0.3s ease;
+            }
+            .delivery-switch-label.active {
+                background-color: #4caf50;
+                color: white;
+            }
+            .delivery-switch-label i {
+                margin-right: 8px;
+            }
+        `)
+        .appendTo('head');
     
     setupEventHandlers();
     updateOrderDetails();
