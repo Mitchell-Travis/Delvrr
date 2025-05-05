@@ -11,7 +11,8 @@ urlpatterns = [
     path("accounts/", include("accounts.urls")),  # Move accounts URLs under /accounts/
     path("core/", include("core.urls")),  # Move core URLs under /core/
     path("auth/", include("allauth.urls")),  # Move allauth URLs under /auth/
-    path("menu/", include("menu_dashboard.urls")),
+    path("menu/", include("menu_dashboard.urls")),  # Menu dashboard URLs under /menu/
+    path("", include("accounts.urls")),  # Include accounts URLs at root level
 ]
 
 # Serve static files in production using WhiteNoise
