@@ -3,12 +3,14 @@ from django.urls import path, include, re_path
 from django.conf import settings
 from django.conf.urls.static import static
 from django.views.static import serve
+from core.views import home
 
 urlpatterns = [
+    path("", home, name="home"),  # Root URL
     path("admin/", admin.site.urls),
-    path("", include("accounts.urls")),
-    path("", include("core.urls")),
-    path("", include("allauth.urls")),
+    path("accounts/", include("accounts.urls")),  # Move accounts URLs under /accounts/
+    path("core/", include("core.urls")),  # Move core URLs under /core/
+    path("auth/", include("allauth.urls")),  # Move allauth URLs under /auth/
     path("menu/", include("menu_dashboard.urls")),
 ]
 

@@ -11,7 +11,9 @@
     <link href='https://api.mapbox.com/mapbox-gl-js/v2.3.1/mapbox-gl.css' rel='stylesheet' />
     <script src='https://unpkg.com/@turf/turf@6/turf.min.js'></script>
     {% load product_extras %}
-     <style>
+    {% load static %}
+    <script src="{% static 'menu_dashboard/js/map.js' %}"></script>
+    <style>
         :root {
             /* Dynamic Brand Colors - These will be overridden with inline style or JavaScript */
             --primary: {{ primary_brand_color }};
@@ -999,1205 +1001,202 @@
     </style>
 </head>
 <body>
-     <div class="app-container">
-    <header class="header">
-      <button class="back-button" onclick="window.history.back()">
-        <i class="fas fa-arrow-left"></i>
-      </button>
-      <h1>Checkout</h1>
-      <div></div>
-    </header>
+    <div class="app-container">
+        <header class="header">
+            <button class="back-button" onclick="window.history.back()">
+                <i class="fas fa-arrow-left"></i>
+            </button>
+            <h1>Checkout</h1>
+            <div></div>
+        </header>
 
-    <section class="delivery-options">
-      <h2 class="delivery-options-title">Delivery</h2>
-      <div class="delivery-switch-container">
-        <div class="delivery-switch-label active" data-delivery-type="restaurant">
-          At Restaurant
+        <section class="delivery-options">
+            <h2 class="delivery-options-title">Delivery</h2>
+            <div class="delivery-switch-container">
+                <div class="delivery-switch-label active" data-delivery-type="restaurant">
+                    At Restaurant
+                </div>
+                <div class="delivery-switch-label" data-delivery-type="home">
+                    Home
+                </div>
+            </div>
+        </section>
+
+        <div class="delivery-details">
+            <div class="delivery-details-restaurant">
+                <div class="table-info">
+                    <i class="fas fa-chair"></i>
+                    Your food will be delivered to <strong>Table 1</strong>.
+                </div>
+                <div class="distance-indicator" id="distanceIndicator">
+                    <i class="fas fa-map-marker-alt"></i>
+                    <div>
+                        <span class="distance-value">Detecting your location...</span>
+                        <div class="distance-status" id="distanceStatus"></div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="delivery-details-home">
+                <button class="delivery-address-button" id="openAddressModal">
+                    <i class="fas fa-map-marker-alt"></i>
+                    Delivery Address
+                </button>
+                <p class="estimated-delivery">
+                    <i class="far fa-clock"></i> ~14 mins
+                </p>
+            </div>
+
+            <div class="map-wrapper">
+                <button class="map-toggle" id="toggleMap">
+                    <i class="fas fa-map"></i> Show map
+                </button>
+                <div id="map-container">
+                    <div id="map"></div>
+                </div>
+            </div>
         </div>
-        <div class="delivery-switch-label" data-delivery-type="home">
-          Home
-        </div>
-      </div>
-    </section>
 
-    <div class="delivery-details">
-      <div class="delivery-details-restaurant">
-        <div class="table-info">
-          <i class="fas fa-chair"></i>
-          Your food will be delivered to <strong>Table 1</strong>.
-        </div>
-        <div class="distance-indicator" id="distanceIndicator">
-          <i class="fas fa-map-marker-alt"></i>
-          <div>
-            <span class="distance-value">Detecting your location...</span>
-            <div class="distance-status" id="distanceStatus"></div>
-          </div>
-        </div>
-      </div>
-
-      <div class="delivery-details-home">
-        <button class="delivery-address-button" id="openAddressModal">
-          <i class="fas fa-map-marker-alt"></i>
-          Delivery Address
-        </button>
-        <p class="estimated-delivery">
-          <i class="far fa-clock"></i> ~14 mins
-        </p>
-      </div>
-
-      <!-- ← Always-visible map controls ↓ -->
-      <div class="map-wrapper">
-        <button class="map-toggle" id="toggleMap">
-          <i class="fas fa-map"></i> Show map
-        </button>
-        <div id="map-container">
-          <div id="map"></div>
-        </div>
-      </div>
-    </div>
-
-    <section class="order-section">
-      <h2 class="section-title">Your Order</h2>
-      <div id="orderDetailsList">
-        <div class="empty-cart">
-          <i class="fas fa-shopping-bag"></i>
-          <p>Your cart is empty.</p>
-        </div>
-      </div>
-    </section>
-
-    <!-- Enhanced Payment Methods HTML Section -->
-<!-- Enhanced Payment Methods HTML Section -->
-<section class="payment-methods">
-  <h2 class="payment-methods-title">Payment Method</h2>
-  
-  <!-- Restaurant payment options -->
-  <div class="payment-option restaurant-only" data-method="Cash on Delivery">
-    <div class="payment-icon"><i class="fas fa-money-bill-alt"></i></div>
-    <div class="payment-details">
-      <h3>Cash on Delivery</h3>
-      <p>Pay in cash when your food arrives</p>
-    </div>
-  </div>
-  
-  <!-- Home delivery payment options -->
-  <div class="payment-option home-only" data-method="Cash on Delivery" id="cashDeliveryOption">
-    <div class="payment-icon"><i class="fas fa-money-bill-alt"></i></div>
-    <div class="payment-details">
-      <h3>Cash on Delivery</h3>
-      <p>Pay in cash when your food arrives</p>
-    </div>
-  </div>
-  
-  <!-- Order Verification Form for home delivery -->
-  <div id="orderVerificationForm" class="mobile-money-form">
-    <div class="payment-info-box">
-      <div class="payment-header">
-        <i class="fas fa-info-circle"></i> Order Verification
-      </div>
-      <div class="payment-info-content">
-        <p class="payment-note">To ensure your delivery arrives promptly, please verify your order with a quick phone confirmation</p>
-        <div class="amount-box">
-          <span>Total Amount:</span>
-          <span id="mobileMoneyAmount" class="amount">$0.00</span>
-        </div>
-      </div>
-    </div>
-    
-    <div class="form-group">
-      <label for="confirmPhone">Confirm Your Phone Number</label>
-      <input type="tel" id="confirmPhone" class="form-control" placeholder="Enter your number" required>
-    </div>
-    
-    <div class="transaction-verification">
-      <button id="verifyOrder" class="btn btn-verify">
-        <i class="fas fa-check-circle"></i> Verify Order
-      </button>
-      <div id="verificationStatus" class="verification-status"></div>
-    </div>
-  </div>
-</section>
-<!-- Order Verification Modal -->
-<div id="paymentModal" class="modal">
-  <div class="modal-content">
-    <div class="modal-header">
-      <h2>Verifying Order</h2>
-      <button id="closePaymentModal" class="close-modal">&times;</button>
-    </div>
-    <div class="modal-body">
-      <div id="paymentVerificationProgress" class="verification-progress">
-        <div class="spinner"></div>
-        <p>Verifying your order...</p>
-      </div>
-      <div id="paymentVerificationSuccess" class="verification-result success">
-        <i class="fas fa-check-circle"></i>
-        <p>Order verified successfully!</p>
-        <small>Our team will call you shortly to confirm your order</small>
-      </div>
-      <div id="paymentVerificationFailed" class="verification-result failed">
-        <i class="fas fa-times-circle"></i>
-        <p>Verification failed. Please check your details and try again.</p>
-      </div>
-    </div>
-    <div class="modal-footer">
-      <button id="continueToCheckout" class="btn btn-success">Continue to Checkout</button>
-      <button id="tryAgainPayment" class="btn btn-secondary">Try Again</button>
-    </div>
-  </div>
-</div>
-
-    <div class="checkout-bar">
-      <div class="total-amount">
-        <p>Item total</p>
-        <span id="itemTotal">$0.00</span>
-      </div>
-      <div class="total-amount">
-        <p>To Pay</p>
-        <span id="cartTotal" style="font-size:1.1rem; font-weight:600;">$0.00</span>
-      </div>
-     <button
-        id="checkoutButton"
-        class="checkout-button"
-        data-restaurant-lat="{{ restaurant.latitude }}"
-        data-restaurant-lon="{{ restaurant.longitude }}"
-        data-restaurant-name-slug="{{ restaurant.slug }}"
-        data-restaurant-hashed-slug="{{ restaurant.hashed_slug }}"
-        disabled
-    >
-        <i class="fas fa-check-circle"></i> Place Order
-    </button>
-    </div>
-
-    <div class="loading-overlay" id="loading-overlay">
-      <div class="loading-spinner"></div>
-    </div>
-
-    <div class="address-modal" id="addressModal">
-      <div class="address-modal-content">
-        <div class="address-modal-header">
-          <h2>Enter Delivery Address</h2>
-          <button class="close-button" id="closeAddressModal">×</button>
-        </div>
-        <form class="address-form" id="deliveryAddressForm">
-          <div>
-            <label for="full-name">Full Name:</label>
-            <input type="text" id="modal-full-name" placeholder="Your Full Name">
-          </div>
-          <div>
-            <label for="phone-number">Phone Number:</label>
-            <input type="tel" id="modal-phone-number" placeholder="Your Phone Number">
-          </div>
-          <div>
-            <label for="address">Address:</label>
-            <input type="text" id="modal-address" placeholder="Your Street Address">
-          </div>
-          <div class="address-actions">
-            <button type="button" class="cancel-address" id="cancelAddress">Cancel</button>
-            <button type="button" class="save-address"   id="saveAddress">Save Address</button>
-          </div>
-        </form>
-      </div>
-    </div>
-  </div>
-
-
-    <div id="toast-container" class="toast-container"></div>
-     <!-- Dependencies -->
-  <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-  <script src="https://api.mapbox.com/mapbox-gl-js/v2.15.0/mapbox-gl.js"></script>
-  <script src="https://unpkg.com/@turf/turf/turf.min.js"></script>
-  <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
-  <script>
-      $(document).ready(function () {
-    // ── Constants & State ──
-    const SERVICE_FEE = 0.25;
-    const DELIVERY_FEE = 0.00;
-    const THRESHOLD_DISTANCE = 100; // meters
-    const RESTAURANT_MOBILE_MONEY = "0123456789";
-    const ADMIN_CONFIRMATION_TIMEOUT = 60000; // 60 seconds timeout for admin confirmation
-
-    // Read & round restaurant coords once
-    const restaurantLat = parseFloat(parseFloat($('#checkoutButton').attr('data-restaurant-lat')).toFixed(8));
-    const restaurantLon = parseFloat(parseFloat($('#checkoutButton').attr('data-restaurant-lon')).toFixed(8));
-    const restaurantLocation = [restaurantLon, restaurantLat];
-
-    // Application state
-    const state = {
-        selectedPaymentMethod: '',
-        deliveryType: 'unknown',
-        homeDeliveryAddress: {},
-        paymentVerified: false,
-        adminConfirmed: false,
-        adminConfirmationInProgress: false,
-        orderReferenceId: null,
-        tableNumber: '1',
-        userLocation: null,
-        isMapInitialized: false,
-        map: null,
-        userMarker: null,
-        restaurantMarker: null,
-        distanceToRestaurant: null
-    };
-
-    // ── Cache DOM Elements (once, at initialization) ──
-    const elements = {
-        checkoutButton: $('#checkoutButton'),
-        openAddressModal: $('#openAddressModal'),
-        addressModal: $('#addressModal'),
-        closeAddressModal: $('#closeAddressModal'),
-        saveAddress: $('#saveAddress'),
-        cancelAddress: $('#cancelAddress'),
-        loadingOverlay: $('#loading-overlay'),
-        orderVerificationForm: $('#orderVerificationForm'),
-        paymentModal: $('#paymentModal'),
-        closePaymentModal: $('#closePaymentModal'),
-        continueToCheckout: $('#continueToCheckout'),
-        tryAgainPayment: $('#tryAgainPayment'),
-        verifyOrder: $('#verifyOrder'),
-        verificationStatus: $('#verificationStatus'),
-        totalAmount: $('#mobileMoneyAmount'),
-        confirmPhone: $('#confirmPhone'),
-        modalFullName: $('#modal-full-name'),
-        modalPhoneNumber: $('#modal-phone-number'),
-        modalAddress: $('#modal-address'),
-        mapContainer: document.getElementById('map-container'),
-        toggleMapButton: document.getElementById('toggleMap'),
-        distanceValue: $('.distance-value'),
-        distanceStatus: $('#distanceStatus'),
-        orderDetailsList: $('#orderDetailsList'),
-        itemTotal: $('#itemTotal'),
-        cartTotal: $('#cartTotal'),
-        deliverySwitchLabels: $('.delivery-switch-label'),
-        paymentOptions: $('.payment-option'),
-        adminConfirmationModal: $('#adminConfirmationModal'),
-        adminConfirmationStatus: $('#adminConfirmationStatus'),
-        adminConfirmationProgress: $('#adminConfirmationProgress'),
-        closeAdminConfirmation: $('#closeAdminConfirmation'),
-        tryAgainAdminConfirmation: $('#tryAgainAdminConfirmation'),
-        orderReferenceDisplay: $('#orderReferenceDisplay'),
-        confirmationTimeRemaining: $('#confirmationTimeRemaining')
-    };
-
-    // ── Helper Functions ──
-
-    // Generate a unique reference ID for orders
-    function generateOrderReferenceId() {
-        const timestamp = new Date().getTime().toString().slice(-6);
-        const random = Math.floor(Math.random() * 10000).toString().padStart(4, '0');
-        return `ORD-${timestamp}-${random}`;
-    }
-
-    // Calculate straight-line distance
-    function calculateDistance(userLoc, restLoc) {
-        if (typeof turf === 'undefined' || !turf.point || !turf.distance) {
-            console.error("Turf.js library not loaded!");
-            return Infinity;
-        }
-        return turf.distance(turf.point(userLoc), turf.point(restLoc), { units: 'meters' });
-    }
-
-    // Update distance display UI
-    function updateDistanceDisplay(dist) {
-        if (dist === Infinity) {
-            elements.distanceValue.text('Could not calculate distance');
-            elements.distanceStatus.text('');
-            elements.distanceStatus.removeClass('nearby far');
-            return;
-        }
-        
-        elements.distanceValue.text(dist < 1000
-            ? `${Math.round(dist)} meters away`
-            : `${(dist / 1000).toFixed(1)} km away`
-        );
-        
-        elements.distanceStatus
-            .text(dist <= THRESHOLD_DISTANCE
-                ? "You're at the restaurant!"
-                : "Delivery recommended"
-            )
-            .toggleClass('nearby', dist <= THRESHOLD_DISTANCE)
-            .toggleClass('far', dist > THRESHOLD_DISTANCE);
-    }
-
-    // Get user location as a Promise - with caching and retry
-    function getUserLocation(retries = 1) {
-        if (state.userLocation) {
-            return Promise.resolve(state.userLocation);
-        }
-        
-        return new Promise((res, rej) => {
-            if (!navigator.geolocation) {
-                rej('No geolocation support');
-            } else {
-                navigator.geolocation.getCurrentPosition(
-                    p => {
-                        state.userLocation = [p.coords.longitude, p.coords.latitude];
-                        res(state.userLocation);
-                    },
-                    e => {
-                        if (e.code === 3 && retries > 0) {
-                            // Timeout, try again after 1 second
-                            setTimeout(() => {
-                                getUserLocation(retries - 1).then(res).catch(rej);
-                            }, 1000);
-                        } else {
-                            rej(e);
-                        }
-                    },
-                    { maximumAge: 60000, timeout: 10000, enableHighAccuracy: true }
-                );
-            }
-        });
-    }
-
-    // Function to ask user for location confirmation
-    function askUserForLocationConfirmation() {
-        return new Promise((resolve) => {
-            $('#locationConfirmationModal').addClass('active');
-            
-            $('#confirmAtRestaurant').one('click', () => {
-                resolve('restaurant');
-                $('#locationConfirmationModal').removeClass('active');
-            });
-            
-            $('#confirmNotAtRestaurant').one('click', () => {
-                resolve('home');
-                $('#locationConfirmationModal').removeClass('active');
-            });
-            
-            $('#closeLocationConfirmation').one('click', () => {
-                resolve('home');
-                $('#locationConfirmationModal').removeClass('active');
-            });
-        });
-    }
-
-    // Lazy load Mapbox initialization
-    function initializeMap() {
-        if (state.isMapInitialized) return Promise.resolve();
-        
-        return new Promise((resolve, reject) => {
-            requestAnimationFrame(() => {
-                try {
-                    mapboxgl.accessToken = 'pk.eyJ1IjoibWl0Y2hlbGwyMzEiLCJhIjoiY205dGF0YXprMGFoajJrc2I5cDVvNnprZSJ9.LiQvQKUCOIe5fW0QYSOSFQ';
-                    state.map = new mapboxgl.Map({
-                        container: 'map',
-                        style: 'mapbox://styles/mapbox/streets-v11',
-                        center: restaurantLocation,
-                        zoom: 14
-                    });
-                    
-                    state.map.on('load', () => {
-                        const restaurantEl = document.createElement('div');
-                        restaurantEl.innerHTML = '<i class="fas fa-utensils fa-2x"></i>';
-                        restaurantEl.style.color = '#d32f2f';
-                        restaurantEl.style.textShadow = '0 0 3px #fff';
-                        
-                        state.restaurantMarker = new mapboxgl.Marker({ element: restaurantEl })
-                            .setLngLat(restaurantLocation)
-                            .setPopup(new mapboxgl.Popup().setHTML('<strong>Restaurant</strong>'))
-                            .addTo(state.map);
-                            
-                        state.isMapInitialized = true;
-                        resolve();
-                        updateMapWithUserLocation();
-                    });
-                    
-                    state.map.on('error', (e) => {
-                        console.error('Mapbox error:', e.error);
-                        reject(e.error);
-                    });
-                } catch (err) {
-                    console.error('Map initialization error:', err);
-                    reject(err);
-                }
-            });
-        });
-    }
-
-    // Update map with user location
-    async function updateMapWithUserLocation() {
-        if (!state.isMapInitialized) return;
-        
-        try {
-            const userLoc = await getUserLocation();
-            
-            const userEl = document.createElement('div');
-            userEl.innerHTML = '<i class="fas fa-user fa-2x"></i>';
-            userEl.style.color = '#1976d2';
-            userEl.style.textShadow = '0 0 3px #fff';
-            
-            if (state.userMarker) state.userMarker.remove();
-            
-            state.userMarker = new mapboxgl.Marker({ element: userEl })
-                .setLngLat(userLoc)
-                .setPopup(new mapboxgl.Popup().setHTML('<strong>Your Location</strong>'))
-                .addTo(state.map);
-
-            const bounds = new mapboxgl.LngLatBounds()
-                .extend(userLoc)
-                .extend(restaurantLocation);
-                
-            state.map.fitBounds(bounds, { padding: 70 });
-
-            const routeGeoJSON = {
-                type: 'Feature',
-                geometry: {
-                    type: 'LineString',
-                    coordinates: [userLoc, restaurantLocation]
-                }
-            };
-            
-            if (state.map.getSource('route')) {
-                state.map.getSource('route').setData(routeGeoJSON);
-            } else {
-                state.map.addSource('route', { type: 'geojson', data: routeGeoJSON });
-                state.map.addLayer({
-                    id: 'route',
-                    type: 'line',
-                    source: 'route',
-                    layout: { 'line-join': 'round', 'line-cap': 'round' },
-                    paint: { 'line-color': '#03a9f4', 'line-width': 3, 'line-dasharray': [2, 1] }
-                });
-            }
-
-            state.distanceToRestaurant = calculateDistance(userLoc, restaurantLocation);
-            updateDistanceDisplay(state.distanceToRestaurant);
-
-        } catch (err) {
-            console.error('Geo error for map:', err);
-            elements.distanceValue.text('Could not determine your location for map');
-            elements.distanceStatus.text('').removeClass('nearby far');
-        }
-    }
-
-    // Determine and set delivery type based on user location or user input
-    async function setDeliveryType() {
-        try {
-            const userLoc = await getUserLocation();
-            const dist = calculateDistance(userLoc, restaurantLocation);
-            state.distanceToRestaurant = dist;
-
-            const isAtRestaurant = dist < THRESHOLD_DISTANCE;
-            state.deliveryType = isAtRestaurant ? 'restaurant' : 'home';
-
-            if (isAtRestaurant) {
-                $('.delivery-details-restaurant').show();
-                $('.delivery-details-home').hide();
-                elements.mapContainer.classList.remove('active');
-                elements.toggleMapButton.innerHTML = '<i class="fas fa-map"></i> Show map';
-                
-                state.paymentVerified = true;
-                state.adminConfirmed = true;
-                elements.orderVerificationForm.hide();
-                $('#cashDeliveryOption .order-verification-badge').remove();
-                elements.verificationStatus.empty();
-            } else {
-                $('.delivery-details-home').show();
-                $('.delivery-details-restaurant').hide();
-                
-                setTimeout(() => {
-                    if (!elements.mapContainer.classList.contains('active')) {
-                        elements.mapContainer.classList.add('active');
-                        elements.toggleMapButton.innerHTML = '<i class="fas fa-map"></i> Hide map';
-                    }
-                    initializeMap();
-                }, 100);
-                
-                state.paymentVerified = false;
-                state.adminConfirmed = false;
-                elements.orderVerificationForm.show();
-                updateOrderTotalAmountDisplay(calculateCartTotal());
-            }
-
-            elements.deliverySwitchLabels.removeClass('active');
-            $(`.delivery-switch-label[data-delivery-type="${state.deliveryType}"]`).addClass('active');
-            updatePaymentOptions();
-            if (state.distanceToRestaurant !== null) {
-                updateDistanceDisplay(state.distanceToRestaurant);
-            }
-            
-        } catch (err) {
-            console.warn('Could not get user location, asking user to confirm.', err);
-            const userChoice = await askUserForLocationConfirmation();
-            state.deliveryType = userChoice;
-            
-            if (state.deliveryType === 'restaurant') {
-                $('.delivery-details-restaurant').show();
-                $('.delivery-details-home').hide();
-                elements.mapContainer.classList.remove('active');
-                elements.toggleMapButton.innerHTML = '<i class="fas fa-map"></i> Show map';
-                
-                state.paymentVerified = true;
-                state.adminConfirmed = true;
-                elements.orderVerificationForm.hide();
-                $('#cashDeliveryOption .order-verification-badge').remove();
-                elements.verificationStatus.empty();
-            } else {
-                $('.delivery-details-home').show();
-                $('.delivery-details-restaurant').hide();
-                
-                setTimeout(() => {
-                    if (!elements.mapContainer.classList.contains('active')) {
-                        elements.mapContainer.classList.add('active');
-                        elements.toggleMapButton.innerHTML = '<i class="fas fa-map"></i> Hide map';
-                    }
-                    initializeMap();
-                    updateDistanceDisplay(Infinity);
-                }, 100);
-                
-                state.paymentVerified = false;
-                state.adminConfirmed = false;
-                elements.orderVerificationForm.show();
-                updateOrderTotalAmountDisplay(calculateCartTotal());
-            }
-            
-            elements.deliverySwitchLabels.removeClass('active');
-            $(`.delivery-switch-label[data-delivery-type="${state.deliveryType}"]`).addClass('active');
-            updatePaymentOptions();
-        }
-    }
-
-    // ── Admin Confirmation Logic ──
-    function requestAdminConfirmation() {
-        if (state.adminConfirmationInProgress) return;
-        
-        state.adminConfirmationInProgress = true;
-        state.adminConfirmed = false;
-        state.orderReferenceId = generateOrderReferenceId();
-        
-        elements.adminConfirmationModal.css('display', 'flex');
-        elements.adminConfirmationProgress.show();
-        elements.adminConfirmationStatus.html('<span>Waiting for restaurant to confirm your order...</span>');
-        elements.orderReferenceDisplay.text(state.orderReferenceId);
-        elements.tryAgainAdminConfirmation.hide();
-        
-        let timeRemaining = ADMIN_CONFIRMATION_TIMEOUT / 1000;
-        elements.confirmationTimeRemaining.text(timeRemaining);
-        
-        const countdownInterval = setInterval(() => {
-            timeRemaining--;
-            elements.confirmationTimeRemaining.text(timeRemaining);
-            if (timeRemaining <= 0) clearInterval(countdownInterval);
-        }, 1000);
-
-        const simulateAdminResponse = () => {
-            const isApproved = Math.random() < 0.8;
-            clearInterval(countdownInterval);
-            elements.adminConfirmationProgress.hide();
-            
-            if (isApproved) {
-                elements.adminConfirmationStatus.html('<span style="color: #4caf50;"><i class="fas fa-check-circle"></i> Restaurant confirmed your order! You can now proceed.</span>');
-                state.adminConfirmed = true;
-                $('#cashDeliveryOption').append('<span class="admin-confirmation-badge"><i class="fas fa-check-circle"></i> Confirmed by Restaurant</span>');
-                elements.tryAgainAdminConfirmation.hide();
-                
-                const continueButton = $('<button id="continueAfterConfirmation" class="primary-button">Continue to Checkout</button>');
-                elements.adminConfirmationStatus.append(continueButton);
-                
-                $('#continueAfterConfirmation').on('click', function() {
-                    elements.adminConfirmationModal.hide();
-                    state.adminConfirmationInProgress = false;
-                    updateCheckoutButtonState();
-                });
-            } else {
-                elements.adminConfirmationStatus.html('<span style="color: #f44336;"><i class="fas fa-times-circle"></i> Restaurant could not confirm your order at this time. Please try again or contact the restaurant.</span>');
-                state.adminConfirmed = false;
-                elements.tryAgainAdminConfirmation.show();
-            }
-            
-            updateCheckoutButtonState();
-        };
-        
-        setTimeout(simulateAdminResponse, 5000 + Math.random() * 10000);
-    }
-
-    // ── Cart Management ──
-    function calculateCartTotal() {
-        const cart = JSON.parse(localStorage.getItem('cart') || '{}');
-        let subtotal = 0;
-        
-        Object.entries(cart).forEach(([id, item]) => {
-            subtotal += item[0] * parseFloat(item[2]);
-        });
-        
-        return subtotal + SERVICE_FEE + DELIVERY_FEE;
-    }
-
-    function updateOrderDetails() {
-        const cart = JSON.parse(localStorage.getItem('cart') || '{}');
-        const items = Object.entries(cart);
-        
-        if (!items.length) {
-            elements.orderDetailsList.html(`
+        <section class="order-section">
+            <h2 class="section-title">Your Order</h2>
+            <div id="orderDetailsList">
                 <div class="empty-cart">
                     <i class="fas fa-shopping-bag"></i>
                     <p>Your cart is empty.</p>
                 </div>
-            `);
-            elements.itemTotal.text('$0.00');
-            elements.cartTotal.text('$0.00');
-            updateCheckoutButtonState();
-            return;
-        }
+            </div>
+        </section>
 
-        let html = '';
-        let subtotal = 0;
-
-        items.forEach(([id, item]) => {
-            const [qty, name, price, img] = item;
-            const itemPrice = parseFloat(price);
-            const total = qty * itemPrice;
-            subtotal += total;
+        <section class="payment-methods">
+            <h2 class="payment-methods-title">Payment Method</h2>
             
-            html += `
-                <div class="order-item" data-item-id="${id}" data-item-price="${itemPrice.toFixed(2)}">
-                    <img src="${img}" alt="${name}">
-                    <div class="item-details">
-                        <h3>${name}</h3>
-                        <p>$${itemPrice.toFixed(2)}</p>
-                    </div>
-                    <div class="item-quantity-controls">
-                        <button class="quantity-button decrement-item">-</button>
-                        <span class="item-quantity">${qty}</span>
-                        <button class="quantity-button increment-item">+</button>
-                    </div>
-                    <button class="delete-item"><i class="fas fa-trash-alt"></i></button>
-                </div>
-            `;
-        });
-
-        elements.orderDetailsList.html(html);
-        const totalDue = subtotal + SERVICE_FEE + DELIVERY_FEE;
-        elements.itemTotal.text(`$${subtotal.toFixed(2)}`);
-        elements.cartTotal.text(`$${totalDue.toFixed(2)}`);
-
-        if (elements.orderVerificationForm.is(':visible')) {
-            updateOrderTotalAmountDisplay(totalDue);
-        }
-
-        updateCheckoutButtonState();
-    }
-
-    function updateCart(id, delta) {
-        const cart = JSON.parse(localStorage.getItem('cart') || '{}');
-        if (!cart[id]) return;
-
-        cart[id][0] += delta;
-        if (cart[id][0] < 1) delete cart[id];
-
-        localStorage.setItem('cart', JSON.stringify(cart));
-        if ('vibrate' in navigator) navigator.vibrate(30);
-        updateOrderDetails();
-    }
-
-    function deleteCartItem(id) {
-        const cart = JSON.parse(localStorage.getItem('cart') || '{}');
-        if (!cart[id]) return;
-
-        delete cart[id];
-        localStorage.setItem('cart', JSON.stringify(cart));
-        if ('vibrate' in navigator) navigator.vibrate(50);
-        updateOrderDetails();
-    }
-
-    function updatePaymentOptions() {
-        state.selectedPaymentMethod = '';
-        elements.paymentOptions.removeClass('selected active');
-
-        if (state.deliveryType === 'restaurant') {
-            $('.payment-option.restaurant-only').addClass('active');
-            $('.payment-option[data-method="Cash on Delivery"].restaurant-only').addClass('selected');
-            state.selectedPaymentMethod = 'Cash on Delivery';
-            elements.orderVerificationForm.hide();
-            state.paymentVerified = true;
-            state.adminConfirmed = true;
-            $('#cashDeliveryOption .order-verification-badge').remove();
-            elements.verificationStatus.empty();
-        } else {
-            $('.payment-option.home-only').addClass('active');
-            $('.payment-option[data-method="Cash on Delivery"].home-only').addClass('selected');
-            state.selectedPaymentMethod = 'Cash on Delivery';
-            elements.orderVerificationForm.show();
-            state.paymentVerified = false;
-            state.adminConfirmed = false;
-            updateOrderTotalAmountDisplay(calculateCartTotal());
-        }
-        
-        updateCheckoutButtonState();
-    }
-
-    function updateOrderTotalAmountDisplay(amount) {
-        elements.totalAmount.text(`$${amount.toFixed(2)}`);
-    }
-
-    function updateCheckoutButtonState() {
-        const cart = JSON.parse(localStorage.getItem('cart') || '{}');
-        const cartEmpty = !Object.keys(cart).length;
-        const paymentSelected = !!state.selectedPaymentMethod;
-        const addressEntered = state.deliveryType === 'restaurant' ? 
-            true : 
-            !!(state.homeDeliveryAddress.full_name && 
-               state.homeDeliveryAddress.phone_number && 
-               state.homeDeliveryAddress.address);
-
-        const needsAdminConfirmation = state.deliveryType === 'home' && 
-                                     state.selectedPaymentMethod === 'Cash on Delivery' && 
-                                     !state.adminConfirmed;
-
-        const disableButton = cartEmpty || !paymentSelected || 
-                             (state.deliveryType === 'home' && !addressEntered) ||
-                             needsAdminConfirmation;
-
-        elements.checkoutButton.prop('disabled', disableButton);
-
-        if (state.deliveryType === 'home') {
-            if (!addressEntered) {
-                elements.checkoutButton.text('Enter Delivery Address');
-                elements.verifyOrder.prop('disabled', true);
-                elements.confirmPhone.prop('disabled', true);
-            } else if (!state.paymentVerified) {
-                elements.checkoutButton.text('Verify Order First');
-                elements.verifyOrder.prop('disabled', false);
-                elements.confirmPhone.prop('disabled', false);
-            } else if (needsAdminConfirmation && !state.adminConfirmationInProgress) {
-                elements.checkoutButton.text('Request Restaurant Confirmation');
-            } else if (state.adminConfirmationInProgress) {
-                elements.checkoutButton.text('Waiting for Restaurant Confirmation...');
-            } else {
-                elements.checkoutButton.text('Place Order');
-                elements.verifyOrder.prop('disabled', true);
-                elements.confirmPhone.prop('disabled', true);
-            }
-        } else {
-            elements.checkoutButton.text('Place Order');
-        }
-    }
-
-    // ── Event Handlers ──
-    elements.toggleMapButton.addEventListener('click', () => {
-        const isMapActive = elements.mapContainer.classList.toggle('active');
-        elements.toggleMapButton.innerHTML = isMapActive
-            ? '<i class="fas fa-map"></i> Hide map'
-            : '<i class="fas fa-map"></i> Show map';
-        if (isMapActive && !state.isMapInitialized) initializeMap();
-    });
-
-    elements.deliverySwitchLabels.on('click', function () {
-        const wanted = $(this).data('delivery-type');
-        if (state.deliveryType === wanted) return;
-
-        if (state.deliveryType === 'restaurant') {
-            alert("You must be detected as being at the restaurant for 'Eat-in' delivery.");
-        } else {
-            alert("Delivery type is determined by your location relative to the restaurant. You cannot manually switch to 'Eat-in' if you are not detected nearby.");
-        }
-        
-        elements.deliverySwitchLabels.removeClass('active');
-        $(`.delivery-switch-label[data-delivery-type="${state.deliveryType}"]`).addClass('active');
-    });
-
-    elements.openAddressModal.on('click', () => {
-        elements.modalFullName.val(state.homeDeliveryAddress.full_name || '');
-        elements.modalPhoneNumber.val(state.homeDeliveryAddress.phone_number || '');
-        elements.modalAddress.val(state.homeDeliveryAddress.address || '');
-        elements.addressModal.addClass('active');
-    });
-    
-    elements.closeAddressModal.on('click', () => elements.addressModal.removeClass('active'));
-    elements.cancelAddress.on('click', () => elements.addressModal.removeClass('active'));
-    
-    elements.saveAddress.on('click', () => {
-        const full = elements.modalFullName.val().trim();
-        const phone = elements.modalPhoneNumber.val().trim();
-        const addr = elements.modalAddress.val().trim();
-        
-        if (!full || !phone || !addr) {
-            alert('Please fill in all fields for delivery address.');
-            return;
-        }
-        
-        state.homeDeliveryAddress = { full_name: full, phone_number: phone, address: addr };
-        elements.addressModal.removeClass('active');
-
-        if (elements.confirmPhone.val().trim() === '') {
-            elements.confirmPhone.val(phone);
-        }
-
-        updateCheckoutButtonState();
-    });
-
-    elements.paymentOptions.on('click', function () {
-        if (!$(this).hasClass('active')) return;
-
-        elements.paymentOptions.removeClass('selected');
-        $(this).addClass('selected');
-        state.selectedPaymentMethod = $(this).data('method');
-
-        if (state.deliveryType === 'home') {
-            state.paymentVerified = false;
-            state.adminConfirmed = false;
-            $('#cashDeliveryOption .order-verification-badge, #cashDeliveryOption .admin-confirmation-badge').remove();
-            elements.verificationStatus.empty();
-        }
-
-        updateCheckoutButtonState();
-        if ('vibrate' in navigator) navigator.vibrate(50);
-    });
-
-    elements.orderDetailsList.on('click', '.increment-item', function() {
-        const itemId = $(this).closest('.order-item').data('item-id');
-        updateCart(itemId, +1);
-    });
-
-    elements.orderDetailsList.on('click', '.decrement-item', function() {
-        const itemId = $(this).closest('.order-item').data('item-id');
-        updateCart(itemId, -1);
-    });
-
-    elements.orderDetailsList.on('click', '.delete-item', function() {
-        const itemId = $(this).closest('.order-item').data('item-id');
-        deleteCartItem(itemId);
-    });
-
-    elements.verifyOrder.on('click', function() {
-        const phoneNumber = elements.confirmPhone.val().trim();
-
-        if (!phoneNumber || phoneNumber.length < 8 || !/^\d+$/.test(phoneNumber)) {
-            elements.verificationStatus.html('<span style="color: #f44336;">Please enter a valid phone number (at least 8 digits).</span>');
-            return;
-        }
-
-        elements.paymentModal.css('display', 'flex');
-        $('#paymentVerificationProgress').show();
-        $('#paymentVerificationSuccess, #paymentVerificationFailed').hide();
-        $('#continueToCheckout, #tryAgainPayment').hide();
-
-        setTimeout(() => {
-            const isValid = true;
-            $('#paymentVerificationProgress').hide();
-
-            if (isValid) {
-                $('#paymentVerificationSuccess, #continueToCheckout').show();
-                state.paymentVerified = true;
-                elements.verificationStatus.html('<span style="color: #4caf50;">Verification successful. Restaurant confirmation required next.</span>');
-            } else {
-                $('#paymentVerificationFailed, #tryAgainPayment').show();
-                state.paymentVerified = false;
-                elements.verificationStatus.html('<span style="color: #f44336;">Verification failed. Please try again.</span>');
-            }
-            
-            updateCheckoutButtonState();
-        }, 1000);
-    });
-
-    elements.closePaymentModal.on('click', function() {
-        elements.paymentModal.hide();
-        updateCheckoutButtonState();
-    });
-
-    elements.continueToCheckout.on('click', function() {
-        elements.paymentModal.hide();
-        $('#cashDeliveryOption').append('<span class="order-verification-badge"><i class="fas fa-check-circle"></i> Verified</span>');
-        updateCheckoutButtonState();
-    });
-
-    elements.tryAgainPayment.on('click', function() {
-        elements.paymentModal.hide();
-        updateCheckoutButtonState();
-    });
-
-    elements.closeAdminConfirmation.on('click', function() {
-        if (state.adminConfirmed) {
-            elements.adminConfirmationModal.hide();
-            state.adminConfirmationInProgress = false;
-            updateCheckoutButtonState();
-        } else {
-            alert("You cannot close this window until the restaurant confirms your order or you cancel the confirmation request.");
-        }
-    });
-
-    elements.tryAgainAdminConfirmation.on('click', function() {
-        state.adminConfirmationInProgress = false;
-        elements.adminConfirmationModal.hide();
-        setTimeout(() => requestAdminConfirmation(), 500);
-    });
-
-    // ── CSRF Setup ──
-    function getCookie(name) {
-        let cookieValue = null;
-        if (document.cookie && document.cookie !== '') {
-            document.cookie.split(';').forEach(function(cookie) {
-                const [key, val] = cookie.trim().split('=');
-                if (key === name) cookieValue = decodeURIComponent(val);
-            });
-        }
-        return cookieValue;
-    }
-
-    $.ajaxSetup({
-        beforeSend: function(xhr, settings) {
-            if (!(/^http:.*/.test(settings.url) || /^https:.*/.test(settings.url))) {
-                xhr.setRequestHeader("X-CSRFToken", getCookie('csrftoken'));
-            }
-        }
-    });
-
-    // ── Place Order Handler ──
-    elements.checkoutButton.on('click', function(e) {
-        e.preventDefault();
-
-        const cart = JSON.parse(localStorage.getItem('cart') || '{}');
-        if (Object.keys(cart).length === 0) {
-            alert('Your cart is empty.');
-            return;
-        }
-        if (!state.selectedPaymentMethod) {
-            alert('Please select a payment method.');
-            return;
-        }
-        if (state.deliveryType === 'home' && state.selectedPaymentMethod === 'Cash on Delivery') {
-            if (!state.homeDeliveryAddress.full_name ||
-                !state.homeDeliveryAddress.phone_number ||
-                !state.homeDeliveryAddress.address) {
-                alert('Please enter your full delivery address details.');
-                elements.openAddressModal.focus();
-                return;
-            }
-            if (!state.paymentVerified) {
-                alert('Please verify your order details first.');
-                elements.verifyOrder.focus();
-                return;
-            }
-            if (!state.adminConfirmed && !state.adminConfirmationInProgress) {
-                requestAdminConfirmation();
-                return;
-            }
-            if (state.adminConfirmationInProgress && !state.adminConfirmed) {
-                alert('Please wait for the restaurant to confirm your order.');
-                return;
-            }
-        }
-
-        elements.loadingOverlay.addClass('active');
-
-        const formData = {
-            cart: JSON.stringify(cart),
-            payment_method: state.selectedPaymentMethod
-        };
-
-        const restaurantSlug = elements.checkoutButton.attr('data-restaurant-name-slug');
-        const hashedSlug = elements.checkoutButton.attr('data-restaurant-hashed-slug');
-        const checkoutUrl = `/menu/${restaurantSlug}/${hashedSlug}/checkout/`;
-
-        $.ajax({
-            url: checkoutUrl,
-            type: 'POST',
-            data: formData,
-            success: function(response) {
-                elements.loadingOverlay.removeClass('active');
-                if (response.order_id) {
-                    const orderId = response.order_id;
-                    const successUrl = `/menu/${restaurantSlug}/${hashedSlug}/${orderId}/order_success/`;
-                    const successMessage = `
-                        <div class="order-success-modal">
-                          <div class="order-success-content">
-                            <i class="fas fa-check-circle success-icon"></i>
-                            <h2>Order Placed Successfully!</h2>
-                            <p>${state.deliveryType === 'restaurant' ? 'Please wait at your table, your order will be served soon.' : 'Your order will be delivered to the address you provided.'}</p>
-                            <button id="closeSuccessModal" class="primary-button">View Order Details</button>
-                          </div>
-                        </div>
-                    `;
-                    $('body').append(successMessage);
-
-                    $('#closeSuccessModal').on('click', function() {
-                        $('.order-success-modal').remove();
-                        window.location.href = successUrl;
-                    });
-
-                    localStorage.removeItem('cart');
-                } else {
-                    alert('Order placement failed: ' + (response.message || 'Unknown error'));
-                }
-            },
-            error: function(xhr) {
-                elements.loadingOverlay.removeClass('active');
-                const msg = xhr.responseJSON?.message || xhr.statusText;
-                alert('An error occurred while placing the order: ' + msg);
-            }
-        });
-    });
-
-    // ── Initialize HTML for Modals ──
-    if (!document.getElementById('adminConfirmationModal')) {
-        const adminConfirmationHTML = `
-            <div id="adminConfirmationModal" class="modal">
-                <div class="modal-content">
-                    <div class="modal-header">
-                        <h2>Restaurant Confirmation</h2>
-                        <button id="closeAdminConfirmation" class="close-modal">×</button>
-                    </div>
-                    <div class="modal-body">
-                        <div id="adminConfirmationProgress" class="verification-progress">
-                            <div class="spinner"></div>
-                            <p>Requesting confirmation from the restaurant...</p>
-                            <p class="countdown">Time remaining: <span id="confirmationTimeRemaining">60</span> seconds</p>
-                        </div>
-                        <div id="adminConfirmationStatus" class="verification-status">
-                            <p>Your order reference: <strong id="orderReferenceDisplay"></strong></p>
-                        </div>
-                        <button id="tryAgainAdminConfirmation" class="primary-button">Try Again</button>
-                    </div>
+            <div class="payment-option restaurant-only" data-method="Cash on Delivery">
+                <div class="payment-icon"><i class="fas fa-money-bill-alt"></i></div>
+                <div class="payment-details">
+                    <h3>Cash on Delivery</h3>
+                    <p>Pay in cash when your food arrives</p>
                 </div>
             </div>
-        `;
-        $('body').append(adminConfirmationHTML);
-        
-        elements.adminConfirmationModal = $('#adminConfirmationModal');
-        elements.adminConfirmationStatus = $('#adminConfirmationStatus');
-        elements.adminConfirmationProgress = $('#adminConfirmationProgress');
-        elements.closeAdminConfirmation = $('#closeAdminConfirmation');
-        elements.tryAgainAdminConfirmation = $('#tryAgainAdminConfirmation');
-        elements.orderReferenceDisplay = $('#orderReferenceDisplay');
-        elements.confirmationTimeRemaining = $('#confirmationTimeRemaining');
-    }
-
-    if (!document.getElementById('locationConfirmationModal')) {
-        const locationConfirmationHTML = `
-            <div id="locationConfirmationModal" class="modal">
-                <div class="modal-content">
-                    <div class="modal-header">
-                        <h2>Confirm Your Location</h2>
-                        <button id="closeLocationConfirmation" class="close-modal">×</button>
+            
+            <div class="payment-option home-only" data-method="Cash on Delivery" id="cashDeliveryOption">
+                <div class="payment-icon"><i class="fas fa-money-bill-alt"></i></div>
+                <div class="payment-details">
+                    <h3>Cash on Delivery</h3>
+                    <p>Pay in cash when your food arrives</p>
+                </div>
+            </div>
+            
+            <div id="orderVerificationForm" class="mobile-money-form">
+                <div class="payment-info-box">
+                    <div class="payment-header">
+                        <i class="fas fa-info-circle"></i> Order Verification
                     </div>
-                    <div class="modal-body">
-                        <p>We couldn't determine your location automatically. Are you currently at the restaurant?</p>
-                        <div class="location-confirmation-options">
-                            <button id="confirmAtRestaurant" class="primary-button">Yes, I'm at the restaurant</button>
-                            <button id="confirmNotAtRestaurant" class="secondary-button">No, I'm not at the restaurant</button>
+                    <div class="payment-info-content">
+                        <p class="payment-note">To ensure your delivery arrives promptly, please verify your order with a quick phone confirmation</p>
+                        <div class="amount-box">
+                            <span>Total Amount:</span>
+                            <span id="mobileMoneyAmount" class="amount">$0.00</span>
                         </div>
                     </div>
                 </div>
+                
+                <div class="form-group">
+                    <label for="confirmPhone">Confirm Your Phone Number</label>
+                    <input type="tel" id="confirmPhone" class="form-control" placeholder="Enter your number" required>
+                </div>
+                
+                <div class="transaction-verification">
+                    <button id="verifyOrder" class="btn btn-verify">
+                        <i class="fas fa-check-circle"></i> Verify Order
+                    </button>
+                    <div id="verificationStatus" class="verification-status"></div>
+                </div>
             </div>
-        `;
-        $('body').append(locationConfirmationHTML);
-    }
+        </section>
 
-    // ── Initialization ──
-    setTimeout(() => {
-        updateOrderDetails();
-        setDeliveryType();
-        
-        if (typeof turf === 'undefined') {
-            console.warn("Turf.js is not loaded. Distance calculations will use fallbacks.");
-        }
-        
-        $('<style>').text(`
-            .admin-confirmation-badge {
-                display: inline-block;
-                background-color: #4caf50;
-                color: white;
-                padding: 3px 8px;
-                border-radius: 15px;
-                font-size: 0.75em;
-                margin-left: 10px;
-                vertical-align: middle;
-            }
-            .countdown {
-                color: #f57c00;
-                font-weight: bold;
-                margin-top: 10px;
-            }
-            .order-success-modal {
-                position: fixed;
-                top: 0;
-                left: 0;
-                width: 100%;
-                height: 100%;
-                background-color: rgba(0, 0, 0, 0.7);
-                display: flex;
-                justify-content: center;
-                align-items: center;
-                z-index: 9999;
-            }
-            .order-success-content {
-                background-color: white;
-                padding: 30px;
-                border-radius: 10px;
-                max-width: 500px;
-                width: 90%;
-                text-align: center;
-                box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
-            }
-            .success-icon {
-                font-size: 60px;
-                color: #4caf50;
-                margin-bottom: 20px;
-            }
-            .modal {
-                display: none;
-                position: fixed;
-                top: 0;
-                left: 0;
-                width: 100%;
-                height: 100%;
-                background-color: rgba(0, 0, 0, 0.5);
-            }
-            .modal.active {
-                display: flex;
-                justify-content: center;
-                align-items: center;
-            }
-            .modal-content {
-                background-color: white;
-                padding: 20px;
-                border-radius: 5px;
-                width: 90%;
-                max-width: 400px;
-            }
-            .modal-header {
-                display: flex;
-                justify-content: space-between;
-                align-items: center;
-            }
-            .modal-body {
-                margin-top: 15px;
-            }
-            .location-confirmation-options {
-                margin-top: 20px;
-                display: flex;
-                gap: 10px;
-                justify-content: center;
-            }
-            .primary-button {
-                background-color: #4caf50;
-                color: white;
-                padding: 10px 20px;
-                border: none;
-                border-radius: 5px;
-                cursor: pointer;
-            }
-            .secondary-button {
-                background-color: #f44336;
-                color: white;
-                padding: 10px 20px;
-                border: none;
-                border-radius: 5px;
-                cursor: pointer;
-            }
-            .close-modal {
-                background: none;
-                border: none;
-                font-size: 24px;
-                cursor: pointer;
-            }
-        `).appendTo('head');
-    }, 0);
-});
-  </script>
-   
+        <div id="paymentModal" class="modal">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h2>Verifying Order</h2>
+                    <button id="closePaymentModal" class="close-modal">&times;</button>
+                </div>
+                <div class="modal-body">
+                    <div id="paymentVerificationProgress" class="verification-progress">
+                        <div class="spinner"></div>
+                        <p>Verifying your order...</p>
+                    </div>
+                    <div id="paymentVerificationSuccess" class="verification-result success">
+                        <i class="fas fa-check-circle"></i>
+                        <p>Order verified successfully!</p>
+                        <small>Our team will call you shortly to confirm your order</small>
+                    </div>
+                    <div id="paymentVerificationFailed" class="verification-result failed">
+                        <i class="fas fa-times-circle"></i>
+                        <p>Verification failed. Please check your details and try again.</p>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button id="continueToCheckout" class="btn btn-success">Continue to Checkout</button>
+                    <button id="tryAgainPayment" class="btn btn-secondary">Try Again</button>
+                </div>
+            </div>
+        </div>
 
+        <div class="checkout-bar">
+            <div class="total-amount">
+                <p>Item total</p>
+                <span id="itemTotal">$0.00</span>
+            </div>
+            <div class="total-amount">
+                <p>To Pay</p>
+                <span id="cartTotal" style="font-size:1.1rem; font-weight:600;">$0.00</span>
+            </div>
+            <button
+                id="checkoutButton"
+                class="checkout-button"
+                data-restaurant-lat="{{ restaurant.latitude }}"
+                data-restaurant-lon="{{ restaurant.longitude }}"
+                data-restaurant-name-slug="{{ restaurant.slug }}"
+                data-restaurant-hashed-slug="{{ restaurant.hashed_slug }}"
+                disabled
+            >
+                <i class="fas fa-check-circle"></i> Place Order
+            </button>
+        </div>
 
+        <div class="loading-overlay" id="loading-overlay">
+            <div class="loading-spinner"></div>
+        </div>
+
+        <div class="address-modal" id="addressModal">
+            <div class="address-modal-content">
+                <div class="address-modal-header">
+                    <h2>Enter Delivery Address</h2>
+                    <button class="close-button" id="closeAddressModal">×</button>
+                </div>
+                <form class="address-form" id="deliveryAddressForm">
+                    <div>
+                        <label for="full-name">Full Name:</label>
+                        <input type="text" id="modal-full-name" placeholder="Your Full Name">
+                    </div>
+                    <div>
+                        <label for="phone-number">Phone Number:</label>
+                        <input type="tel" id="modal-phone-number" placeholder="Your Phone Number">
+                    </div>
+                    <div>
+                        <label for="address">Address:</label>
+                        <input type="text" id="modal-address" placeholder="Your Street Address">
+                    </div>
+                    <div class="address-actions">
+                        <button type="button" class="cancel-address" id="cancelAddress">Cancel</button>
+                        <button type="button" class="save-address" id="saveAddress">Save Address</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <div id="toast-container" class="toast-container"></div>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 </body>
 </html>

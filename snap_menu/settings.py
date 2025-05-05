@@ -9,6 +9,7 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 
 # Determine the environment
 ENVIRONMENT = os.getenv("DJANGO_ENV", "development")
+IS_PRODUCTION = ENVIRONMENT == "production"
 
 # Firebase Initialization (Optional)
 FIREBASE_CREDENTIALS = BASE_DIR / "menu_dashboard/secrets/serviceAccountKey.json"
@@ -17,19 +18,52 @@ if os.path.exists(FIREBASE_CREDENTIALS):
     firebase_admin.initialize_app(cred)
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = config("SECRET_KEY", default="your-default-secret-key")
+SECRET_KEY = config("SECRET_KEY")  # No default value in production
 
 # Debug Mode - Set to False in Production
-DEBUG = True
+DEBUG = config("DEBUG", default=not IS_PRODUCTION, cast=bool)
 
+# Security Settings
+if IS_PRODUCTION:
+    # SSL/HTTPS settings
+    SECURE_SSL_REDIRECT = True
+    SESSION_COOKIE_SECURE = True
+    CSRF_COOKIE_SECURE = True
+    SECURE_BROWSER_XSS_FILTER = True
+    SECURE_CONTENT_TYPE_NOSNIFF = True
+    X_FRAME_OPTIONS = 'DENY'
+    SECURE_HSTS_SECONDS = 31536000  # 1 year
+    SECURE_HSTS_INCLUDE_SUBDOMAINS = True
+    SECURE_HSTS_PRELOAD = True
+else:
+    # Development settings
+    SECURE_SSL_REDIRECT = False
+    SESSION_COOKIE_SECURE = False
+    CSRF_COOKIE_SECURE = False
 
-THUMBNAIL_ALIASES = {
-    '': {
-        'tiny': {'size': (20, 20), 'crop': True},
-        '400': {'size': (400, 400), 'crop': True},
-        '800': {'size': (800, 800), 'crop': True},
+# Session settings
+SESSION_COOKIE_AGE = 1209600  # 2 weeks
+SESSION_SAVE_EVERY_REQUEST = True
+SESSION_EXPIRE_AT_BROWSER_CLOSE = True
+
+# Password validation
+AUTH_PASSWORD_VALIDATORS = [
+    {
+        'NAME': 'django.contrib.auth.password_validation.UserAttributeSimilarityValidator',
     },
-}
+    {
+        'NAME': 'django.contrib.auth.password_validation.MinimumLengthValidator',
+        'OPTIONS': {
+            'min_length': 8,
+        }
+    },
+    {
+        'NAME': 'django.contrib.auth.password_validation.CommonPasswordValidator',
+    },
+    {
+        'NAME': 'django.contrib.auth.password_validation.NumericPasswordValidator',
+    },
+]
 
 # Allowed Hosts
 ALLOWED_HOSTS = [
@@ -41,7 +75,7 @@ ALLOWED_HOSTS = [
     "www.delvrr.com",
     "delvrr.com",
     "172.20.10.3",
-    "172.20.10.2",  # Add this line
+    "172.20.10.2",
     "192.168.1.129",
     "192.168.1.1"
 ]
@@ -77,7 +111,7 @@ INSTALLED_APPS = [
 # Middleware
 MIDDLEWARE = [
     "django.middleware.security.SecurityMiddleware",
-    "whitenoise.middleware.WhiteNoiseMiddleware",  # For static files
+    "whitenoise.middleware.WhiteNoiseMiddleware",
     "django.contrib.sessions.middleware.SessionMiddleware",
     "django.middleware.common.CommonMiddleware",
     "django.middleware.csrf.CsrfViewMiddleware",
@@ -113,7 +147,6 @@ TEMPLATES = [
 # URL Config
 ROOT_URLCONF = "snap_menu.urls"
 
-# Database Configuration (Only PostgreSQL)
 # Database Configuration
 if ENVIRONMENT == "development":
     DATABASES = {
@@ -125,7 +158,7 @@ if ENVIRONMENT == "development":
 else:
     DATABASES = {
         "default": dj_database_url.config(
-            default=config("DATABASE_URL", default="postgresql://postgres:postgres@localhost:5432/snapmenu")
+            default=config("DATABASE_URL")
         )
     }
 

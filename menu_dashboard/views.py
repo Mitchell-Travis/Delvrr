@@ -22,12 +22,12 @@ import logging
 from django.template.loader import render_to_string
 from django.utils import timezone
 import logging
-from django.views.generic import DetailView
+from django.views.generic import DetailView, View
 from django.db.models import Prefetch
 from django.core.cache import cache
 from django.db.models import Prefetch, Q, F, Case, When, FloatField
 from django.contrib.sites.shortcuts import get_current_site
-from django.views.decorators.cache import cache_control
+from django.views.decorators.cache import cache_control, never_cache
 from django.views.decorators.cache import cache_page  # server-side cache
 # from celery import shared_task
 
@@ -39,6 +39,13 @@ from django.views.decorators.cache import cache_page  # server-side cache
 from django.http import HttpResponseForbidden
 from django.utils import timezone
 from django.utils.decorators import method_decorator
+from django.core.cache import cache
+from django.db import transaction
+from django.views.decorators.http import require_http_methods, require_POST
+from django.views.decorators.vary import vary_on_cookie
+from django.core.validators import validate_email
+from django.db.models import F, Sum
+from django.db import transaction
 
 
 class ProductDetailView(DetailView):
@@ -510,101 +517,183 @@ logger = logging.getLogger(__name__)
 from django.shortcuts import redirect
 from django.contrib import messages
 
-@login_required
-def restaurant_checkout(request, restaurant_name_slug, hashed_slug):
-    # Fetch the restaurant using the correct parameters
-    restaurant = get_object_or_404(
-        Restaurant.objects.prefetch_related('brand_colors'),
-        slug=restaurant_name_slug,
-        hashed_slug=hashed_slug
-    )
-    is_logged_in = request.user.is_authenticated
+@method_decorator([login_required, never_cache], name='dispatch')
+class RestaurantCheckoutView(View):
+    """
+    A class-based view for handling restaurant checkout operations.
+    This view is optimized for performance and scalability.
+    """
     
-    # Get brand colors with fallbacks
-    brand_colors = restaurant.brand_colors.all()
-    primary_brand_color = brand_colors[0].color if brand_colors.count() > 0 else "#f7c028"
-    secondary_brand_color = brand_colors[1].color if brand_colors.count() > 1 else "#000000"
-    third_brand_color = brand_colors[2].color if brand_colors.count() > 2 else "#ffffff"
-    
-    if request.method == 'GET':
-        return render(request, 'menu_dashboard/checkout.html', {
-            'restaurant': restaurant,
-            'is_logged_in': is_logged_in,
-            # pass the exact model fields
-            'restaurant_lat': restaurant.latitude,
-            'restaurant_lon': restaurant.longitude,
-            # Add brand colors to context
-            'primary_brand_color': primary_brand_color,
-            'secondary_brand_color': secondary_brand_color,
-            'third_brand_color': third_brand_color,
-        })
-    
-    if request.method == 'POST':
-        if not is_logged_in:
-            messages.info(request, "To place an order, please log in or create an account.")
-            return JsonResponse({'message': 'User not authenticated.'}, status=401)
-        
+    def get(self, request, restaurant_name_slug, hashed_slug):
+        """
+        Handle GET requests for the checkout page.
+        Uses caching to improve performance.
+        """
         try:
-            cart_data = request.POST.get('cart')
-            if not cart_data:
-                return JsonResponse({'message': 'Cart data is missing'}, status=400)
+            # Try to get restaurant from cache first
+            cache_key = f"restaurant_{restaurant_name_slug}_{hashed_slug}"
+            restaurant = cache.get(cache_key)
             
-            cart = json.loads(cart_data)
-            payment_method = request.POST.get('payment_method')
-            
-            customer, created = Customer.objects.get_or_create(user=request.user)
-            table = Table.objects.filter(restaurant=restaurant).first()
-            table_number = table.table_number if table else None
-            
-            order = Orders.objects.create(
-                customer=customer,
-                restaurant=restaurant,
-                status='Pending',
-                payment_method=payment_method,
-                table_number=table_number,
-                amount=0
-            )
-            
-            total_amount = Decimal('0.00')
-            service_charge = Decimal('0.25')
-            
-            for product_id, item_data in cart.items():
-                product = get_object_or_404(Product, id=product_id)
-                qty = item_data[0]
-                total_amount += product.price * qty
-                OrderProduct.objects.create(
-                    order=order,
-                    product=product,
-                    quantity=qty,
-                    price=product.price
+            if not restaurant:
+                # If not in cache, fetch from database with optimized query
+                restaurant = get_object_or_404(
+                    Restaurant.objects.select_related('user')
+                                    .prefetch_related('brand_colors', 'tables'),
+                    slug=restaurant_name_slug,
+                    hashed_slug=hashed_slug
                 )
+                # Cache for 5 minutes
+                cache.set(cache_key, restaurant, 300)
             
-            total_amount += service_charge
-            order.amount = total_amount
-            order.save()
+            # Get brand colors with fallbacks
+            brand_colors = restaurant.brand_colors.all()
+            primary_brand_color = brand_colors[0].color if brand_colors.count() > 0 else "#f7c028"
+            secondary_brand_color = brand_colors[1].color if brand_colors.count() > 1 else "#000000"
+            third_brand_color = brand_colors[2].color if brand_colors.count() > 2 else "#ffffff"
             
-            Earnings.objects.create(order=order, service_charge=service_charge)
-            logger.info(f"Order placed: {order.id}")
+            # Get available tables
+            available_tables = restaurant.tables.filter(is_occupied=False)
             
-            if 'cart' in request.session:
-                del request.session['cart']
+            context = {
+                'restaurant': restaurant,
+                'is_logged_in': request.user.is_authenticated,
+                'restaurant_lat': restaurant.latitude,
+                'restaurant_lon': restaurant.longitude,
+                'primary_brand_color': primary_brand_color,
+                'secondary_brand_color': secondary_brand_color,
+                'third_brand_color': third_brand_color,
+                'available_tables': available_tables,
+            }
             
-            return JsonResponse({
-                'message': 'Order placed successfully',
-                'order_id': order.id,
-                'total_amount': str(total_amount)
-            })
+            return render(request, 'menu_dashboard/checkout.html', context)
             
         except Exception as e:
-            logger.error(f"Error processing order: {e}")
-            return JsonResponse({'message': str(e)}, status=500)
-    
-    return JsonResponse({'message': 'Method not allowed'}, status=405)
+            logger.error(f"Error in checkout GET: {str(e)}")
+            return JsonResponse({'error': 'An error occurred while loading the checkout page'}, status=500)
 
+    @method_decorator(require_POST)
+    def post(self, request, restaurant_name_slug, hashed_slug):
+        """
+        Handle POST requests for order submission.
+        Uses transaction management and proper error handling.
+        """
+        if not request.user.is_authenticated:
+            return JsonResponse({'error': 'Authentication required'}, status=401)
+        
+        try:
+            # Validate input data
+            cart_data = request.POST.get('cart')
+            payment_method = request.POST.get('payment_method')
+            table_number = request.POST.get('table_number')
+            
+            if not cart_data or not payment_method:
+                return JsonResponse({'error': 'Missing required data'}, status=400)
+            
+            # Parse cart data
+            try:
+                cart = json.loads(cart_data)
+            except json.JSONDecodeError:
+                return JsonResponse({'error': 'Invalid cart data format'}, status=400)
+            
+            # Start transaction
+            with transaction.atomic():
+                # Get restaurant
+                restaurant = get_object_or_404(
+                    Restaurant.objects.select_related('user'),
+                    slug=restaurant_name_slug,
+                    hashed_slug=hashed_slug
+                )
+                
+                # Get or create customer
+                customer, _ = Customer.objects.get_or_create(user=request.user)
+                
+                # Create order
+                order = Orders.objects.create(
+                    customer=customer,
+                    restaurant=restaurant,
+                    status='Pending',
+                    payment_method=payment_method,
+                    table_number=table_number,
+                    amount=0
+                )
+                
+                # Calculate total amount
+                total_amount = Decimal('0.00')
+                service_charge = Decimal('0.25')
+                
+                # Process cart items
+                for product_id, item_data in cart.items():
+                    try:
+                        product = Product.objects.select_for_update().get(
+                            id=product_id,
+                            restaurant=restaurant,
+                            status='Available'
+                        )
+                        
+                        qty = int(item_data[0])
+                        if qty <= 0:
+                            raise ValidationError(f"Invalid quantity for product {product_id}")
+                        
+                        # Calculate item total
+                        item_total = product.price * qty
+                        total_amount += item_total
+                        
+                        # Create order product
+                        OrderProduct.objects.create(
+                            order=order,
+                            product=product,
+                            quantity=qty,
+                            price=product.price
+                        )
+                        
+                    except Product.DoesNotExist:
+                        raise ValidationError(f"Product {product_id} not found or not available")
+                    except (ValueError, TypeError):
+                        raise ValidationError(f"Invalid data for product {product_id}")
+                
+                # Add service charge
+                total_amount += service_charge
+                
+                # Update order amount
+                order.amount = total_amount
+                order.save()
+                
+                # Create earnings record
+                Earnings.objects.create(
+                    order=order,
+                    service_charge=service_charge
+                )
+                
+                # Update table status if table number provided
+                if table_number:
+                    Table.objects.filter(
+                        restaurant=restaurant,
+                        table_number=table_number
+                    ).update(is_occupied=True)
+                
+                # Clear cart from session
+                if 'cart' in request.session:
+                    del request.session['cart']
+                
+                # Log successful order
+                logger.info(f"Order {order.id} placed successfully for restaurant {restaurant.id}")
+                
+                return JsonResponse({
+                    'success': True,
+                    'order_id': order.id,
+                    'total_amount': str(total_amount),
+                    'message': 'Order placed successfully'
+                })
+                
+        except ValidationError as e:
+            logger.warning(f"Validation error in checkout: {str(e)}")
+            return JsonResponse({'error': str(e)}, status=400)
+        except Exception as e:
+            logger.error(f"Error in checkout POST: {str(e)}")
+            return JsonResponse({'error': 'An error occurred while processing your order'}, status=500)
 
-
-
-
+# Replace the old restaurant_checkout view with the new class-based view
+restaurant_checkout = RestaurantCheckoutView.as_view()
 
 @login_required(login_url='adminlogin')
 def create_restaurant_menu(request):
