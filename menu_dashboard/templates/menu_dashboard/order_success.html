@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>Order Success - SnapMenu</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600&display=swap" rel="stylesheet">
     <style>
     :root {
         --primary: #13A658;
@@ -15,13 +16,16 @@
         --text-light: #666666;
         --shadow: rgba(0, 0, 0, 0.1);
         --accent: #FCF4EA;
+        --radius-sm: 6px;
+        --radius-md: 10px;
+        --radius-lg: 14px;
     }
 
     * {
         margin: 0;
         padding: 0;
         box-sizing: border-box;
-        font-family: 'SF Pro Display', -apple-system, BlinkMacSystemFont, sans-serif;
+        font-family: 'Poppins', sans-serif;
     }
 
     body {
@@ -34,6 +38,8 @@
     }
 
     .container {
+        max-width: 400px;
+        margin: 0 auto;
         width: 100%;
         display: flex;
         flex-direction: column;
@@ -42,15 +48,15 @@
 
     .header {
         background: var(--primary);
-        padding: 60px 24px 40px;
+        padding: 40px 24px;
         text-align: center;
         color: white;
         position: relative;
     }
 
     .status-icon {
-        width: 80px;
-        height: 80px;
+        width: 72px;
+        height: 72px;
         background: white;
         border-radius: 50%;
         display: flex;
@@ -64,23 +70,23 @@
 
     .status-icon i {
         color: var(--primary);
-        font-size: 40px;
+        font-size: 32px;
     }
 
     .header-title {
-        font-size: 32px;
-        font-weight: 700;
-        margin-bottom: 12px;
+        font-size: 24px;
+        font-weight: 600;
+        margin-bottom: 8px;
     }
 
     .header-subtitle {
-        font-size: 17px;
+        font-size: 15px;
         opacity: 0.9;
         font-weight: 500;
         max-width: 280px;
         margin: 0 auto;
         line-height: 1.4;
-        padding: 8px 16px;
+        padding: 6px 12px;
         background: rgba(255, 255, 255, 0.15);
         border-radius: 100px;
         display: inline-block;
@@ -100,116 +106,60 @@
         padding: 24px;
     }
 
-    .delivery-section {
-        background: #F9FCFA;
-        border-radius: 16px;
-        padding: 20px;
-        margin-bottom: 24px;
-        border: 1px solid rgba(19, 166, 88, 0.1);
-    }
-
-    .delivery-header {
-        display: flex;
-        align-items: center;
-        margin-bottom: 12px;
-    }
-
-    .delivery-icon {
-        width: 40px;
-        height: 40px;
+    .table-info {
         background: var(--primary);
-        border-radius: 50%;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        margin-right: 12px;
-        color: white;
-    }
-
-    .delivery-title {
-        font-size: 18px;
-        font-weight: 700;
-        color: var(--text);
-    }
-
-    .delivery-address {
-        font-size: 14px;
-        color: var(--text-light);
-        line-height: 1.5;
-        margin-left: 52px;
-    }
-
-    .delivery-tracking {
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
-        background: #FFFFFF;
-        border-radius: 12px;
+        border-radius: var(--radius-md);
         padding: 16px;
-        margin-top: 16px;
-        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
-    }
-
-    .tracking-left {
+        margin-bottom: 24px;
+        color: white;
         display: flex;
         align-items: center;
+        gap: 12px;
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
     }
 
-    .tracking-icon {
-        color: var(--primary);
-        margin-right: 12px;
+    .table-info i {
         font-size: 20px;
+        background: rgba(255, 255, 255, 0.2);
+        padding: 8px;
+        border-radius: 50%;
     }
 
-    .tracking-status {
+    .table-info-content {
+        flex: 1;
+    }
+
+    .table-info-title {
         font-weight: 600;
         font-size: 15px;
+        margin-bottom: 2px;
     }
 
-    .tracking-button {
-        color: var(--primary);
-        font-weight: 600;
-        font-size: 15px;
-        text-decoration: none;
-    }
-
-    .section-heading {
-        font-size: 20px;
-        font-weight: 700;
-        color: var(--text);
-        margin-bottom: 16px;
-        padding-bottom: 8px;
-        border-bottom: 1px solid #F0F0F0;
+    .table-info-subtitle {
+        font-size: 13px;
+        opacity: 0.9;
     }
 
     .order-items {
-        margin-bottom: 28px;
+        margin-bottom: 24px;
     }
 
     .item {
         display: flex;
-        margin-bottom: 20px;
+        margin-bottom: 16px;
         background: #FFFFFF;
-        border-radius: 12px;
+        border-radius: var(--radius-md);
         padding: 12px;
         box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
     }
 
     .item-image {
-        width: 80px;
-        height: 80px;
-        border-radius: 12px;
+        width: 64px;
+        height: 64px;
+        border-radius: var(--radius-sm);
         overflow: hidden;
-        margin-right: 16px;
+        margin-right: 12px;
         background: #F5F5F5;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-    }
-
-    .item-image i {
-        color: var(--primary);
-        font-size: 28px;
     }
 
     .item-image img {
@@ -227,431 +177,147 @@
 
     .item-name {
         font-weight: 600;
-        font-size: 16px;
+        font-size: 15px;
         margin-bottom: 4px;
         color: var(--text);
     }
 
     .item-variant {
-        font-size: 14px;
+        font-size: 13px;
         color: var(--text-light);
         margin-bottom: 4px;
     }
 
-    .item-price-container {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        margin-top: 4px;
-    }
-
-    .item-original-price {
-        font-size: 14px;
-        text-decoration: line-through;
-        color: var(--text-light);
-        margin-right: 8px;
-    }
-
     .item-price {
-        font-weight: 700;
-        font-size: 16px;
+        font-weight: 600;
+        font-size: 15px;
         color: var(--text);
     }
 
-    .summary-section {
+    .order-summary {
         background: #F9FCFA;
-        border-radius: 16px;
+        border-radius: var(--radius-md);
         padding: 20px;
         margin-bottom: 24px;
+        border: 1px solid rgba(19, 166, 88, 0.1);
     }
 
     .summary-row {
         display: flex;
         justify-content: space-between;
         margin-bottom: 12px;
+        font-size: 14px;
     }
 
-    .summary-label {
-        font-size: 15px;
-        color: var(--text-light);
+    .summary-row:last-child {
+        margin-bottom: 0;
+        padding-top: 12px;
+        border-top: 1px solid rgba(0, 0, 0, 0.1);
+        font-weight: 600;
+        font-size: 16px;
     }
 
-    .summary-value {
-        font-size: 15px;
-        font-weight: 500;
-        color: var(--text);
-    }
-
-    .grand-total {
+    .action-buttons {
         display: flex;
-        justify-content: space-between;
-        padding-top: 16px;
-        border-top: 1px dashed #DDDDDD;
-        margin-top: 12px;
+        gap: 12px;
+        margin-top: 24px;
     }
 
-    .grand-total-label {
-        font-size: 18px;
-        font-weight: 700;
-        color: var(--text);
+    .action-button {
+        flex: 1;
+        padding: 14px;
+        border-radius: var(--radius-md);
+        border: none;
+        font-weight: 600;
+        font-size: 15px;
+        cursor: pointer;
+        transition: all 0.2s ease;
     }
 
-    .grand-total-value {
-        font-size: 20px;
-        font-weight: 700;
-        color: var(--primary);
-    }
-
-    .button {
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        gap: 8px;
+    .primary-button {
         background: var(--primary);
         color: white;
-        padding: 18px;
-        border-radius: 14px;
-        font-size: 16px;
-        font-weight: 600;
-        text-decoration: none;
-        transition: all 0.3s ease;
-        margin-top: 8px;
-        text-align: center;
     }
 
-    .button:hover {
-        background: var(--primary-dark);
-        transform: translateY(-2px);
-    }
-
-    .button i {
-        font-size: 18px;
-    }
-
-    .info-card {
-        background: #FFFFFF;
-        border-radius: 12px;
-        padding: 16px;
-        margin-bottom: 20px;
-        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
-    }
-
-    .info-row {
-        display: grid;
-        grid-template-columns: 1fr 1fr;
-        gap: 16px;
-    }
-
-    .info-item {
-        display: flex;
-        flex-direction: column;
-        margin-bottom: 12px;
-    }
-
-    .info-label {
-        font-size: 13px;
-        color: var(--text-light);
-        margin-bottom: 4px;
-    }
-
-    .info-value {
-        font-size: 15px;
-        font-weight: 600;
+    .secondary-button {
+        background: #F5F5F5;
         color: var(--text);
     }
 
-    .back-button {
-        position: absolute;
-        top: 24px;
-        left: 24px;
-        width: 40px;
-        height: 40px;
-        background: rgba(255, 255, 255, 0.2);
-        border-radius: 50%;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        color: white;
-        text-decoration: none;
-        font-size: 18px;
-    }
-
-    .view-summary-button {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        background: #F9F9F9;
-        padding: 16px;
-        border-radius: 12px;
-        text-decoration: none;
-        color: var(--text);
-        font-weight: 600;
-        margin: 16px 0;
-    }
-
-    .view-summary-button i {
-        color: #999;
-    }
-
-    .status-badge {
-        display: inline-flex;
-        align-items: center;
-        background: rgba(255, 255, 255, 0.2);
-        padding: 6px 12px;
-        border-radius: 100px;
-        margin-top: 12px;
-        font-weight: 500;
-    }
-
-    .pulse-dot {
-        width: 8px;
-        height: 8px;
-        background: white;
-        border-radius: 50%;
-        margin-right: 8px;
-        animation: blink 1.5s infinite;
+    .action-button:active {
+        transform: scale(0.98);
     }
 
     @keyframes fadeIn {
-        0% { opacity: 0; }
-        100% { opacity: 1; }
-    }
-
-    @keyframes blink {
-        0% { opacity: 0.4; }
-        50% { opacity: 1; }
-        100% { opacity: 0.4; }
-    }
-
-    /* Responsiveness */
-    @media (min-width: 500px) {
-        .container {
-            max-width: 480px;
-            margin: 0 auto;
-        }
-    }
-
-    /* More compact styles */
-    .header {
-        padding: 40px 24px 30px;
-    }
-
-    .status-icon {
-        width: 60px;
-        height: 60px;
-        margin: 0 auto 16px;
-    }
-
-    .header-title {
-        font-size: 26px;
-        margin-bottom: 8px;
-    }
-
-    .header-subtitle {
-        font-size: 15px;
-        padding: 6px 12px;
-    }
-
-    .content-inner {
-        padding: 16px;
-    }
-
-    .delivery-section {
-        padding: 16px;
-        margin-bottom: 16px;
-    }
-
-    .delivery-tracking {
-        padding: 12px;
-        margin-top: 12px;
-    }
-
-    .info-card {
-        padding: 14px;
-        margin-bottom: 16px;
-    }
-
-    .section-heading {
-        margin-bottom: 12px;
-        font-size: 18px;
-    }
-
-    .item {
-        margin-bottom: 14px;
-        padding: 10px;
-    }
-
-    .item-image {
-        width: 60px;
-        height: 60px;
-        margin-right: 12px;
-    }
-
-    .item-name {
-        font-size: 15px;
-    }
-
-    .item-variant {
-        font-size: 13px;
-    }
-
-    .summary-section {
-        padding: 16px;
-        margin-bottom: 16px;
-    }
-
-    .button {
-        padding: 14px;
+        from { opacity: 0; }
+        to { opacity: 1; }
     }
     </style>
 </head>
 <body>
     <div class="container">
-        <a href="{% url 'restaurant_menu' restaurant_name_slug=restaurant.slug hashed_slug=restaurant.hashed_slug %}" class="back-button">
-            <i class="fas fa-arrow-left"></i>
-        </a>
-        
         <div class="header">
             <div class="status-icon">
                 <i class="fas fa-check"></i>
             </div>
-            <h1 class="header-title">Order Confirmed</h1>
-            <div class="header-subtitle">
-                Your order will be ready in 15-20 minutes
-            </div>
-            <div class="status-badge">
-                <span class="pulse-dot"></span>
-                {{ order.status }}
-            </div>
+            <h1 class="header-title">Order Confirmed!</h1>
+            <p class="header-subtitle">Your order has been successfully placed</p>
         </div>
         
         <div class="content">
             <div class="content-inner">
-                {% if table_number %}
-                <!-- Restaurant Pickup Section -->
-                <div class="delivery-section">
-                    <div class="delivery-header">
-                        <div class="delivery-icon">
-                            <i class="fas fa-utensils"></i>
-                        </div>
-                        <div class="delivery-title">Table {{ table_number }}</div>
-                    </div>
-                    <div class="delivery-address">
-                        {{ restaurant.name }}<br>
-                        {{ restaurant.address }}
-                    </div>
-                    <div class="delivery-tracking">
-                        <div class="tracking-left">
-                            <i class="fas fa-clock tracking-icon"></i>
-                            <span class="tracking-status">Ready in 15-20 minutes</span>
-                        </div>
-                        <a href="#" class="tracking-button">Details</a>
+                <div class="table-info">
+                    <i class="fas fa-utensils"></i>
+                    <div class="table-info-content">
+                        <div class="table-info-title">Order will be served at your table 12</div>
+                        <div class="table-info-subtitle">Please wait while we prepare your order</div>
                     </div>
                 </div>
-                {% else %}
-                <!-- Delivery Section -->
-                <div class="delivery-section">
-                    <div class="delivery-header">
-                        <div class="delivery-icon">
-                            <i class="fas fa-location-dot"></i>
-                        </div>
-                        <div class="delivery-title">Delivery To Home</div>
-                    </div>
-                    <div class="delivery-address">
-                        {{ order.delivery_address|default:"Your delivery address will appear here" }}
-                    </div>
-                    <div class="delivery-tracking">
-                        <div class="tracking-left">
-                            <i class="fas fa-motorcycle tracking-icon"></i>
-                            <span class="tracking-status">Arriving in 15-20 minutes</span>
-                        </div>
-                        <a href="#" class="tracking-button">Track</a>
-                    </div>
-                </div>
-                {% endif %}
-                
-                <!-- Order Info Card (Combined with Bill Summary for compactness) -->
-                <div class="info-card">
-                    <div class="section-heading">Order Information</div>
-                    <div class="info-row">
-                        <div class="info-item">
-                            <span class="info-label">Order ID</span>
-                            <span class="info-value">{{ order_id }}</span>
-                        </div>
-                        <div class="info-item">
-                            <span class="info-label">Time</span>
-                            <span class="info-value">{{ order_time|date:"g:i A" }}</span>
-                        </div>
-                        <div class="info-item">
-                            <span class="info-label">Payment</span>
-                            <span class="info-value">{{ payment_method }}</span>
-                        </div>
-                        <div class="info-item">
-                            <span class="info-label">Status</span>
-                            <span class="info-value">{{ order.status }}</span>
-                        </div>
-                    </div>
-                </div>
-                
-                <!-- Order Items -->
-                <div class="section-heading">Order Items</div>
+
                 <div class="order-items">
-                    {% if order_items %}
-                        {% for item in order_items %}
-                        <div class="item">
-                            <div class="item-image">
-                                {% if item.product.product_image %}
-                                <img src="{{ item.product.product_image.url }}" alt="{{ item.product.name }}">
-                                {% else %}
-                                <i class="fas fa-utensils"></i>
-                                {% endif %}
-                            </div>
-                            <div class="item-details">
-                                <div class="item-name">{{ item.product.name }}</div>
-                                <div class="item-variant">
-                                    {% if item.variant %}{{ item.variant }}{% else %}Regular{% endif %}
-                                    {% if item.quantity > 1 %}
-                                        × {{ item.quantity }}
-                                    {% endif %}
-                                </div>
-                                <div class="item-price-container">
-                                    {% if item.product.original_price and item.product.original_price > item.price %}
-                                    <span class="item-original-price">${{ item.product.original_price }}</span>
-                                    {% endif %}
-                                    <span class="item-price">${{ item.price }}</span>
-                                </div>
-                            </div>
-                        </div>
-                        {% endfor %}
-                    {% else %}
+                    {% for item in order_items %}
                     <div class="item">
                         <div class="item-image">
-                            <i class="fas fa-receipt"></i>
+                            {% if item.image %}
+                            <img src="{{ item.image.url }}" alt="{{ item.name }}">
+                            {% else %}
+                            <i class="fas fa-utensils"></i>
+                            {% endif %}
                         </div>
                         <div class="item-details">
-                            <div class="item-name">Your complete order</div>
-                            <div class="item-variant">Total {{ order.amount }} items</div>
-                            <div class="item-price-container">
-                                <span class="item-price">${{ amount }}</span>
-                            </div>
+                            <div class="item-name">{{ item.name }}</div>
+                            {% if item.variant %}
+                            <div class="item-variant">{{ item.variant }}</div>
+                            {% endif %}
+                            <div class="item-price">${{ item.price }}</div>
                         </div>
                     </div>
-                    {% endif %}
+                    {% endfor %}
                 </div>
-                
-                <!-- Bill Summary (More compact) -->
-                <div class="summary-section">
-                    <div class="section-heading" style="margin-top:0; padding-top:0; border:none;">Bill Summary</div>
-                    <div class="grand-total" style="margin-top:0; padding-top:0; border:none;">
-                        <span class="grand-total-label">Total Amount</span>
-                        <span class="grand-total-value">${{ amount }}</span>
+
+                <div class="order-summary">
+                    <div class="summary-row">
+                        <span>Subtotal</span>
+                        <span>${{ subtotal }}</span>
+                    </div>
+                    <div class="summary-row">
+                        <span>Tax</span>
+                        <span>${{ tax }}</span>
+                    </div>
+                    <div class="summary-row">
+                        <span>Total</span>
+                        <span>${{ total }}</span>
                     </div>
                 </div>
-                
-                <a href="{% url 'restaurant_menu' restaurant_name_slug=restaurant.slug hashed_slug=restaurant.hashed_slug %}" class="button">
-                    <i class="fas fa-utensils"></i>
-                    Back to Menu
-                </a>
+
+                <div class="action-buttons">
+                    <button class="action-button secondary-button" onclick="window.location.href='/'">
+                        <i class="fas fa-home"></i> Back to Menu
+                    </button>
+                    <button class="action-button primary-button" onclick="window.location.href='/orders/'">
+                        <i class="fas fa-list"></i> View Orders
+                    </button>
+                </div>
             </div>
         </div>
     </div>
