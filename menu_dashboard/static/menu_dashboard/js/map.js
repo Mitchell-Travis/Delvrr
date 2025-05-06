@@ -5,6 +5,7 @@ const THRESHOLD_DISTANCE = 100; // meters
 const ADMIN_CONFIRMATION_TIMEOUT = 60000; // 60 seconds
 const LOCATION_TIMEOUT = 5000; // 5 seconds
 const LOCATION_MAX_AGE = 30000; // 30 seconds
+const AVERAGE_SPEED_KMH = 30; // Average delivery speed in km/h
 
 // Map state management
 const state = {
@@ -222,6 +223,25 @@ async function getUserLocation(retries = 1) {
     });
 }
 
+function formatDistance(meters) {
+    if (meters >= 1000) {
+        return (meters / 1000).toFixed(1) + 'km';
+    }
+    return Math.round(meters) + 'm';
+}
+
+function calculateDeliveryTime(distanceMeters) {
+    const distanceKm = distanceMeters / 1000;
+    const timeHours = distanceKm / AVERAGE_SPEED_KMH;
+    const timeMinutes = Math.round(timeHours * 60);
+    return Math.max(10, timeMinutes); // Minimum 10 minutes
+}
+
+function updateDeliveryTime(distanceMeters) {
+    const timeMinutes = calculateDeliveryTime(distanceMeters);
+    $('.estimated-delivery').html(`<i class="far fa-clock"></i> ~${timeMinutes} mins`);
+}
+
 async function updateMapWithUserLocation() {
     if (!state.isMapInitialized) return;
 
@@ -274,15 +294,20 @@ async function updateMapWithUserLocation() {
         elements.deliverySwitchLabels.removeClass('active');
         $(`.delivery-switch-label[data-delivery-type="${newDeliveryType}"]`).addClass('active');
         
-        // Show/hide table info based on distance
+        // Show/hide appropriate elements based on delivery type
         if (newDeliveryType === 'restaurant') {
             console.log('Showing table info - user is at restaurant');
+            $('.delivery-details-restaurant').removeClass('inactive');
+            $('.delivery-details-home').removeClass('active');
             $('.table-info').show();
             showToast('You are at the restaurant!', 'nearby');
         } else {
             console.log('Hiding table info - user is not at restaurant');
+            $('.delivery-details-restaurant').addClass('inactive');
+            $('.delivery-details-home').addClass('active');
             $('.table-info').hide();
-            showToast(`You are ${Math.round(state.distanceToRestaurant)}m away`, 'far');
+            showToast(formatDistance(state.distanceToRestaurant) + ' away', 'far');
+            updateDeliveryTime(state.distanceToRestaurant);
         }
         
         updatePaymentOptions();
@@ -781,8 +806,15 @@ document.addEventListener('DOMContentLoaded', () => {
     updateOrderDetails();
     setDeliveryType();
     
-    // Initialize map but keep it hidden
-    initializeMap();
+    // Start location detection immediately
+    getUserLocation().then(() => {
+        // Initialize map after getting location
+        initializeMap();
+    }).catch(err => {
+        console.error('Error getting initial location:', err);
+        // Still try to initialize map even if location fails
+        initializeMap();
+    });
     
     if (typeof turf === 'undefined') {
         console.warn("Turf.js is not loaded. Distance calculations will use fallbacks.");

@@ -178,18 +178,23 @@
         .table-info {
             display: flex;
             align-items: center;
-            gap: 0.5rem;
-            margin-bottom: 0.8rem;
-            font-size: 0.9rem;
-            color: var(--text-secondary);
-            background-color: var(--primary-very-light);
-            padding: 0.8rem;
-            border-radius: var(--radius-sm);
+            gap: 0.8rem;
+            margin-bottom: 1rem;
+            font-size: 0.95rem;
+            color: #fff;
+            background: var(--primary-gradient);
+            padding: 1rem;
+            border-radius: var(--radius-md);
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
         }
 
         .table-info i {
-            color: var(--primary);
-            font-size: 1rem;
+            color: #fff;
+            font-size: 1.2rem;
+        }
+
+        .table-info span {
+            font-weight: 500;
         }
 
         .delivery-address-button {
@@ -1030,7 +1035,7 @@
             <div class="delivery-details-restaurant">
                 <div class="table-info" style="display: none;">
                     <i class="fas fa-utensils"></i>
-                    <span>You are at the restaurant. Your order will be served to your table.</span>
+                    <span>Your order will be served to your table.</span>
                 </div>
                 
             </div>
