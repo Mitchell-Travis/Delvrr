@@ -84,10 +84,20 @@ $('<style>')
     `)
     .appendTo('head');
 
-// Add toast container to body
-$('body').append('<div class="toast-container"></div>');
+// Initialize toast container
+let toastContainer = null;
+
+function initializeToastContainer() {
+    if (!toastContainer) {
+        toastContainer = document.createElement('div');
+        toastContainer.className = 'toast-container';
+        document.body.appendChild(toastContainer);
+    }
+    return toastContainer;
+}
 
 function showToast(message, type = 'info') {
+    const container = initializeToastContainer();
     const toast = document.createElement('div');
     toast.className = `toast ${type}`;
     
@@ -102,7 +112,7 @@ function showToast(message, type = 'info') {
         <span>${message}</span>
     `;
     
-    document.querySelector('.toast-container').appendChild(toast);
+    container.appendChild(toast);
     setTimeout(() => {
         toast.remove();
     }, 3000);
@@ -760,8 +770,8 @@ document.addEventListener('DOMContentLoaded', () => {
         paymentOptions: $('.payment-option')
     };
     
-    // Remove the distance-value span if it exists
-    $('.distance-value').remove();
+    // Initialize toast container
+    initializeToastContainer();
     
     setupEventHandlers();
     updateOrderDetails();
