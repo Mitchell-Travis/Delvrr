@@ -157,7 +157,7 @@ $(document).ready(function() {
     // Check if the user is navigating back from the checkout page
     $(window).on('pageshow', function(event) {
         if (event.originalEvent.persisted || performance.getEntriesByType('navigation')[0].type === 'back_forward') {
-            setTimeout(hideLoadingOverlay, 1000); // Hide loading overlay after 1 second delay if navigating back
+            setTimeout(hideLoadingOverlay, 5000); // Hide loading overlay after 5 second delay if navigating back
         }
     });
 
