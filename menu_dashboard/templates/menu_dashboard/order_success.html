@@ -1,309 +1,447 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Order Confirmed – SnapMenu</title>
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-  <style>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Order Success - Delvrr</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
     :root {
-      --color-primary: #13A658;
-      --color-primary-light: #2ACA78;
-      --color-primary-dark: #0E8245;
-      --color-bg: #fff;
-      --color-bg-muted: #F9FCFA;
-      --color-text: #333;
-      --color-text-muted: #666;
-      --color-shadow: rgba(0,0,0,0.1);
-      --radius: 12px;
-      --spacing-sm: 8px;
-      --spacing-md: 16px;
-      --spacing-lg: 24px;
-      --transition: 0.3s ease;
-      font-size: 16px;
+        --primary: #13A658;
+        --text: #333333;
+        --text-light: #666666;
     }
 
     * {
-      margin: 0; padding: 0;
-      box-sizing: border-box;
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+        font-family: -apple-system, BlinkMacSystemFont, sans-serif;
     }
 
     body {
-      font-family: 'SF Pro Display', -apple-system, BlinkMacSystemFont, sans-serif;
-      background: var(--color-primary);
-      color: var(--color-text);
-      display: flex;
-      justify-content: center;
-      align-items: flex-start;
-      min-height: 100vh;
-      padding: var(--spacing-lg);
-      animation: fadeIn var(--transition);
+        background: var(--primary);
+        min-height: 100vh;
+        display: flex;
+        flex-direction: column;
     }
 
-    .card {
-      background: var(--color-bg);
-      border-radius: var(--radius);
-      box-shadow: 0 8px 24px var(--color-shadow);
-      max-width: 480px;
-      width: 100%;
-      overflow: hidden;
+    .container {
+        width: 100%;
+        max-width: 480px;
+        margin: 0 auto;
+        display: flex;
+        flex-direction: column;
+        flex: 1;
     }
 
-    header {
-      background: var(--color-primary);
-      color: #fff;
-      text-align: center;
-      padding: var(--spacing-lg) var(--spacing-md);
-      position: relative;
+    .header {
+        background: var(--primary);
+        padding: 24px 16px 20px;
+        text-align: center;
+        color: white;
+        position: relative;
     }
-    header .back {
-      position: absolute;
-      left: var(--spacing-md);
-      top: var(--spacing-md);
-      color: rgba(255,255,255,0.8);
-      text-decoration: none;
-      font-size: 1.2rem;
-      transition: color var(--transition);
-    }
-    header .back:hover { color: #fff; }
 
     .status-icon {
-      background: #fff;
-      width: 72px; height: 72px;
-      border-radius: 50%;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      margin: 0 auto var(--spacing-md);
-      box-shadow: 0 4px 16px var(--color-shadow);
-    }
-    .status-icon i { color: var(--color-primary); font-size: 2rem; }
-
-    header h1 {
-      font-size: 1.75rem;
-      margin-bottom: var(--spacing-sm);
-    }
-    header p {
-      font-size: 1rem;
-      opacity: 0.9;
+        width: 48px;
+        height: 48px;
+        background: white;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin: 0 auto 12px;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
     }
 
-    /* Progress indicator */
-    .progress {
-      display: flex;
-      justify-content: space-between;
-      list-style: none;
-      margin: var(--spacing-lg) 0;
-      padding: 0 var(--spacing-md);
-    }
-    .progress li {
-      text-align: center;
-      flex: 1;
-      position: relative;
-    }
-    .progress li:not(:last-child)::after {
-      content: "";
-      position: absolute;
-      top: 50%;
-      right: calc(-50% + 12px);
-      width: 100%;
-      height: 4px;
-      background: #e0e0e0;
-      z-index: 0;
-    }
-    .progress li.is-complete::after {
-      background: var(--color-primary-light);
-    }
-    .progress li .step {
-      background: #e0e0e0;
-      width: 24px; height: 24px;
-      border-radius: 50%;
-      margin: 0 auto;
-      line-height: 24px;
-      color: #fff;
-      z-index: 1;
-      position: relative;
-      transition: background var(--transition);
-    }
-    .progress li.is-complete .step {
-      background: var(--color-primary);
-    }
-    .progress li span {
-      display: block;
-      font-size: 0.75rem;
-      margin-top: var(--spacing-sm);
-      color: var(--color-text-muted);
-    }
-    .progress li.is-complete span { font-weight: 600; color: var(--color-text); }
-
-    main {
-      padding: var(--spacing-md);
+    .status-icon i {
+        color: var(--primary);
+        font-size: 24px;
     }
 
-    .info, .items, .summary {
-      margin-bottom: var(--spacing-lg);
-      background: var(--color-bg-muted);
-      padding: var(--spacing-md);
-      border-radius: var(--radius);
+    .header-title {
+        font-size: 22px;
+        font-weight: 700;
+        margin-bottom: 4px;
     }
 
-    .info div {
-      display: flex; justify-content: space-between;
-      margin-bottom: var(--spacing-sm);
-    }
-    .info div:last-child { margin-bottom: 0; }
-
-    .items .item {
-      display: flex;
-      align-items: center;
-      margin-bottom: var(--spacing-md);
-      background: var(--color-bg);
-      padding: var(--spacing-sm);
-      border-radius: var(--radius);
-      box-shadow: 0 2px 8px var(--color-shadow);
-    }
-    .items .item img, .items .item .icon {
-      width: 60px; height: 60px;
-      border-radius: var(--radius);
-      object-fit: cover;
-      background: #f5f5f5;
-      display: flex; align-items: center; justify-content: center;
-      font-size: 1.5rem;
-      color: var(--color-primary);
-      margin-right: var(--spacing-md);
-    }
-    .items .details {
-      flex: 1;
-    }
-    .items .details .name {
-      font-weight: 600;
-      margin-bottom: var(--spacing-sm);
-    }
-    .items .details .meta {
-      font-size: 0.875rem;
-      color: var(--color-text-muted);
-      margin-bottom: var(--spacing-sm);
-    }
-    .items .details .price {
-      font-weight: 700;
+    .header-subtitle {
+        font-size: 14px;
+        opacity: 0.9;
+        font-weight: 500;
     }
 
-    .summary div {
-      display: flex; justify-content: space-between;
-      margin-bottom: var(--spacing-sm);
-      font-size: 0.95rem;
-    }
-    .summary .total {
-      font-size: 1.25rem;
-      font-weight: 700;
-      border-top: 1px dashed #ddd;
-      padding-top: var(--spacing-sm);
-      margin-top: var(--spacing-sm);
+    .content {
+        background: white;
+        flex: 1;
+        border-radius: 20px 20px 0 0;
+        margin-top: -10px;
+        overflow: hidden;
     }
 
-    .btn {
-      display: block;
-      text-align: center;
-      background: var(--color-primary);
-      color: #fff;
-      padding: var(--spacing-md);
-      border-radius: var(--radius);
-      text-decoration: none;
-      font-weight: 600;
-      transition: background var(--transition), transform var(--transition);
-    }
-    .btn:hover {
-      background: var(--color-primary-dark);
-      transform: translateY(-2px);
+    .content-inner {
+        padding: 12px;
     }
 
-    @media (min-width: 600px) {
-      .progress { padding: 0 var(--spacing-lg); }
+    .section {
+        background: #F9FCFA;
+        border-radius: 12px;
+        padding: 12px;
+        margin-bottom: 12px;
+        border: 1px solid rgba(19, 166, 88, 0.1);
     }
 
-    @keyframes fadeIn {
-      from { opacity: 0; } to { opacity: 1; }
+    .section-header {
+        display: flex;
+        align-items: center;
+        margin-bottom: 8px;
     }
-  </style>
+
+    .section-icon {
+        width: 30px;
+        height: 30px;
+        background: var(--primary);
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin-right: 10px;
+        color: white;
+    }
+
+    .section-title {
+        font-size: 16px;
+        font-weight: 600;
+        color: var(--text);
+    }
+
+    .delivery-address {
+        font-size: 13px;
+        color: var(--text-light);
+        line-height: 1.3;
+        margin-left: 40px;
+    }
+
+    .tracking-info {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        background: #FFFFFF;
+        border-radius: 10px;
+        padding: 10px;
+        margin-top: 10px;
+        box-shadow: 0 1px 4px rgba(0, 0, 0, 0.05);
+    }
+
+    .tracking-status {
+        display: flex;
+        align-items: center;
+        font-weight: 500;
+        font-size: 13px;
+    }
+
+    .tracking-status i {
+        color: var(--primary);
+        margin-right: 8px;
+        font-size: 14px;
+    }
+
+    .tracking-link {
+        color: var(--primary);
+        font-weight: 500;
+        font-size: 13px;
+        text-decoration: none;
+    }
+
+    .info-grid {
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+        gap: 8px;
+    }
+
+    .info-item {
+        display: flex;
+        flex-direction: column;
+    }
+
+    .info-label {
+        font-size: 12px;
+        color: var(--text-light);
+        margin-bottom: 2px;
+    }
+
+    .info-value {
+        font-size: 14px;
+        font-weight: 600;
+        color: var(--text);
+    }
+
+    .item-list {
+        max-height: 240px;
+        overflow-y: auto;
+    }
+
+    .item {
+        display: flex;
+        padding: 8px;
+        border-bottom: 1px solid #f0f0f0;
+    }
+
+    .item:last-child {
+        border-bottom: none;
+    }
+
+    .item-img {
+        width: 40px;
+        height: 40px;
+        border-radius: 8px;
+        margin-right: 10px;
+        background: #F5F5F5;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .item-img i {
+        color: var(--primary);
+        font-size: 16px;
+    }
+
+    .item-details {
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+    }
+
+    .item-name {
+        font-weight: 500;
+        font-size: 14px;
+        color: var(--text);
+        display: flex;
+        justify-content: space-between;
+    }
+
+    .item-variant {
+        font-size: 12px;
+        color: var(--text-light);
+    }
+
+    .bill-row {
+        display: flex;
+        justify-content: space-between;
+        font-size: 13px;
+        margin-bottom: 6px;
+    }
+
+    .bill-row:last-child {
+        margin-bottom: 0;
+        padding-top: 6px;
+        border-top: 1px dashed #DDDDDD;
+        font-weight: 700;
+    }
+
+    .bill-total-value {
+        color: var(--primary);
+    }
+
+    .back-button {
+        position: absolute;
+        top: 16px;
+        left: 16px;
+        width: 32px;
+        height: 32px;
+        background: rgba(255, 255, 255, 0.2);
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: white;
+        text-decoration: none;
+        font-size: 14px;
+    }
+
+    .button {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 6px;
+        background: var(--primary);
+        color: white;
+        padding: 12px;
+        border-radius: 10px;
+        font-size: 14px;
+        font-weight: 600;
+        text-decoration: none;
+        text-align: center;
+    }
+
+    .button i {
+        font-size: 14px;
+    }
+
+    .status-badge {
+        display: inline-flex;
+        align-items: center;
+        background: rgba(255, 255, 255, 0.2);
+        padding: 4px 10px;
+        border-radius: 100px;
+        margin-top: 8px;
+        font-weight: 500;
+        font-size: 12px;
+    }
+
+    .pulse-dot {
+        width: 6px;
+        height: 6px;
+        background: white;
+        border-radius: 50%;
+        margin-right: 6px;
+        animation: blink 1.5s infinite;
+    }
+
+    @keyframes blink {
+        0% { opacity: 0.4; }
+        50% { opacity: 1; }
+        100% { opacity: 0.4; }
+    }
+    </style>
 </head>
 <body>
-
-  <article class="card" role="region" aria-label="Order Confirmation">
-    <header>
-      <a href="{% url 'restaurant_menu' restaurant_name_slug=restaurant.slug hashed_slug=restaurant.hashed_slug %}" class="back" aria-label="Back to menu">
-        <i class="fas fa-arrow-left"></i>
-      </a>
-      <div class="status-icon"><i class="fas fa-check"></i></div>
-      <h1>Order Confirmed!</h1>
-      <p>Your order will be ready in <strong>15–20 minutes</strong></p>
-    </header>
-
-    <ol class="progress" aria-label="Order status progress">
-      <li class="is-complete">
-        <div class="step">1</div>
-        <span>Placed</span>
-      </li>
-      <li class="is-complete">
-        <div class="step">2</div>
-        <span>Preparing</span>
-      </li>
-      <li>
-        <div class="step">3</div>
-        <span>Ready</span>
-      </li>
-    </ol>
-
-    <main>
-      <!-- Order Info -->
-      <section class="info" aria-labelledby="order-info-heading">
-        <h2 id="order-info-heading" class="visually-hidden">Order Information</h2>
-        <div><span>Order ID</span><span>{{ order_id }}</span></div>
-        <div><span>Time</span><span>{{ order_time|date:"g:i A" }}</span></div>
-        <div><span>Payment</span><span>{{ payment_method }}</span></div>
-        <div><span>Status</span><span>{{ order.status }}</span></div>
-      </section>
-
-      <!-- Items -->
-      <section class="items" aria-labelledby="order-items-heading">
-        <h2 id="order-items-heading" class="visually-hidden">Order Items</h2>
-        {% for item in order_items %}
-        <div class="item">
-          {% if item.product.product_image %}
-            <img src="{{ item.product.product_image.url }}" alt="{{ item.product.name }}">
-          {% else %}
-            <div class="icon"><i class="fas fa-utensils"></i></div>
-          {% endif %}
-          <div class="details">
-            <div class="name">{{ item.product.name }}</div>
-            <div class="meta">
-              {{ item.variant|default:"Regular" }}  
-              {% if item.quantity > 1 %}× {{ item.quantity }}{% endif %}
+    <div class="container">
+        <a href="{% url 'restaurant_menu' restaurant_name_slug=restaurant.slug hashed_slug=restaurant.hashed_slug %}" class="back-button">
+            <i class="fas fa-arrow-left"></i>
+        </a>
+        
+        <div class="header">
+            <div class="status-icon">
+                <i class="fas fa-check"></i>
             </div>
-            <div class="price">
-              {% if item.product.original_price > item.price %}
-                <small style="text-decoration:line-through; color:var(--color-text-muted);">${{ item.product.original_price }}</small>
-              {% endif %}
-              ${{ item.price }}
+            <h1 class="header-title">Order Confirmed</h1>
+            <p class="header-subtitle">Ready in 15-20 minutes</p>
+            <div class="status-badge">
+                <span class="pulse-dot"></span>
+                {{ order.status }}
             </div>
-          </div>
         </div>
-        {% endfor %}
-      </section>
-
-      <!-- Bill Summary -->
-      <section class="summary" aria-labelledby="bill-summary-heading">
-        <h2 id="bill-summary-heading" class="visually-hidden">Bill Summary</h2>
-        <div><span>Subtotal</span><span>${{ order.subtotal }}</span></div>
-        <div><span>Tax</span><span>${{ order.tax }}</span></div>
-        <div class="total"><span>Total</span><span>${{ order.amount }}</span></div>
-      </section>
-
-      <!-- Back to menu -->
-      <a href="{% url 'restaurant_menu' restaurant_name_slug=restaurant.slug hashed_slug=restaurant.hashed_slug %}" class="btn">
-        <i class="fas fa-utensils"></i> Back to Menu
-      </a>
-    </main>
-  </article>
-
+        
+        <div class="content">
+            <div class="content-inner">
+                <!-- Delivery/Pickup Section -->
+                <div class="section">
+                    {% if table_number %}
+                    <div class="section-header">
+                        <div class="section-icon">
+                            <i class="fas fa-utensils"></i>
+                        </div>
+                        <div class="section-title">Table {{ table_number }}</div>
+                    </div>
+                    <div class="delivery-address">
+                        {{ restaurant.name }}<br>
+                        {{ restaurant.address }}
+                    </div>
+                    <div class="tracking-info">
+                        <div class="tracking-status">
+                            <i class="fas fa-clock"></i>
+                            <span>Ready in 15-20 minutes</span>
+                        </div>
+                        <a href="#" class="tracking-link">Details</a>
+                    </div>
+                    {% else %}
+                    <div class="section-header">
+                        <div class="section-icon">
+                            <i class="fas fa-location-dot"></i>
+                        </div>
+                        <div class="section-title">Delivery To Home</div>
+                    </div>
+                    <div class="delivery-address">
+                        {{ order.delivery_address|default:"Your delivery address will appear here" }}
+                    </div>
+                    <div class="tracking-info">
+                        <div class="tracking-status">
+                            <i class="fas fa-motorcycle"></i>
+                            <span>Arriving in 15-20 minutes</span>
+                        </div>
+                        <a href="#" class="tracking-link">Track</a>
+                    </div>
+                    {% endif %}
+                </div>
+                
+                <!-- Combined Order Info & Items -->
+                <div class="section">
+                    <div class="section-header">
+                        <div class="section-icon">
+                            <i class="fas fa-receipt"></i>
+                        </div>
+                        <div class="section-title">Order #{{ order_id }}</div>
+                    </div>
+                    
+                    <div class="info-grid">
+                        <div class="info-item">
+                            <span class="info-label">Time</span>
+                            <span class="info-value">{{ order_time|date:"g:i A" }}</span>
+                        </div>
+                        <div class="info-item">
+                            <span class="info-label">Payment</span>
+                            <span class="info-value">{{ payment_method }}</span>
+                        </div>
+                    </div>
+                    
+                    <div class="item-list">
+                        {% if order_items %}
+                            {% for item in order_items %}
+                            <div class="item">
+                                <div class="item-img">
+                                    {% if item.product.product_image %}
+                                    <img src="{{ item.product.product_image.url }}" alt="{{ item.product.name }}">
+                                    {% else %}
+                                    <i class="fas fa-utensils"></i>
+                                    {% endif %}
+                                </div>
+                                <div class="item-details">
+                                    <div class="item-name">
+                                        <span>{{ item.product.name }}</span>
+                                        <span>${{ item.price }}</span>
+                                    </div>
+                                    <div class="item-variant">
+                                        {% if item.variant %}{{ item.variant }}{% else %}Regular{% endif %}
+                                        {% if item.quantity > 1 %} × {{ item.quantity }}{% endif %}
+                                    </div>
+                                </div>
+                            </div>
+                            {% endfor %}
+                        {% else %}
+                        <div class="item">
+                            <div class="item-img">
+                                <i class="fas fa-receipt"></i>
+                            </div>
+                            <div class="item-details">
+                                <div class="item-name">
+                                    <span>Complete order</span>
+                                    <span>${{ amount }}</span>
+                                </div>
+                                <div class="item-variant">Total {{ order.amount }} items</div>
+                            </div>
+                        </div>
+                        {% endif %}
+                    </div>
+                    
+                    <!-- Bill Summary -->
+                    <div style="margin-top: 10px; background: #f5f5f5; border-radius: 8px; padding: 8px;">
+                        <div class="bill-row">
+                            <span>Total Amount</span>
+                            <span class="bill-total-value">${{ amount }}</span>
+                        </div>
+                    </div>
+                </div>
+                
+                <a href="{% url 'restaurant_menu' restaurant_name_slug=restaurant.slug hashed_slug=restaurant.hashed_slug %}" class="button">
+                    <i class="fas fa-utensils"></i>
+                    Back to Menu
+                </a>
+            </div>
+        </div>
+    </div>
 </body>
 </html>
