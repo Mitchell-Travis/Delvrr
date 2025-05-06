@@ -180,13 +180,16 @@ async function initializeMap() {
     });
 }
 
-async function getUserLocation(retries = 1) {
+async function getUserLocation(retries = 1, showNotification = true) {
     if (state.userLocation && !state.locationLoading) {
         return Promise.resolve(state.userLocation);
     }
     
     state.locationLoading = true;
-    showToast('Detecting your location...', 'loading');
+    // Only show toast notification if the parameter is true
+    if (showNotification) {
+        showToast('Detecting your location...', 'loading');
+    }
     
     return new Promise((resolve, reject) => {
         if (!navigator.geolocation) {
@@ -208,7 +211,7 @@ async function getUserLocation(retries = 1) {
                 showToast('Could not detect your location', 'error');
                 if (error.code === 3 && retries > 0) {
                     setTimeout(() => {
-                        getUserLocation(retries - 1).then(resolve).catch(reject);
+                        getUserLocation(retries - 1, showNotification).then(resolve).catch(reject);
                     }, 1000);
                 } else {
                     reject(error);
@@ -246,7 +249,8 @@ async function updateMapWithUserLocation() {
     if (!state.isMapInitialized) return;
 
     try {
-        const userLoc = await getUserLocation();
+        // Pass false to prevent showing duplicate toast notifications
+        const userLoc = await getUserLocation(1, false);
         console.log('User location:', userLoc);
         
         if (state.userMarker) state.userMarker.remove();
@@ -806,8 +810,8 @@ document.addEventListener('DOMContentLoaded', () => {
     updateOrderDetails();
     setDeliveryType();
     
-    // Start location detection immediately
-    getUserLocation().then(() => {
+    // Start location detection immediately - show notification for this initial call
+    getUserLocation(1, true).then(() => {
         // Initialize map after getting location
         initializeMap();
     }).catch(err => {
