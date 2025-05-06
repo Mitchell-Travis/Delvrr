@@ -427,7 +427,13 @@ def order_success(request, restaurant_name_slug, hashed_slug, order_id):
     # 5) Get order products - using OrderProduct instead of OrderItem
     order_items = OrderProduct.objects.filter(order=order)
     
-    # 6) Convert to local timezone (for accuracy) and build context
+    # 6) Get brand colors with fallbacks (similar to RestaurantCheckoutView)
+    brand_colors = restaurant.brand_colors.all()
+    primary_brand_color = brand_colors[0].color if brand_colors.count() > 0 else "#f7c028"
+    secondary_brand_color = brand_colors[1].color if brand_colors.count() > 1 else "#000000"
+    third_brand_color = brand_colors[2].color if brand_colors.count() > 2 else "#ffffff"
+    
+    # 7) Convert to local timezone (for accuracy) and build context
     local_order_time = timezone.localtime(order.order_date)
     context = {
         'restaurant':    restaurant,
@@ -439,8 +445,11 @@ def order_success(request, restaurant_name_slug, hashed_slug, order_id):
         'table_number':   order.table_number,
         'amount':         order.amount,
         'order_items':    order_items,
+        'primary_brand_color': primary_brand_color,
+        'secondary_brand_color': secondary_brand_color,
+        'third_brand_color': third_brand_color,
     }
-    # 7) Render the success page
+    # 8) Render the success page
     return render(request, 'menu_dashboard/order_success.html', context)
 
 

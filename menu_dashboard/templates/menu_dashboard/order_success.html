@@ -7,7 +7,9 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
     :root {
-        --primary: #13A658;
+        --primary: {{ primary_brand_color|default:"#13A658" }};
+        --secondary: {{ secondary_brand_color|default:"#000000" }};
+        --tertiary: {{ third_brand_color|default:"#FFFFFF" }};
         --text: #333333;
         --text-light: #666666;
     }
@@ -39,14 +41,14 @@
         background: var(--primary);
         padding: 24px 16px 20px;
         text-align: center;
-        color: white;
+        color: var(--tertiary);
         position: relative;
     }
 
     .status-icon {
         width: 48px;
         height: 48px;
-        background: white;
+        background: var(--tertiary);
         border-radius: 50%;
         display: flex;
         align-items: center;
@@ -73,7 +75,7 @@
     }
 
     .content {
-        background: white;
+        background: var(--tertiary);
         flex: 1;
         border-radius: 20px 20px 0 0;
         margin-top: -10px;
@@ -89,7 +91,7 @@
         border-radius: 12px;
         padding: 12px;
         margin-bottom: 12px;
-        border: 1px solid rgba(19, 166, 88, 0.1);
+        border: 1px solid rgba({{ primary_brand_color|slice:"1:" }}, 0.1);
     }
 
     .section-header {
@@ -107,7 +109,7 @@
         align-items: center;
         justify-content: center;
         margin-right: 10px;
-        color: white;
+        color: var(--tertiary);
     }
 
     .section-title {
@@ -127,7 +129,7 @@
         display: flex;
         align-items: center;
         justify-content: space-between;
-        background: #FFFFFF;
+        background: var(--tertiary);
         border-radius: 10px;
         padding: 10px;
         margin-top: 10px;
@@ -264,7 +266,7 @@
         display: flex;
         align-items: center;
         justify-content: center;
-        color: white;
+        color: var(--tertiary);
         text-decoration: none;
         font-size: 14px;
     }
@@ -275,7 +277,7 @@
         justify-content: center;
         gap: 6px;
         background: var(--primary);
-        color: white;
+        color: var(--tertiary);
         padding: 12px;
         border-radius: 10px;
         font-size: 14px;
@@ -302,7 +304,7 @@
     .pulse-dot {
         width: 6px;
         height: 6px;
-        background: white;
+        background: var(--tertiary);
         border-radius: 50%;
         margin-right: 6px;
         animation: blink 1.5s infinite;
@@ -313,7 +315,7 @@
         50% { opacity: 1; }
         100% { opacity: 0.4; }
     }
-    </style>
+</style>
 </head>
 <body>
     <div class="container">
