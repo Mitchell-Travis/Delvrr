@@ -34,26 +34,38 @@ $('<style>')
     .text(`
         .toast-container {
             position: fixed;
-            top: 10px;
-            right: 10px;
+            top: 20px;
+            right: 20px;
             z-index: 9999;
         }
         .toast {
-            background: #4CAF50;
+            background: rgba(0, 0, 0, 0.8);
             color: white;
-            border-radius: 6px;
-            padding: 8px 12px;
-            margin-bottom: 6px;
-            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+            padding: 12px 20px;
+            border-radius: 8px;
+            font-size: 14px;
             display: flex;
             align-items: center;
-            min-width: 180px;
-            font-size: 14px;
+            gap: 10px;
             animation: slideIn 0.3s ease-out;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+            margin-bottom: 10px;
         }
         .toast i {
-            margin-right: 6px;
             font-size: 16px;
+        }
+        .toast.loading i {
+            color: #2196F3;
+            animation: spin 1s linear infinite;
+        }
+        .toast.nearby i {
+            color: #4CAF50;
+        }
+        .toast.far i {
+            color: #FF9800;
+        }
+        .toast.error i {
+            color: #f44336;
         }
         @keyframes slideIn {
             from {
@@ -65,25 +77,34 @@ $('<style>')
                 opacity: 1;
             }
         }
+        @keyframes spin {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
+        }
     `)
     .appendTo('head');
 
 // Add toast container to body
 $('body').append('<div class="toast-container"></div>');
 
-function showToast(message) {
-    const toast = $(`
-        <div class="toast">
-            <i class="fas fa-truck"></i>
-            <span>${message}</span>
-        </div>
-    `);
-
-    $('.toast-container').append(toast);
+function showToast(message, type = 'info') {
+    const toast = document.createElement('div');
+    toast.className = `toast ${type}`;
     
-    // Remove toast after 3 seconds
+    let icon = 'fa-info-circle';
+    if (type === 'loading') icon = 'fa-spinner';
+    else if (type === 'nearby') icon = 'fa-check-circle';
+    else if (type === 'far') icon = 'fa-truck';
+    else if (type === 'error') icon = 'fa-exclamation-circle';
+    
+    toast.innerHTML = `
+        <i class="fas ${icon}"></i>
+        <span>${message}</span>
+    `;
+    
+    document.querySelector('.toast-container').appendChild(toast);
     setTimeout(() => {
-        toast.fadeOut(300, () => toast.remove());
+        toast.remove();
     }, 3000);
 }
 
@@ -154,12 +175,12 @@ async function getUserLocation(retries = 1) {
     }
     
     state.locationLoading = true;
-    showToast('Location Detection');
+    showToast('Detecting your location...', 'loading');
     
     return new Promise((resolve, reject) => {
         if (!navigator.geolocation) {
             state.locationLoading = false;
-            showToast('Error');
+            showToast('Geolocation is not supported by your browser', 'error');
             reject(new Error('Geolocation is not supported by your browser'));
             return;
         }
@@ -173,12 +194,12 @@ async function getUserLocation(retries = 1) {
             },
             (error) => {
                 state.locationLoading = false;
+                showToast('Could not detect your location', 'error');
                 if (error.code === 3 && retries > 0) {
                     setTimeout(() => {
                         getUserLocation(retries - 1).then(resolve).catch(reject);
                     }, 1000);
                 } else {
-                    showToast('Error');
                     reject(error);
                 }
             },
@@ -239,12 +260,14 @@ async function updateMapWithUserLocation() {
             elements.deliverySwitchLabels.removeClass('active');
             $(`.delivery-switch-label[data-delivery-type="${newDeliveryType}"]`).addClass('active');
             
-            // Only show toast when far from restaurant
-            if (newDeliveryType === 'home') {
-                const distance = state.distanceToRestaurant < 1000 
-                    ? `${Math.round(state.distanceToRestaurant)}m away` 
-                    : `${(state.distanceToRestaurant / 1000).toFixed(1)}km away`;
-                showToast(`You are ${distance}`);
+            // Show/hide table info based on distance
+            $('.table-info').toggle(newDeliveryType === 'restaurant');
+            
+            // Show appropriate toast message
+            if (newDeliveryType === 'restaurant') {
+                showToast('You are at the restaurant!', 'nearby');
+            } else {
+                showToast(`You are ${Math.round(state.distanceToRestaurant)}m away`, 'far');
             }
             
             updatePaymentOptions();
@@ -252,6 +275,7 @@ async function updateMapWithUserLocation() {
 
     } catch (err) {
         console.error('Geo error for map:', err);
+        showToast('Error updating location', 'error');
     }
 }
 
@@ -735,6 +759,9 @@ document.addEventListener('DOMContentLoaded', () => {
         deliverySwitchLabels: $('.delivery-switch-label'),
         paymentOptions: $('.payment-option')
     };
+    
+    // Remove the distance-value span if it exists
+    $('.distance-value').remove();
     
     setupEventHandlers();
     updateOrderDetails();

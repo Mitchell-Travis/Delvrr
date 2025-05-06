@@ -1028,17 +1028,11 @@
 
         <div class="delivery-details">
             <div class="delivery-details-restaurant">
-                <div class="table-info">
+                <div class="table-info" style="display: none;">
                     <i class="fas fa-chair"></i>
-                    Your food will be delivered to <strong>Table 1</strong>.
+                    Your food will be delivered to your table.
                 </div>
-                <div class="distance-indicator" id="distanceIndicator">
-                    <i class="fas fa-map-marker-alt"></i>
-                    <div>
-                        <span class="distance-value">Detecting your location...</span>
-                        <div class="distance-status" id="distanceStatus"></div>
-                    </div>
-                </div>
+                
             </div>
 
             <div class="delivery-details-home">
@@ -1051,13 +1045,8 @@
                 </p>
             </div>
 
-            <div class="map-wrapper">
-                <button class="map-toggle" id="toggleMap">
-                    <i class="fas fa-map"></i> Show map
-                </button>
-                <div id="map-container">
-                    <div id="map"></div>
-                </div>
+            <div id="map-container">
+                <div id="map"></div>
             </div>
         </div>
 
@@ -1200,7 +1189,5 @@
             </div>
         </div>
     </div>
-
-    <div id="toast-container" class="toast-container"></div>
 </body>
 </html>
