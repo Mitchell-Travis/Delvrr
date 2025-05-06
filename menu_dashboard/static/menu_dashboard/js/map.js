@@ -34,7 +34,7 @@ $('<style>')
     .text(`
         .toast-container {
             position: fixed;
-            top: 20px;
+            top: 80px;
             right: 20px;
             z-index: 9999;
         }
@@ -227,6 +227,7 @@ async function updateMapWithUserLocation() {
 
     try {
         const userLoc = await getUserLocation();
+        console.log('User location:', userLoc);
         
         if (state.userMarker) state.userMarker.remove();
         
@@ -262,26 +263,29 @@ async function updateMapWithUserLocation() {
         }
 
         state.distanceToRestaurant = calculateDistance(userLoc, state.restaurantLocation);
+        console.log('Distance to restaurant:', state.distanceToRestaurant, 'meters');
         
         // Update delivery type based on distance
         const newDeliveryType = state.distanceToRestaurant <= THRESHOLD_DISTANCE ? 'restaurant' : 'home';
-        if (state.deliveryType !== newDeliveryType) {
-            state.deliveryType = newDeliveryType;
-            elements.deliverySwitchLabels.removeClass('active');
-            $(`.delivery-switch-label[data-delivery-type="${newDeliveryType}"]`).addClass('active');
-            
-            // Show/hide table info based on distance
-            $('.table-info').toggle(newDeliveryType === 'restaurant');
-            
-            // Show appropriate toast message
-            if (newDeliveryType === 'restaurant') {
-                showToast('You are at the restaurant!', 'nearby');
-            } else {
-                showToast(`You are ${Math.round(state.distanceToRestaurant)}m away`, 'far');
-            }
-            
-            updatePaymentOptions();
+        console.log('New delivery type:', newDeliveryType);
+        
+        // Always update the delivery type and UI elements
+        state.deliveryType = newDeliveryType;
+        elements.deliverySwitchLabels.removeClass('active');
+        $(`.delivery-switch-label[data-delivery-type="${newDeliveryType}"]`).addClass('active');
+        
+        // Show/hide table info based on distance
+        if (newDeliveryType === 'restaurant') {
+            console.log('Showing table info - user is at restaurant');
+            $('.table-info').show();
+            showToast('You are at the restaurant!', 'nearby');
+        } else {
+            console.log('Hiding table info - user is not at restaurant');
+            $('.table-info').hide();
+            showToast(`You are ${Math.round(state.distanceToRestaurant)}m away`, 'far');
         }
+        
+        updatePaymentOptions();
 
     } catch (err) {
         console.error('Geo error for map:', err);
