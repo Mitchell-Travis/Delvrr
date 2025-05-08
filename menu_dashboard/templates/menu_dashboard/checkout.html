@@ -18,6 +18,32 @@
     <script src="{% static 'menu_dashboard/js/map.js' %}"></script>
     {% csrf_token %}
     <style>
+        .error-toast {
+            position: fixed;
+            bottom: calc(20px + var(--safe-area-bottom));
+            left: 50%;
+            transform: translateX(-50%);
+            background-color: #dc3545;
+            color: white;
+            padding: 12px 24px;
+            border-radius: var(--radius-md);
+            font-size: 0.9rem;
+            z-index: 2000;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+            animation: toast-slide-up 0.3s ease;
+        }
+
+        @keyframes toast-slide-up {
+            from {
+                transform: translate(-50%, 100%);
+                opacity: 0;
+            }
+            to {
+                transform: translate(-50%, 0);
+                opacity: 1;
+            }
+        }
+
         :root {
             /* Dynamic Brand Colors - These will be overridden with inline style or JavaScript */
             --primary: {{ primary_brand_color }};
@@ -909,62 +935,71 @@
             position: fixed;
             top: 0;
             left: 0;
-            width: 100vw;
-            height: 100vh;
+            width: 100%;
+            height: 100%;
             background: rgba(0,0,0,0.5);
-            z-index: 1000;
+            z-index: 9999;
             justify-content: center;
             align-items: center;
+            opacity: 0;
+            transition: opacity 0.3s ease;
         }
 
         .loading-overlay.active {
             display: flex;
+            opacity: 1;
         }
 
         .delvrr-loading-card {
             background: #222;
-            border-radius: 18px;
-            padding: 2.2rem 2.5rem 1.7rem 2.5rem;
+            border-radius: 10px;
+            padding: 1rem 1.2rem 0.8rem 1.2rem;
             display: flex;
             flex-direction: column;
             align-items: center;
-            box-shadow: 0 8px 32px rgba(0,0,0,0.18);
-            min-width: 180px;
+            box-shadow: 0 4px 16px rgba(0,0,0,0.15);
+            min-width: 120px;
+            transform: scale(0.9);
+            transition: transform 0.3s ease;
+        }
+
+        .loading-overlay.active .delvrr-loading-card {
+            transform: scale(1);
         }
 
         .delvrr-icon {
             background: #fff;
             border-radius: 50%;
-            width: 48px;
-            height: 48px;
+            width: 32px;
+            height: 32px;
             display: flex;
             align-items: center;
             justify-content: center;
-            margin-bottom: 1.1rem;
+            margin-bottom: 0.6rem;
         }
 
         .delvrr-icon i {
             color: #13A658;
-            font-size: 2rem;
+            font-size: 1.2rem;
         }
 
         .delvrr-title {
             color: #fff;
-            font-size: 1.25rem;
+            font-size: 0.9rem;
             font-weight: 600;
-            margin-bottom: 1.1rem;
-            letter-spacing: 0.02em;
+            margin-bottom: 0.6rem;
+            letter-spacing: 0.01em;
         }
 
         .delvrr-dots {
             display: flex;
-            gap: 0.5rem;
-            margin-top: 0.2rem;
+            gap: 0.3rem;
+            margin-top: 0.1rem;
         }
 
         .delvrr-dots .dot {
-            width: 8px;
-            height: 8px;
+            width: 4px;
+            height: 4px;
             background: #fff;
             border-radius: 50%;
             opacity: 0.5;
@@ -1071,6 +1106,16 @@
             text-align: center;
             padding: 10px;
             font-family: 'Poppins', sans-serif;
+        }
+
+        .delvrr-logo-img {
+            width: 32px;
+            height: 32px;
+            object-fit: cover;
+            display: block;
+            margin: 0 auto;
+            border-radius: 50%;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.08);
         }
     </style>
 </head>
@@ -1222,7 +1267,6 @@
                 data-restaurant-lon="{{ restaurant.longitude }}"
                 data-restaurant-name-slug="{{ restaurant.slug }}"
                 data-restaurant-hashed-slug="{{ restaurant.hashed_slug }}"
-                disabled
             >
                 <i class="fas fa-check-circle"></i> Place Order
             </button>
@@ -1231,7 +1275,7 @@
         <div class="loading-overlay" id="loading-overlay">
             <div class="delvrr-loading-card">
                 <div class="delvrr-icon">
-                    <i class="fas fa-motorcycle"></i>
+                    <img src="{% static 'menu_dashboard/delvrr-logo.JPG' %}" alt="Delvrr Logo" class="delvrr-logo-img">
                 </div>
                 <div class="delvrr-title">Delvrr</div>
                 <div class="delvrr-dots">
@@ -1270,5 +1314,97 @@
             </div>
         </div>
     </div>
+
+    <script>
+        // Function to show error message
+        function showError(message) {
+            const errorToast = $('<div>').addClass('error-toast').text(message);
+            $('body').append(errorToast);
+            setTimeout(() => errorToast.remove(), 3000);
+        }
+
+        // Function to validate cart
+        function validateCart() {
+            return cart && cart.items && cart.items.length > 0;
+        }
+
+        // Enable/disable checkout button based on cart
+        function updateCheckoutButton() {
+            const isValid = validateCart();
+            $('#checkoutButton').prop('disabled', !isValid);
+        }
+
+        // Update button state when cart changes
+        $(document).on('cartUpdated', function() {
+            updateCheckoutButton();
+        });
+
+        // Initial button state
+        updateCheckoutButton();
+
+        function showLoadingOverlay() {
+            const overlay = document.getElementById('loading-overlay');
+            if (overlay) {
+                overlay.style.display = 'flex';
+                // Force reflow
+                overlay.offsetHeight;
+                overlay.classList.add('active');
+            }
+        }
+
+        function hideLoadingOverlay() {
+            const overlay = document.getElementById('loading-overlay');
+            if (overlay) {
+                overlay.classList.remove('active');
+                setTimeout(() => {
+                    overlay.style.display = 'none';
+                }, 300);
+            }
+        }
+
+        $('#checkoutButton').off('click').on('click', function(e) {
+            e.preventDefault();
+
+            // Show overlay
+            showLoadingOverlay();
+
+            let ajaxDone = false;
+            let timerDone = false;
+            let redirectUrl = null;
+
+            // Start minimum display timer
+            setTimeout(function() {
+                timerDone = true;
+                if (ajaxDone && redirectUrl) {
+                    window.location.href = redirectUrl;
+                }
+            }, 3000);
+
+            // Send AJAX request
+            $.ajax({
+                url: window.location.pathname + 'place_order/',
+                type: 'POST',
+                data: {
+                    csrfmiddlewaretoken: $('[name=csrfmiddlewaretoken]').val()
+                },
+                success: function(response) {
+                    if (response.order_id) {
+                        redirectUrl = `/orders/${response.order_id}/success/`;
+                        ajaxDone = true;
+                        if (timerDone) {
+                            window.location.href = redirectUrl;
+                        }
+                    } else {
+                        hideLoadingOverlay();
+                        alert('Failed to place order');
+                    }
+                },
+                error: function(xhr) {
+                    hideLoadingOverlay();
+                    alert('Failed to place order');
+                }
+            });
+        });
+    </script>
 </body>
 </html>

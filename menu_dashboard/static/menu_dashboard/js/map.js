@@ -9,7 +9,7 @@ const AVERAGE_SPEED_KMH = 30; // Average delivery speed in km/h
 
 // Add at the top of the file, after other constants
 let loadingOverlayShownAt = 0;
-const MIN_LOADING_DURATION = 10000; // 10 seconds
+const MIN_LOADING_DURATION = 3000; // 10 seconds
 
 // Map state management
 const state = {
@@ -643,43 +643,43 @@ function setupEventHandlers() {
         }, 1000);
     });
 
-    elements.checkoutButton.on('click', function(e) {
-        e.preventDefault();
-        console.log('Checkout button clicked');
+   elements.checkoutButton.on('click', function(e) {
+    e.preventDefault();
+    console.log('Checkout button clicked');
 
-        const cart = JSON.parse(localStorage.getItem('cart') || '{}');
-        if (Object.keys(cart).length === 0) {
-            alert('Your cart is empty.');
+    const cart = JSON.parse(localStorage.getItem('cart') || '{}');
+    if (Object.keys(cart).length === 0) {
+        alert('Your cart is empty.');
+        return;
+    }
+    if (!state.selectedPaymentMethod) {
+        alert('Please select a payment method.');
+        return;
+    }
+    if (state.deliveryType === 'home' && state.selectedPaymentMethod === 'Cash on Delivery') {
+        if (!state.homeDeliveryAddress.full_name ||
+            !state.homeDeliveryAddress.phone_number ||
+            !state.homeDeliveryAddress.address) {
+            alert('Please enter your full delivery address details.');
+            elements.openAddressModal.focus();
             return;
         }
-        if (!state.selectedPaymentMethod) {
-            alert('Please select a payment method.');
+        if (!state.paymentVerified) {
+            alert('Please verify your order details first.');
+            elements.verifyOrder.focus();
             return;
         }
-        if (state.deliveryType === 'home' && state.selectedPaymentMethod === 'Cash on Delivery') {
-            if (!state.homeDeliveryAddress.full_name ||
-                !state.homeDeliveryAddress.phone_number ||
-                !state.homeDeliveryAddress.address) {
-                alert('Please enter your full delivery address details.');
-                elements.openAddressModal.focus();
-                return;
-            }
-            if (!state.paymentVerified) {
-                alert('Please verify your order details first.');
-                elements.verifyOrder.focus();
-                return;
-            }
-            if (!state.adminConfirmed && !state.adminConfirmationInProgress) {
-                requestAdminConfirmation();
-                return;
-            }
-            if (state.adminConfirmationInProgress && !state.adminConfirmed) {
-                alert('Please wait for the restaurant to confirm your order.');
-                return;
-            }
+        if (!state.adminConfirmed && !state.adminConfirmationInProgress) {
+            requestAdminConfirmation();
+            return;
         }
+        if (state.adminConfirmationInProgress && !state.adminConfirmed) {
+            alert('Please wait for the restaurant to confirm your order.');
+            return;
+        }
+    }
 
-        elements.loadingOverlay.addClass('active');
+    elements.loadingOverlay.addClass('active');
         loadingOverlayShownAt = Date.now();
         console.log('Sending order request...');
 
@@ -702,16 +702,24 @@ function setupEventHandlers() {
             },
             success: function(response) {
                 console.log('Order response:', response);
-                const elapsed = Date.now() - loadingOverlayShownAt;
-                const remaining = Math.max(0, MIN_LOADING_DURATION - elapsed);
-                setTimeout(function(){ elements.loadingOverlay.removeClass('active'); }, remaining);
+                
                 if (response.order_id) {
                     const orderId = response.order_id;
                     const successUrl = `/menu/${restaurantSlug}/${hashedSlug}/${orderId}/order_success/`;
-                    window.location.href = successUrl;
-                    localStorage.removeItem('cart');
+                    
+                    // Calculate remaining time to show loading overlay
+                    const elapsed = Date.now() - loadingOverlayShownAt;
+                    const remaining = Math.max(0, MIN_LOADING_DURATION - elapsed);
+                    
+                    // Only redirect after minimum loading duration
+                    setTimeout(function(){
+                        elements.loadingOverlay.removeClass('active');
+                        window.location.href = successUrl;
+                        localStorage.removeItem('cart');
+                    }, remaining);
                 } else {
                     console.error('Order placement failed:', response);
+                    elements.loadingOverlay.removeClass('active');
                     alert('Order placement failed: ' + (response.message || 'Unknown error'));
                 }
             },
