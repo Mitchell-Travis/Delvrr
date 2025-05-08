@@ -513,72 +513,102 @@
             border-radius: 3px;
         }
 
-        .payment-option {
-            display: none; /* Hidden by default */
-            background-color: var(--surface);
-            border-radius: 8px;
-            padding: 1rem;
-            margin-bottom: 0.75rem;
-            align-items: center;
-            gap: 1rem;
+        .payment-methods-title.clickable {
             cursor: pointer;
-            border: 2px solid #e0e0e0;
-            transition: all 0.3s ease;
+            user-select: none;
+            transition: color 0.2s;
+        }
+
+        .payment-methods-title.clickable:hover {
+            color: #13A658;
+        }
+
+        .payment-methods-list {
+            background: #fff;
+            border-radius: 12px;
+            box-shadow: 0 1px 6px rgba(0,0,0,0.06);
+            padding: 0.5rem 0.5rem;
+            display: flex;
+            flex-direction: column;
+            gap: 0;
+            border: 1px solid #e0e0e0;
+        }
+
+        .payment-method-option {
+            display: flex;
+            align-items: center;
+            padding: 1rem 1rem;
+            cursor: pointer;
+            border-bottom: 1px solid #f0f0f0;
             position: relative;
-            overflow: hidden;
+            transition: background 0.2s;
         }
 
-        .payment-option.active {
-            display: flex; /* Shown when active */
+        .payment-method-option:last-child {
+            border-bottom: none;
         }
 
-        .payment-option.selected {
-            border-color: var(--primary);
-            background-color: rgba(var(--primary-rgb), 0.08);
-            transform: translateY(-2px);
-            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+        .payment-method-option:hover {
+            background: #f8f9fa;
         }
 
-        .payment-option:hover:not(.selected) {
-            border-color: #bdbdbd;
-            background-color: #f5f5f5;
-        }
-
-        .payment-icon {
-            background-color: var(--primary-light);
-            color: var(--primary);
-            width: 40px;
-            height: 40px;
-            border-radius: 50%;
+        .payment-method-icon {
+            margin-right: 1rem;
+            font-size: 1.4rem;
+            width: 28px;
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 1.1rem;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-            transition: all 0.3s ease;
         }
 
-        .payment-option.selected .payment-icon {
-            transform: scale(1.1);
-            background-color: var(--primary);
-            color: var(--text-on-primary);
-        }
-
-        .payment-details {
+        .payment-method-label {
+            font-size: 1rem;
+            font-weight: 500;
+            color: #222;
             flex: 1;
         }
 
-        .payment-details h3 {
-            font-size: 0.95rem;
-            margin-bottom: 0.25rem;
-            font-weight: 600;
-            color: var(--text);
+        .payment-method-icons img {
+            margin-left: 4px;
+            vertical-align: middle;
         }
 
-        .payment-details p {
-            font-size: 0.8rem;
-            color: var(--text-secondary);
-            margin: 0;
+        .payment-method-icons {
+            display: flex;
+            align-items: center;
+        }
+
+        .payment-method-option input[type="radio"] {
+            opacity: 0;
+            position: absolute;
+        }
+
+        .custom-radio {
+            width: 20px;
+            height: 20px;
+            border: 2px solid #bbb;
+            border-radius: 50%;
+            margin-right: 1rem;
+            display: inline-block;
+            position: relative;
+            background: #fff;
+            transition: border-color 0.2s;
+        }
+
+        .payment-method-option input[type="radio"]:checked + .custom-radio {
+            border-color: #13A658;
+        }
+
+        .payment-method-option input[type="radio"]:checked + .custom-radio::after {
+            content: '';
+            display: block;
+            width: 10px;
+            height: 10px;
+            background: #13A658;
+            border-radius: 50%;
+            position: absolute;
+            top: 3px;
+            left: 3px;
         }
 
         /* Mobile Money Form Styling */
@@ -1117,6 +1147,136 @@
             border-radius: 50%;
             box-shadow: 0 2px 8px rgba(0,0,0,0.1);
         }
+
+        .payment-coming-soon {
+            opacity: 0.7;
+            cursor: not-allowed;
+        }
+
+        .coming-soon-badge {
+            background: #13A658;
+            color: #fff;
+            font-size: 0.8rem;
+            font-weight: 600;
+            border-radius: 5px;
+            padding: 1px 8px;
+            margin-left: 0.4em;
+            white-space: nowrap;
+        }
+
+        .payment-methods-list.image-style {
+            background: #fff;
+            border-radius: 10px;
+            border: 1px solid #e0e0e0;
+            box-shadow: 0 1px 4px rgba(0,0,0,0.04);
+            padding: 0.24rem 0.3rem 0.24rem 0.3rem;
+            display: flex;
+            flex-direction: column;
+            gap: 0;
+        }
+        .payment-method-row {
+            display: flex;
+            align-items: flex-start;
+            padding: 1rem 1rem 1rem 0.7rem;
+            border-bottom: 1px solid #f0f0f0;
+            position: relative;
+            cursor: pointer;
+            background: #fff;
+            transition: background 0.2s;
+            font-size: 0.97rem;
+            font-weight: 500;
+        }
+        .payment-method-row:last-child {
+            border-bottom: none;
+        }
+        .payment-method-row.disabled {
+            opacity: 0.7;
+            cursor: not-allowed;
+        }
+        .payment-method-row input[type="radio"] {
+            opacity: 0;
+            position: absolute;
+        }
+        .pm-radio {
+            width: 20px;
+            height: 20px;
+            border: 2px solid #bbb;
+            border-radius: 50%;
+            margin-right: 1rem;
+            margin-top: 2px;
+            background: #fff;
+            position: relative;
+            flex-shrink: 0;
+        }
+        .payment-method-row input[type="radio"]:checked + .pm-radio {
+            border-color: #13A658;
+        }
+        .payment-method-row input[type="radio"]:checked + .pm-radio::after {
+            content: '';
+            display: block;
+            width: 10px;
+            height: 10px;
+            background: #13A658;
+            border-radius: 50%;
+            position: absolute;
+            top: 3px;
+            left: 3px;
+        }
+        .pm-icon-label {
+            display: flex;
+            flex-direction: column;
+            align-items: flex-start;
+            flex: 1;
+            min-width: 0;
+        }
+        .pm-icon {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 24px;
+            height: 24px;
+            margin-bottom: 2px;
+            margin-right: 0.7rem;
+            font-size: 1.15rem;
+            background: #fff;
+            border-radius: 6px;
+            box-shadow: 0 1px 2px rgba(0,0,0,0.04);
+        }
+        .pm-icon img {
+            width: 22px;
+            height: 22px;
+            object-fit: contain;
+            border-radius: 4px;
+        }
+        .pm-label-main {
+            font-size: 0.97rem;
+            font-weight: 500;
+            color: #222;
+            margin-left: 32px;
+            margin-top: -24px;
+            margin-bottom: 0.1rem;
+            display: block;
+        }
+        .pm-label-sub {
+            font-size: 0.85rem;
+            color: #666;
+            font-weight: 400;
+            margin-left: 32px;
+            margin-top: 0.1rem;
+            display: block;
+        }
+        .pm-badge {
+            background: #13A658;
+            color: #fff;
+            font-size: 0.75rem;
+            font-weight: 600;
+            border-radius: 5px;
+            padding: 2px 10px;
+            margin-left: auto;
+            align-self: center;
+            white-space: nowrap;
+            margin-top: 0.1rem;
+        }
     </style>
 </head>
 <body>
@@ -1178,48 +1338,43 @@
 
         <section class="payment-methods">
             <h2 class="payment-methods-title">Payment Method</h2>
-            
-            <div class="payment-option restaurant-only" data-method="Cash on Delivery">
-                <div class="payment-icon"><i class="fas fa-money-bill-alt"></i></div>
-                <div class="payment-details">
-                    <h3>Cash on Delivery</h3>
-                    <p>Pay in cash when your food arrives</p>
-                </div>
-            </div>
-            
-            <div class="payment-option home-only" data-method="Cash on Delivery" id="cashDeliveryOption">
-                <div class="payment-icon"><i class="fas fa-money-bill-alt"></i></div>
-                <div class="payment-details">
-                    <h3>Cash on Delivery</h3>
-                    <p>Pay in cash when your food arrives</p>
-                </div>
-            </div>
-            
-            <div id="orderVerificationForm" class="mobile-money-form">
-                <div class="payment-info-box">
-                    <div class="payment-header">
-                        <i class="fas fa-info-circle"></i> Order Verification
-                    </div>
-                    <div class="payment-info-content">
-                        <p class="payment-note">To ensure your delivery arrives promptly, please verify your order with a quick phone confirmation</p>
-                        <div class="amount-box">
-                            <span>Total Amount:</span>
-                            <span id="mobileMoneyAmount" class="amount">$0.00</span>
-                        </div>
-                    </div>
-                </div>
-                
-                <div class="form-group">
-                    <label for="confirmPhone">Confirm Your Phone Number</label>
-                    <input type="tel" id="confirmPhone" class="form-control" placeholder="Enter your number" required>
-                </div>
-                
-                <div class="transaction-verification">
-                    <button id="verifyOrder" class="btn btn-verify">
-                        <i class="fas fa-check-circle"></i> Verify Order
-                    </button>
-                    <div id="verificationStatus" class="verification-status"></div>
-                </div>
+            <div class="payment-methods-list image-style">
+                <label class="payment-method-row">
+                    <input type="radio" name="payment_method" value="cash" checked>
+                    <span class="pm-radio"></span>
+                    <span class="pm-icon-label">
+                        <span class="pm-icon pm-cash"><i class="fas fa-money-bill-wave"></i></span>
+                        <span class="pm-label-main">Cash on Delivery</span>
+                        <span class="pm-label-sub">Pay in cash when your food arrives.</span>
+                    </span>
+                </label>
+                <label class="payment-method-row disabled">
+                    <input type="radio" name="payment_method" value="card" disabled>
+                    <span class="pm-radio"></span>
+                    <span class="pm-icon-label">
+                        <span class="pm-icon"><i class="fas fa-credit-card"></i></span>
+                        <span class="pm-label-main">Card</span>
+                    </span>
+                    <span class="pm-badge">Coming Soon</span>
+                </label>
+                <label class="payment-method-row disabled">
+                    <input type="radio" name="payment_method" value="orange_money" disabled>
+                    <span class="pm-radio"></span>
+                    <span class="pm-icon-label">
+                        <span class="pm-icon"><img src="{% static 'menu_dashboard/orange_money.png' %}" alt="Orange Money"></span>
+                        <span class="pm-label-main">Orange Money</span>
+                    </span>
+                    <span class="pm-badge">Coming Soon</span>
+                </label>
+                <label class="payment-method-row disabled">
+                    <input type="radio" name="payment_method" value="mtn_momo" disabled>
+                    <span class="pm-radio"></span>
+                    <span class="pm-icon-label">
+                        <span class="pm-icon"><img src="{% static 'menu_dashboard/mtn-momo.jpg' %}" alt="MTN Momo"></span>
+                        <span class="pm-label-main">MTN Momo</span>
+                    </span>
+                    <span class="pm-badge">Coming Soon</span>
+                </label>
             </div>
         </section>
 
@@ -1275,7 +1430,7 @@
         <div class="loading-overlay" id="loading-overlay">
             <div class="delvrr-loading-card">
                 <div class="delvrr-icon">
-                    <img src="{% static 'menu_dashboard/delvrr-logo.JPG' %}" alt="Delvrr Logo" class="delvrr-logo-img">
+                    <img src="{% static 'menu_dashboard/delvrrlogo.JPG' %}" alt="Delvrr Logo" class="delvrr-logo-img">
                 </div>
                 <div class="delvrr-title">Delvrr</div>
                 <div class="delvrr-dots">
@@ -1403,6 +1558,37 @@
                     hideLoadingOverlay();
                     alert('Failed to place order');
                 }
+            });
+        });
+
+        document.addEventListener('DOMContentLoaded', function() {
+            // Hide all payment method content by default
+            document.querySelectorAll('.payment-method-content').forEach(function(content) {
+                content.style.display = 'none';
+            });
+            // Show the first (cash) by default
+            var firstToggle = document.querySelector('.payment-method-toggle[data-method="cash"]');
+            var firstContent = document.querySelector('.payment-method-content[data-content="cash"]');
+            if (firstToggle && firstContent) {
+                firstToggle.classList.add('active');
+                firstContent.style.display = 'block';
+            }
+            // Toggle logic for payment methods
+            document.querySelectorAll('.payment-method-toggle').forEach(function(toggle) {
+                toggle.addEventListener('click', function(e) {
+                    if (toggle.classList.contains('payment-coming-soon')) return;
+                    // Remove active from all
+                    document.querySelectorAll('.payment-method-toggle').forEach(function(t) { t.classList.remove('active'); });
+                    document.querySelectorAll('.payment-method-content').forEach(function(c) { c.style.display = 'none'; });
+                    // Add active to this
+                    toggle.classList.add('active');
+                    var method = toggle.getAttribute('data-method');
+                    var content = document.querySelector('.payment-method-content[data-content="' + method + '"]');
+                    if (content) content.style.display = 'block';
+                    // Select the radio
+                    var radio = toggle.querySelector('input[type="radio"]');
+                    if (radio && !radio.disabled) radio.checked = true;
+                });
             });
         });
     </script>
