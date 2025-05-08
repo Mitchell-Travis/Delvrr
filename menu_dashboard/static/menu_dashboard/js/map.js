@@ -9,7 +9,7 @@ const AVERAGE_SPEED_KMH = 30; // Average delivery speed in km/h
 
 // Add at the top of the file, after other constants
 let loadingOverlayShownAt = 0;
-const MIN_LOADING_DURATION = 60000; // 10 seconds
+const MIN_LOADING_DURATION = 10000; // 10 seconds
 
 // Map state management
 const state = {
@@ -708,62 +708,7 @@ function setupEventHandlers() {
                 if (response.order_id) {
                     const orderId = response.order_id;
                     const successUrl = `/menu/${restaurantSlug}/${hashedSlug}/${orderId}/order_success/`;
-                    console.log('Creating success modal...');
-                    const successMessage = `
-                        <div class="order-success-modal" style="
-                            position: fixed;
-                            top: 0;
-                            left: 0;
-                            width: 100%;
-                            height: 100%;
-                            background-color: rgba(0, 0, 0, 0.5);
-                            display: flex;
-                            justify-content: center;
-                            align-items: center;
-                            z-index: 1000;
-                        ">
-                          <div class="order-success-content" style="
-                            background-color: white;
-                            padding: 2rem;
-                            border-radius: 12px;
-                            text-align: center;
-                            max-width: 90%;
-                            width: 400px;
-                          ">
-                            <i class="fas fa-check-circle" style="
-                                color: #4CAF50;
-                                font-size: 3rem;
-                                margin-bottom: 1rem;
-                            "></i>
-                            <h2 style="
-                                margin-bottom: 1rem;
-                                color: #333;
-                            ">Order Placed Successfully!</h2>
-                            <p style="
-                                margin-bottom: 1.5rem;
-                                color: #666;
-                            ">${state.deliveryType === 'restaurant' ? 'Please wait at your table, your order will be served soon.' : 'Your order will be delivered to the address you provided.'}</p>
-                            <button id="closeSuccessModal" class="primary-button" style="
-                                background-color: #4CAF50;
-                                color: white;
-                                border: none;
-                                padding: 0.75rem 1.5rem;
-                                border-radius: 6px;
-                                font-size: 1rem;
-                                cursor: pointer;
-                            ">View Order Details</button>
-                          </div>
-                        </div>
-                    `;
-                    $('body').append(successMessage);
-                    console.log('Success modal added to DOM');
-
-                    $('#closeSuccessModal').on('click', function() {
-                        console.log('Close success modal clicked');
-                        $('.order-success-modal').remove();
-                        window.location.href = successUrl;
-                    });
-
+                    window.location.href = successUrl;
                     localStorage.removeItem('cart');
                 } else {
                     console.error('Order placement failed:', response);

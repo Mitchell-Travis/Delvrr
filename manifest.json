@@ -1,0 +1,21 @@
+{
+  "name": "Delvrr",
+  "short_name": "Delvrr",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#13A658",
+  "theme_color": "#13A658",
+  "description": "Order food and manage your restaurant experience with Delvrr.",
+  "icons": [
+    {
+      "src": "/static/icons/icon-192x192.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    },
+    {
+      "src": "/static/icons/icon-512x512.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ]
+} 
