@@ -1337,6 +1337,92 @@
             outline: none;
             box-shadow: 0 0 0 2px rgba(var(--primary-rgb), 0.1);
         }
+
+        .order-verification-box {
+            background: #f9fbff;
+            border: 1.5px solid #e3eafc;
+            border-radius: 14px;
+            margin: 1.5rem 0 0 0;
+            padding: 1.2rem 1.2rem 1.5rem 1.2rem;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.03);
+        }
+        .ov-header {
+            background: #e3eafc;
+            border-radius: 10px 10px 0 0;
+            padding: 0.7rem 1rem;
+            font-weight: 700;
+            color: #2563eb;
+            font-size: 1.1rem;
+            display: flex;
+            align-items: center;
+            gap: 0.6rem;
+            margin: -1.2rem -1.2rem 1rem -1.2rem;
+        }
+        .ov-header i {
+            font-size: 1.2rem;
+        }
+        .ov-message {
+            color: #222;
+            font-size: 1rem;
+            margin-bottom: 1.1rem;
+            margin-top: 0.2rem;
+        }
+        .ov-amount-box {
+            border: 2px dashed #bfc9d8;
+            border-radius: 8px;
+            background: #fff;
+            padding: 1rem 1.2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 1.1rem;
+            font-weight: 600;
+            margin-bottom: 1.2rem;
+        }
+        .ov-amount {
+            color: #b91c1c;
+            font-weight: 700;
+            font-size: 1.25rem;
+        }
+        .ov-phone-label {
+            font-size: 1.05rem;
+            font-weight: 500;
+            margin-bottom: 0.5rem;
+            margin-top: 0.2rem;
+            color: #222;
+        }
+        .ov-phone-input {
+            width: 100%;
+            padding: 0.85rem 1rem;
+            border: 1.5px solid #d1d5db;
+            border-radius: 8px;
+            font-size: 1.1rem;
+            margin-bottom: 1.2rem;
+            background: #fff;
+            color: #222;
+        }
+        .ov-verify-btn {
+            width: 100%;
+            background: #b91c1c;
+            color: #fff;
+            border: none;
+            border-radius: 8px;
+            padding: 0.95rem 0;
+            font-size: 1.1rem;
+            font-weight: 700;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.7rem;
+            cursor: pointer;
+            box-shadow: 0 2px 8px rgba(185,28,28,0.08);
+            transition: background 0.2s, transform 0.1s;
+            margin-top: 0.2rem;
+        }
+        .ov-verify-btn:active {
+            background: #991b1b;
+            transform: scale(0.98);
+        }
     </style>
 </head>
 <body>
@@ -1376,26 +1462,12 @@
                     <i class="fas fa-map-marker-alt"></i>
                     Delivery Address
                 </button>
-                <div class="payment-info-box">
-                    <div class="payment-header">
-                        <i class="fas fa-info-circle"></i>
-                        Order Verification
-                    </div>
-                    <div class="payment-info-content">
-                        <p class="payment-note">Please confirm your phone number. We'll call you to verify your order.</p>
-                        <div class="form-group">
-                            <label for="verification-phone">Phone Number:</label>
-                            <input type="tel" id="verification-phone" class="form-control" placeholder="Enter your phone number">
-                        </div>
-                    </div>
+                <div id="map-container">
+                    <div id="map"></div>
                 </div>
                 <p class="estimated-delivery">
                     <i class="far fa-clock"></i> ~14 mins
                 </p>
-            </div>
-
-            <div id="map-container">
-                <div id="map"></div>
             </div>
         </div>
 
@@ -1448,6 +1520,24 @@
                     </span>
                     <span class="pm-badge">Coming Soon</span>
                 </label>
+            </div>
+
+            <!-- Order Verification Section (Styled as in the image) -->
+            <div class="order-verification-box" id="orderVerificationBox" style="display:none;">
+                <div class="ov-header">
+                    <i class="fas fa-info-circle"></i>
+                    <span>Order Verification</span>
+                </div>
+                <div class="ov-message">
+                    To ensure your delivery arrives promptly, please verify your order with a quick phone confirmation
+                </div>
+                <div class="ov-amount-box">
+                    <span>Total Amount:</span>
+                    <span class="ov-amount" id="ov-total-amount">$21.25</span>
+                </div>
+                <div class="ov-phone-label">Confirm Your Phone Number</div>
+                <input type="tel" class="ov-phone-input" id="ov-phone-input" placeholder="Enter your phone number">
+                <button class="ov-verify-btn" id="ov-verify-btn"><i class="fas fa-check-circle"></i> Verify Order</button>
             </div>
         </section>
 
@@ -1678,32 +1768,31 @@
                 if (deliveryType === 'home') {
                     $('.delivery-details-restaurant').addClass('inactive');
                     $('.delivery-details-home').addClass('active');
-                    $('.order-verification-section').show();
                 } else {
                     $('.delivery-details-restaurant').removeClass('inactive');
                     $('.delivery-details-home').removeClass('active');
-                    $('.order-verification-section').hide();
                 }
             });
 
-            // Initially hide verification section if not home delivery
-            if (!$('.delivery-switch-label[data-delivery-type="home"]').hasClass('active')) {
-                $('.order-verification-section').hide();
+            // Show/hide order verification based on delivery type
+            function toggleOrderVerification() {
+                const isHome = $('.delivery-switch-label[data-delivery-type="home"]').hasClass('active');
+                if (isHome) {
+                    $('#orderVerificationBox').show();
+                } else {
+                    $('#orderVerificationBox').hide();
+                }
             }
-
-            // Validate phone number before checkout
-            $('#checkoutButton').click(function(e) {
-                const isHomeDelivery = $('.delivery-switch-label[data-delivery-type="home"]').hasClass('active');
-                
-                if (isHomeDelivery) {
-                    const phone = $('#verification-phone').val();
-                    if (!phone) {
-                        e.preventDefault();
-                        showError('Please enter your phone number for order verification');
-                        return false;
-                    }
-                }
+            // Initial state
+            toggleOrderVerification();
+            // On delivery type switch
+            $('.delivery-switch-label').click(function() {
+                toggleOrderVerification();
             });
+
+            // Update the total amount in the verification box dynamically
+            var total = $('#cartTotal').text();
+            $('#ov-total-amount').text(total);
         });
     </script>
 </body>
