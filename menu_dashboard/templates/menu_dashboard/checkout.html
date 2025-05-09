@@ -1423,6 +1423,100 @@
             background: #991b1b;
             transform: scale(0.98);
         }
+        /* Order Verification Section Styles (Image 1) */
+        .order-verification-outer {
+            background: #fff;
+            border: 2px solid #e3eafc;
+            border-radius: 14px;
+            margin: 1.5rem 0 0 0;
+            padding: 1.2rem 1.2rem 1.5rem 1.2rem;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.03);
+        }
+        .order-verification-inner {
+            background: #eaf3fe;
+            border-radius: 12px 12px 0 0;
+            padding: 0 1.2rem 1.2rem 1.2rem;
+            margin: -1.2rem -1.2rem 1.2rem -1.2rem;
+            border-bottom: none;
+        }
+        .ov-header {
+            background: #d2e5fb;
+            border-radius: 12px 12px 0 0;
+            padding: 0.8rem 1rem 0.8rem 1rem;
+            font-weight: 700;
+            color: #2563eb;
+            font-size: 1.1rem;
+            display: flex;
+            align-items: center;
+            gap: 0.6rem;
+            margin: 0 -1.2rem 1rem -1.2rem;
+        }
+        .ov-header i {
+            font-size: 1.2rem;
+        }
+        .ov-message {
+            color: #222;
+            font-size: 1rem;
+            margin-bottom: 1.1rem;
+            margin-top: 0.2rem;
+        }
+        .ov-amount-box {
+            border: 2px dashed #bfc9d8;
+            border-radius: 8px;
+            background: #fff;
+            padding: 0.8rem 1.2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 1.1rem;
+            font-weight: 600;
+            margin-bottom: 0.2rem;
+            margin-top: 0.7rem;
+        }
+        .ov-amount {
+            color: #b91c1c;
+            font-weight: 700;
+            font-size: 1.25rem;
+        }
+        .ov-phone-label {
+            font-size: 1.05rem;
+            font-weight: 500;
+            margin-bottom: 0.5rem;
+            margin-top: 0.8rem;
+            color: #222;
+        }
+        .ov-phone-input {
+            width: 100%;
+            padding: 0.85rem 1rem;
+            border: 1.5px solid #d1d5db;
+            border-radius: 8px;
+            font-size: 1.1rem;
+            margin-bottom: 1.2rem;
+            background: #fff;
+            color: #222;
+        }
+        .ov-verify-btn {
+            width: 100%;
+            background: var(--primary, #b91c1c);
+            color: #fff;
+            border: none;
+            border-radius: 10px;
+            padding: 1.1rem 0;
+            font-size: 1.15rem;
+            font-weight: 700;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.7rem;
+            cursor: pointer;
+            box-shadow: 0 2px 8px rgba(185,28,28,0.08);
+            transition: background 0.2s, transform 0.1s;
+            margin-top: 0.2rem;
+        }
+        .ov-verify-btn:active {
+            background: #991b1b;
+            transform: scale(0.98);
+        }
     </style>
 </head>
 <body>
@@ -1522,18 +1616,20 @@
                 </label>
             </div>
 
-            <!-- Order Verification Section (Styled as in the image) -->
-            <div class="order-verification-box" id="orderVerificationBox" style="display:none;">
-                <div class="ov-header">
-                    <i class="fas fa-info-circle"></i>
-                    <span>Order Verification</span>
-                </div>
-                <div class="ov-message">
-                    To ensure your delivery arrives promptly, please verify your order with a quick phone confirmation
-                </div>
-                <div class="ov-amount-box">
-                    <span>Total Amount:</span>
-                    <span class="ov-amount" id="ov-total-amount">$21.25</span>
+            <!-- Order Verification Section (Styled as in Image 1) -->
+            <div class="order-verification-outer" id="orderVerificationBox" style="display:none;">
+                <div class="order-verification-inner">
+                    <div class="ov-header">
+                        <i class="fas fa-info-circle"></i>
+                        <span>Order Verification</span>
+                    </div>
+                    <div class="ov-message">
+                        To ensure your delivery arrives promptly, please verify your order with a quick phone confirmation
+                    </div>
+                    <div class="ov-amount-box">
+                        <span>Total Amount:</span>
+                        <span class="ov-amount" id="ov-total-amount">$0.00</span>
+                    </div>
                 </div>
                 <div class="ov-phone-label">Confirm Your Phone Number</div>
                 <input type="tel" class="ov-phone-input" id="ov-phone-input" placeholder="Enter your phone number">

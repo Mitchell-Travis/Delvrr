@@ -1,7 +1,7 @@
 // Constants
 const SERVICE_FEE = 0.25;
 const DELIVERY_FEE = 0.00;
-const THRESHOLD_DISTANCE = 100; // meters
+const THRESHOLD_DISTANCE = 200; // meters
 const ADMIN_CONFIRMATION_TIMEOUT = 60000; // 60 seconds
 const LOCATION_TIMEOUT = 5000; // 5 seconds
 const LOCATION_MAX_AGE = 30000; // 30 seconds
