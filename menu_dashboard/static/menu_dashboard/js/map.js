@@ -1,7 +1,7 @@
 // Constants
 const SERVICE_FEE = 0.25;
 const DELIVERY_FEE = 0.00;
-const THRESHOLD_DISTANCE = 200; // meters
+const THRESHOLD_DISTANCE = 300; // Increased from 100 to 300 meters
 const ADMIN_CONFIRMATION_TIMEOUT = 60000; // 60 seconds
 const LOCATION_TIMEOUT = 5000; // 5 seconds
 const LOCATION_MAX_AGE = 30000; // 30 seconds
@@ -123,6 +123,34 @@ function showToast(message, type = 'info') {
     }, 3000);
 }
 
+function calculateDistance(point1, point2) {
+    // First try to use turf.js if available
+    if (typeof turf !== 'undefined' && turf.distance) {
+        return turf.distance(point1, point2, { units: 'meters' });
+    }
+    
+    // Fallback to Haversine formula if turf.js is not available
+    const toRad = (value) => value * Math.PI / 180;
+    const R = 6371000; // Earth radius in meters
+    
+    const lat1 = point1[1]; // Extract latitude from [lng, lat] format
+    const lon1 = point1[0]; // Extract longitude from [lng, lat] format
+    const lat2 = point2[1];
+    const lon2 = point2[0];
+    
+    const dLat = toRad(lat2 - lat1);
+    const dLon = toRad(lon2 - lon1);
+    
+    const a = Math.sin(dLat/2) * Math.sin(dLat/2) +
+              Math.cos(toRad(lat1)) * Math.cos(toRad(lat2)) * 
+              Math.sin(dLon/2) * Math.sin(dLon/2);
+    const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+    const distance = R * c;
+    
+    console.log('Fallback distance calculation:', distance, 'meters');
+    return distance;
+}
+
 // Map Functions
 async function initializeMap() {
     return new Promise((resolve, reject) => {
@@ -208,15 +236,34 @@ async function getUserLocation(retries = 1, showNotification = true) {
                 state.locationLoading = false;
                 const userLoc = [position.coords.longitude, position.coords.latitude];
                 state.userLocation = userLoc;
+                // Log accuracy information for debugging
+                console.log('Location accuracy:', position.coords.accuracy, 'meters');
                 resolve(userLoc);
             },
             (error) => {
                 state.locationLoading = false;
-                showToast('Could not detect your location', 'error');
+                console.error('Geolocation error:', error);
+                
+                // More detailed error message based on error code
+                let errorMsg = 'Could not detect your location';
+                if (error.code === 1) {
+                    errorMsg = 'Location permission denied. Please enable location services.';
+                } else if (error.code === 2) {
+                    errorMsg = 'Location unavailable. Try moving to an area with better GPS signal.';
+                } else if (error.code === 3) {
+                    errorMsg = 'Location timed out. Please try again.';
+                }
+                
+                showToast(errorMsg, 'error');
+                
                 if (error.code === 3 && retries > 0) {
                     setTimeout(() => {
                         getUserLocation(retries - 1, showNotification).then(resolve).catch(reject);
                     }, 1000);
+                } else if (state.userLocation) {
+                    // Fall back to last known location if available
+                    console.log('Using last known location as fallback');
+                    resolve(state.userLocation);
                 } else {
                     reject(error);
                 }
@@ -259,9 +306,12 @@ async function updateMapWithUserLocation() {
         
         if (state.userMarker) state.userMarker.remove();
         
-        state.userMarker = new mapboxgl.Marker()
-            .setLngLat(userLoc)
-            .addTo(state.map);
+        state.userMarker = new mapboxgl.Marker({
+            color: '#03a9f4',
+            draggable: false
+        })
+        .setLngLat(userLoc)
+        .addTo(state.map);
 
         const bounds = new mapboxgl.LngLatBounds()
             .extend(userLoc)
@@ -290,12 +340,33 @@ async function updateMapWithUserLocation() {
             });
         }
 
+        // Calculate distance and log it for debugging
         state.distanceToRestaurant = calculateDistance(userLoc, state.restaurantLocation);
         console.log('Distance to restaurant:', state.distanceToRestaurant, 'meters');
+        console.log('Threshold distance:', THRESHOLD_DISTANCE, 'meters');
         
-        // Update delivery type based on distance
-        const newDeliveryType = state.distanceToRestaurant <= THRESHOLD_DISTANCE ? 'restaurant' : 'home';
-        console.log('New delivery type:', newDeliveryType);
+        // Add debugging info to page
+        if (!document.getElementById('debug-distance')) {
+            const debugEl = document.createElement('div');
+            debugEl.id = 'debug-distance';
+            debugEl.style.position = 'fixed';
+            debugEl.style.bottom = '10px';
+            debugEl.style.left = '10px';
+            debugEl.style.background = 'rgba(0,0,0,0.7)';
+            debugEl.style.color = 'white';
+            debugEl.style.padding = '8px';
+            debugEl.style.borderRadius = '4px';
+            debugEl.style.fontSize = '12px';
+            debugEl.style.zIndex = '9999';
+            document.body.appendChild(debugEl);
+        }
+        document.getElementById('debug-distance').textContent = 
+            `Distance: ${Math.round(state.distanceToRestaurant)}m | Threshold: ${THRESHOLD_DISTANCE}m`;
+        
+        // Update delivery type based on distance with a more reliable approach
+        const isAtRestaurant = state.distanceToRestaurant <= THRESHOLD_DISTANCE;
+        const newDeliveryType = isAtRestaurant ? 'restaurant' : 'home';
+        console.log('New delivery type:', newDeliveryType, 'isAtRestaurant:', isAtRestaurant);
         
         // Always update the delivery type and UI elements
         state.deliveryType = newDeliveryType;
@@ -306,18 +377,22 @@ async function updateMapWithUserLocation() {
         if (newDeliveryType === 'restaurant') {
             console.log('Showing table info - user is at restaurant');
             $('.delivery-details-restaurant').removeClass('inactive');
-            $('.delivery-details-home').removeClass('active');
+            $('.delivery-details-home').removeClass('active').addClass('inactive');
             $('.table-info').show();
             showToast('You are at the restaurant!', 'nearby');
         } else {
             console.log('Hiding table info - user is not at restaurant');
             $('.delivery-details-restaurant').addClass('inactive');
-            $('.delivery-details-home').addClass('active');
+            $('.delivery-details-home').removeClass('inactive').addClass('active');
             $('.table-info').hide();
             showToast(formatDistance(state.distanceToRestaurant) + ' away', 'far');
             updateDeliveryTime(state.distanceToRestaurant);
         }
         
+        // Update distance display with more detailed information
+        updateDistanceDisplay(state.distanceToRestaurant);
+        
+        // Finally update payment options based on new delivery type
         updatePaymentOptions();
 
     } catch (err) {
@@ -727,6 +802,58 @@ function setupEventHandlers() {
                 const msg = xhr.responseJSON?.message || xhr.statusText;
                 alert('An error occurred while placing the order: ' + msg);
             }
+        });
+    });
+}
+
+function addLocationDebugControls() {
+    // Create a debug panel for location testing
+    const debugPanel = document.createElement('div');
+    debugPanel.id = 'location-debug';
+    debugPanel.style.position = 'fixed';
+    debugPanel.style.top = '10px';
+    debugPanel.style.right = '10px';
+    debugPanel.style.background = 'rgba(0,0,0,0.7)';
+    debugPanel.style.color = 'white';
+    debugPanel.style.padding = '10px';
+    debugPanel.style.borderRadius = '4px';
+    debugPanel.style.zIndex = '9999';
+    debugPanel.style.fontSize = '12px';
+    debugPanel.innerHTML = `
+        <div>
+            <button id="debug-at-restaurant" style="padding:5px; margin:5px;">Set At Restaurant</button>
+            <button id="debug-away" style="padding:5px; margin:5px;">Set Away From Restaurant</button>
+            <button id="debug-refresh" style="padding:5px; margin:5px;">Refresh Location</button>
+        </div>
+    `;
+    document.body.appendChild(debugPanel);
+    
+    // Add event listeners
+    document.getElementById('debug-at-restaurant').addEventListener('click', () => {
+        // Set location to be at restaurant (just offset slightly)
+        state.userLocation = [
+            state.restaurantLocation[0] + 0.00005,
+            state.restaurantLocation[1] + 0.00005
+        ];
+        state.distanceToRestaurant = 10; // Set to 10 meters to force "at restaurant"
+        updateMapWithUserLocation();
+    });
+    
+    document.getElementById('debug-away').addEventListener('click', () => {
+        // Set location to be away from restaurant
+        state.userLocation = [
+            state.restaurantLocation[0] + 0.01,
+            state.restaurantLocation[1] + 0.01
+        ];
+        state.distanceToRestaurant = 1500; // Set to 1.5km to force "away"
+        updateMapWithUserLocation();
+    });
+    
+    document.getElementById('debug-refresh').addEventListener('click', () => {
+        // Force refresh the real location
+        state.userLocation = null;
+        getUserLocation(1, true).then(() => {
+            updateMapWithUserLocation();
         });
     });
 }
