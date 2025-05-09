@@ -34,6 +34,9 @@ const state = {
 // DOM Elements cache - will be initialized when DOM is loaded
 let elements;
 
+// Set this to true to show debug UI, false for production
+const DEBUG_MODE = false;
+
 // Add toast notification styles
 $('<style>')
     .text(`
@@ -301,108 +304,76 @@ async function updateMapWithUserLocation() {
 
     try {
         // Pass false to prevent showing duplicate toast notifications
-        const userLoc = await getUserLocation(1, false);
-        console.log('User location:', userLoc);
-        
-        if (state.userMarker) state.userMarker.remove();
-        
-        state.userMarker = new mapboxgl.Marker({
-            color: '#03a9f4',
-            draggable: false
-        })
-        .setLngLat(userLoc)
-        .addTo(state.map);
+        getUserLocation(1, false).then(userLoc => {
+            console.log('User location:', userLoc);
+            if (state.userMarker) state.userMarker.remove();
+            state.userMarker = new mapboxgl.Marker({ color: '#03a9f4', draggable: false })
+                .setLngLat(userLoc)
+                .addTo(state.map);
 
-        const bounds = new mapboxgl.LngLatBounds()
-            .extend(userLoc)
-            .extend(state.restaurantLocation);
-            
-        state.map.fitBounds(bounds, { padding: 70 });
+            const bounds = new mapboxgl.LngLatBounds()
+                .extend(userLoc)
+                .extend(state.restaurantLocation);
+            state.map.fitBounds(bounds, { padding: 70 });
 
-        const routeGeoJSON = {
-            type: 'Feature',
-            geometry: {
-                type: 'LineString',
-                coordinates: [userLoc, state.restaurantLocation]
+            state.distanceToRestaurant = calculateDistance(userLoc, state.restaurantLocation);
+            console.log('Distance to restaurant:', state.distanceToRestaurant, 'meters');
+            console.log('Threshold distance:', THRESHOLD_DISTANCE, 'meters');
+
+            // Debug info
+            if (DEBUG_MODE) {
+                if (!document.getElementById('debug-distance')) {
+                    const debugEl = document.createElement('div');
+                    debugEl.id = 'debug-distance';
+                    debugEl.style.position = 'fixed';
+                    debugEl.style.bottom = '10px';
+                    debugEl.style.left = '10px';
+                    debugEl.style.background = 'rgba(0,0,0,0.7)';
+                    debugEl.style.color = 'white';
+                    debugEl.style.padding = '8px';
+                    debugEl.style.borderRadius = '4px';
+                    debugEl.style.fontSize = '12px';
+                    debugEl.style.zIndex = '9999';
+                    document.body.appendChild(debugEl);
+                }
+                document.getElementById('debug-distance').textContent =
+                    `Distance: ${Math.round(state.distanceToRestaurant)}m | Threshold: ${THRESHOLD_DISTANCE}m`;
+            } else {
+                const dbg = document.getElementById('debug-distance');
+                if (dbg) dbg.remove();
             }
-        };
-        
-        if (state.map.getSource('route')) {
-            state.map.getSource('route').setData(routeGeoJSON);
-        } else {
-            state.map.addSource('route', { type: 'geojson', data: routeGeoJSON });
-            state.map.addLayer({
-                id: 'route',
-                type: 'line',
-                source: 'route',
-                layout: { 'line-join': 'round', 'line-cap': 'round' },
-                paint: { 'line-color': '#03a9f4', 'line-width': 3, 'line-dasharray': [2, 1] }
-            });
-        }
 
-        // Calculate distance and log it for debugging
-        state.distanceToRestaurant = calculateDistance(userLoc, state.restaurantLocation);
-        console.log('Distance to restaurant:', state.distanceToRestaurant, 'meters');
-        console.log('Threshold distance:', THRESHOLD_DISTANCE, 'meters');
-        
-        // Add debugging info to page
-        if (!document.getElementById('debug-distance')) {
-            const debugEl = document.createElement('div');
-            debugEl.id = 'debug-distance';
-            debugEl.style.position = 'fixed';
-            debugEl.style.bottom = '10px';
-            debugEl.style.left = '10px';
-            debugEl.style.background = 'rgba(0,0,0,0.7)';
-            debugEl.style.color = 'white';
-            debugEl.style.padding = '8px';
-            debugEl.style.borderRadius = '4px';
-            debugEl.style.fontSize = '12px';
-            debugEl.style.zIndex = '9999';
-            document.body.appendChild(debugEl);
-        }
-        document.getElementById('debug-distance').textContent = 
-            `Distance: ${Math.round(state.distanceToRestaurant)}m | Threshold: ${THRESHOLD_DISTANCE}m`;
-        
-        // Update delivery type based on distance with a more reliable approach
-        const isAtRestaurant = state.distanceToRestaurant <= THRESHOLD_DISTANCE;
-        const newDeliveryType = isAtRestaurant ? 'restaurant' : 'home';
-        console.log('New delivery type:', newDeliveryType, 'isAtRestaurant:', isAtRestaurant);
-        
-        // Always update the delivery type and UI elements
-        state.deliveryType = newDeliveryType;
-        elements.deliverySwitchLabels.removeClass('active');
-        $(`.delivery-switch-label[data-delivery-type="${newDeliveryType}"]`).addClass('active');
-        
-        // Show/hide appropriate elements based on delivery type
-        if (newDeliveryType === 'restaurant') {
-            console.log('Showing table info - user is at restaurant');
-            $('.delivery-details-restaurant').removeClass('inactive');
-            $('.delivery-details-home').removeClass('active').addClass('inactive');
-            $('.table-info').show();
-            showToast('You are at the restaurant!', 'nearby');
-        } else {
-            console.log('Hiding table info - user is not at restaurant');
-            $('.delivery-details-restaurant').addClass('inactive');
-            $('.delivery-details-home').removeClass('inactive').addClass('active');
-            $('.table-info').hide();
-            showToast(formatDistance(state.distanceToRestaurant) + ' away', 'far');
-            updateDeliveryTime(state.distanceToRestaurant);
-        }
-        
-        // Update distance display with more detailed information
-        updateDistanceDisplay(state.distanceToRestaurant);
-        
-        // Finally update payment options based on new delivery type
-        updatePaymentOptions();
+            // Update delivery type based on distance
+            const isAtRestaurant = state.distanceToRestaurant <= THRESHOLD_DISTANCE;
+            const newDeliveryType = isAtRestaurant ? 'restaurant' : 'home';
+            state.deliveryType = newDeliveryType;
+            elements.deliverySwitchLabels.removeClass('active');
+            $(`.delivery-switch-label[data-delivery-type="${newDeliveryType}"]`).addClass('active');
 
+            // Show/hide appropriate elements based on delivery type
+            if (isAtRestaurant) {
+                $('.delivery-details-restaurant').removeClass('inactive').addClass('active');
+                $('.delivery-details-home').removeClass('active').addClass('inactive');
+                $('.table-info').show();
+                showToast('You are at the restaurant!', 'nearby');
+            } else {
+                $('.delivery-details-restaurant').removeClass('active').addClass('inactive');
+                $('.delivery-details-home').removeClass('inactive').addClass('active');
+                $('.table-info').hide();
+                showToast(formatDistance(state.distanceToRestaurant) + ' away', 'far');
+                updateDeliveryTime(state.distanceToRestaurant);
+            }
+
+            updateDistanceDisplay(state.distanceToRestaurant);
+            updatePaymentOptions();
+        }).catch(err => {
+            console.error('Geo error for map:', err);
+            showToast('Error updating location', 'error');
+        });
     } catch (err) {
         console.error('Geo error for map:', err);
         showToast('Error updating location', 'error');
     }
-}
-
-function calculateDistance(point1, point2) {
-    return turf.distance(point1, point2, { units: 'meters' });
 }
 
 function updateDistanceDisplay(dist) {
@@ -540,7 +511,6 @@ function updatePaymentOptions() {
         state.paymentVerified = false;
         state.adminConfirmed = false;
         updateOrderTotalAmountDisplay(calculateCartTotal());
-        // Show the address modal if no address is entered
         if (!state.homeDeliveryAddress.full_name || 
             !state.homeDeliveryAddress.phone_number || 
             !state.homeDeliveryAddress.address) {
