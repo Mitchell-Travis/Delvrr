@@ -1756,14 +1756,16 @@
         });
 
         $(document).ready(function() {
+            // Show location detection toast immediately
+            if (typeof showToast === 'function') {
+                showToast('Detecting your location...', 'loading');
+            }
             // Handle delivery type switching
             $('.delivery-switch-label').click(function() {
                 const deliveryType = $(this).data('delivery-type');
-                
                 // Update active state of switch labels
                 $('.delivery-switch-label').removeClass('active');
                 $(this).addClass('active');
-                
                 // Show/hide appropriate delivery details
                 if (deliveryType === 'home') {
                     $('.delivery-details-restaurant').addClass('inactive');
@@ -1772,6 +1774,8 @@
                     $('.delivery-details-restaurant').removeClass('inactive');
                     $('.delivery-details-home').removeClass('active');
                 }
+                // Show/hide order verification based on delivery type
+                toggleOrderVerification();
             });
 
             // Show/hide order verification based on delivery type
@@ -1785,14 +1789,19 @@
             }
             // Initial state
             toggleOrderVerification();
-            // On delivery type switch
-            $('.delivery-switch-label').click(function() {
-                toggleOrderVerification();
-            });
 
             // Update the total amount in the verification box dynamically
             var total = $('#cartTotal').text();
             $('#ov-total-amount').text(total);
+
+            // Map initialization with error handling
+            try {
+                if (typeof initializeMap === 'function') {
+                    initializeMap();
+                }
+            } catch (err) {
+                console.error('Map initialization failed:', err);
+            }
         });
     </script>
 </body>
