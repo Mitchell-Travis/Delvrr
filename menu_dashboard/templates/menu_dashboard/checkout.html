@@ -1277,6 +1277,66 @@
             white-space: nowrap;
             margin-top: 0.1rem;
         }
+        .order-verification-section {
+            margin: 1rem 0;
+        }
+
+        .payment-info-box {
+            background-color: #f0f7ff;
+            border: 1px solid #cce0ff;
+            border-radius: var(--radius-md);
+            margin-bottom: 1rem;
+            overflow: hidden;
+        }
+
+        .payment-header {
+            background-color: #e6f0ff;
+            padding: 0.75rem 1rem;
+            font-weight: 500;
+            color: #0056b3;
+            font-size: 0.9rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .payment-info-content {
+            padding: 1rem;
+        }
+
+        .payment-note {
+            font-size: 0.85rem;
+            color: #555;
+            margin-bottom: 1rem;
+        }
+
+        .form-group {
+            margin-bottom: 1rem;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 0.4rem;
+            font-size: 0.85rem;
+            color: #555;
+            font-weight: 500;
+        }
+
+        .form-control {
+            width: 100%;
+            padding: 0.75rem;
+            border: 1px solid #ddd;
+            border-radius: var(--radius-md);
+            font-size: 0.9rem;
+            transition: border-color 0.2s ease;
+            background-color: #fff;
+        }
+
+        .form-control:focus {
+            border-color: var(--primary);
+            outline: none;
+            box-shadow: 0 0 0 2px rgba(var(--primary-rgb), 0.1);
+        }
     </style>
 </head>
 <body>
@@ -1316,6 +1376,21 @@
                     <i class="fas fa-map-marker-alt"></i>
                     Delivery Address
                 </button>
+                <div class="order-verification-section">
+                    <div class="payment-info-box">
+                        <div class="payment-header">
+                            <i class="fas fa-info-circle"></i>
+                            Order Verification
+                        </div>
+                        <div class="payment-info-content">
+                            <p class="payment-note">Please confirm your phone number. We'll call you to verify your order.</p>
+                            <div class="form-group">
+                                <label for="verification-phone">Phone Number:</label>
+                                <input type="tel" id="verification-phone" class="form-control" placeholder="Enter your phone number">
+                            </div>
+                        </div>
+                    </div>
+                </div>
                 <p class="estimated-delivery">
                     <i class="far fa-clock"></i> ~14 mins
                 </p>
@@ -1589,6 +1664,47 @@
                     var radio = toggle.querySelector('input[type="radio"]');
                     if (radio && !radio.disabled) radio.checked = true;
                 });
+            });
+        });
+
+        $(document).ready(function() {
+            // Handle delivery type switching
+            $('.delivery-switch-label').click(function() {
+                const deliveryType = $(this).data('delivery-type');
+                
+                // Update active state of switch labels
+                $('.delivery-switch-label').removeClass('active');
+                $(this).addClass('active');
+                
+                // Show/hide appropriate delivery details
+                if (deliveryType === 'home') {
+                    $('.delivery-details-restaurant').addClass('inactive');
+                    $('.delivery-details-home').addClass('active');
+                    $('.order-verification-section').show();
+                } else {
+                    $('.delivery-details-restaurant').removeClass('inactive');
+                    $('.delivery-details-home').removeClass('active');
+                    $('.order-verification-section').hide();
+                }
+            });
+
+            // Initially hide verification section if not home delivery
+            if (!$('.delivery-switch-label[data-delivery-type="home"]').hasClass('active')) {
+                $('.order-verification-section').hide();
+            }
+
+            // Validate phone number before checkout
+            $('#checkoutButton').click(function(e) {
+                const isHomeDelivery = $('.delivery-switch-label[data-delivery-type="home"]').hasClass('active');
+                
+                if (isHomeDelivery) {
+                    const phone = $('#verification-phone').val();
+                    if (!phone) {
+                        e.preventDefault();
+                        showError('Please enter your phone number for order verification');
+                        return false;
+                    }
+                }
             });
         });
     </script>
