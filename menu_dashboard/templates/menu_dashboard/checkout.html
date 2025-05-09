@@ -1756,27 +1756,13 @@
         });
 
         $(document).ready(function() {
-            // Show location detection toast immediately
-            if (typeof showToast === 'function') {
-                showToast('Detecting your location...', 'loading');
+            // Ensure only one delivery type is active on load
+            var $deliveryLabels = $('.delivery-switch-label');
+            $deliveryLabels.removeClass('active');
+            // If any is already active, keep it, else default to restaurant
+            if ($deliveryLabels.filter('.active').length === 0) {
+                $deliveryLabels.filter('[data-delivery-type="restaurant"]').addClass('active');
             }
-            // Handle delivery type switching
-            $('.delivery-switch-label').click(function() {
-                const deliveryType = $(this).data('delivery-type');
-                // Update active state of switch labels
-                $('.delivery-switch-label').removeClass('active');
-                $(this).addClass('active');
-                // Show/hide appropriate delivery details
-                if (deliveryType === 'home') {
-                    $('.delivery-details-restaurant').addClass('inactive');
-                    $('.delivery-details-home').addClass('active');
-                } else {
-                    $('.delivery-details-restaurant').removeClass('inactive');
-                    $('.delivery-details-home').removeClass('active');
-                }
-                // Show/hide order verification based on delivery type
-                toggleOrderVerification();
-            });
 
             // Show/hide order verification based on delivery type
             function toggleOrderVerification() {
@@ -1787,8 +1773,24 @@
                     $('#orderVerificationBox').hide();
                 }
             }
-            // Initial state
+
+            // Initial state (in case Home is preselected)
             toggleOrderVerification();
+
+            // Handle delivery type switching
+            $('.delivery-switch-label').click(function() {
+                $deliveryLabels.removeClass('active');
+                $(this).addClass('active');
+                // Show/hide appropriate delivery details
+                if ($(this).data('delivery-type') === 'home') {
+                    $('.delivery-details-restaurant').addClass('inactive');
+                    $('.delivery-details-home').addClass('active');
+                } else {
+                    $('.delivery-details-restaurant').removeClass('inactive');
+                    $('.delivery-details-home').removeClass('active');
+                }
+                toggleOrderVerification();
+            });
 
             // Update the total amount in the verification box dynamically
             var total = $('#cartTotal').text();
@@ -1801,6 +1803,11 @@
                 }
             } catch (err) {
                 console.error('Map initialization failed:', err);
+            }
+
+            // Show location detection toast immediately
+            if (typeof showToast === 'function') {
+                showToast('Detecting your location...', 'loading');
             }
         });
     </script>
