@@ -414,7 +414,7 @@ function updateOrderDetails() {
     elements.itemTotal.text(`$${subtotal.toFixed(2)}`);
     elements.cartTotal.text(`$${totalDue.toFixed(2)}`);
 
-    if (elements.orderVerificationForm.is(':visible')) {
+    if (elements.orderVerificationBox.is(':visible')) {
         updateOrderTotalAmountDisplay(totalDue);
     }
 
@@ -452,7 +452,7 @@ function updatePaymentOptions() {
         $('.payment-option.restaurant-only').addClass('active');
         $('.payment-option[data-method="Cash on Delivery"].restaurant-only').addClass('selected');
         state.selectedPaymentMethod = 'Cash on Delivery';
-        elements.orderVerificationForm.hide();
+        elements.orderVerificationBox.hide();
         state.paymentVerified = true;
         state.adminConfirmed = true;
         $('#cashDeliveryOption .order-verification-badge').remove();
@@ -461,11 +461,10 @@ function updatePaymentOptions() {
         $('.payment-option.home-only').addClass('active');
         $('.payment-option[data-method="Cash on Delivery"].home-only').addClass('selected');
         state.selectedPaymentMethod = 'Cash on Delivery';
-        elements.orderVerificationForm.show();
+        elements.orderVerificationBox.show();
         state.paymentVerified = false;
         state.adminConfirmed = false;
         updateOrderTotalAmountDisplay(calculateCartTotal());
-        
         // Show the address modal if no address is entered
         if (!state.homeDeliveryAddress.full_name || 
             !state.homeDeliveryAddress.phone_number || 
@@ -473,7 +472,6 @@ function updatePaymentOptions() {
             elements.openAddressModal.trigger('click');
         }
     }
-    
     updateCheckoutButtonState();
 }
 
@@ -745,6 +743,7 @@ document.addEventListener('DOMContentLoaded', () => {
         cancelAddress: $('#cancelAddress'),
         loadingOverlay: $('#loading-overlay'),
         orderVerificationForm: $('#orderVerificationForm'),
+        orderVerificationBox: $('#orderVerificationBox'),
         paymentModal: $('#paymentModal'),
         closePaymentModal: $('#closePaymentModal'),
         continueToCheckout: $('#continueToCheckout'),
