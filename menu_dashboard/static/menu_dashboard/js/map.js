@@ -1,7 +1,7 @@
 // Constants
 const SERVICE_FEE = 0.25;
 const DELIVERY_FEE = 0.00;
-const THRESHOLD_DISTANCE = 300; // meters
+const THRESHOLD_DISTANCE = 500; // Increased from 300 to 500 meters for better detection
 const ADMIN_CONFIRMATION_TIMEOUT = 60000; // 60 seconds
 const LOCATION_TIMEOUT = 10000; // 10 seconds
 const LOCATION_MAX_AGE = 30000; // 30 seconds
@@ -19,13 +19,16 @@ const state = {
     restaurantLocation: null,
     selectedPaymentMethod: '',
     deliveryType: 'unknown',
+    deliveryTypeUserOverride: null, // NEW: Allow user to override automatic selection
     homeDeliveryAddress: {},
     paymentVerified: false,
     adminConfirmed: false,
     adminConfirmationInProgress: false,
     orderReferenceId: null,
     tableNumber: '1',
-    locationLoading: false
+    locationLoading: false,
+    locationAttempts: 0,
+    lastLocationUpdateTime: 0
 };
 
 // DOM Elements cache
@@ -59,6 +62,9 @@ $('<style>').text(`
     .toast.nearby i { color: #4CAF50; }
     .toast.far i { color: #FF9800; }
     .toast.error i { color: #f44336; }
+    .delivery-switch-label.manual-override {
+        border: 2px solid #4CAF50 !important;
+    }
     @keyframes slideIn { from { transform: translateX(100%); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
     @keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
 `).appendTo('head');
@@ -75,7 +81,7 @@ function initializeToastContainer() {
     return toastContainer;
 }
 
-function showToast(message, type = 'info') {
+function showToast(message, type = 'info', duration = 3000) {
     const container = initializeToastContainer();
     const toast = document.createElement('div');
     toast.className = `toast ${type}`;
@@ -88,7 +94,7 @@ function showToast(message, type = 'info') {
     
     toast.innerHTML = `<i class="fas ${icon}"></i><span>${message}</span>`;
     container.appendChild(toast);
-    setTimeout(() => toast.remove(), 3000);
+    setTimeout(() => toast.remove(), duration);
 }
 
 function calculateDistance(point1, point2) {
@@ -157,10 +163,21 @@ async function initializeMap() {
 }
 
 async function getUserLocation(retries = 2, showNotification = true) {
-    if (state.userLocation && !state.locationLoading) return Promise.resolve(state.userLocation);
+    // If we have a recent location (less than 2 minutes old), use it
+    const now = Date.now();
+    if (state.userLocation && 
+        state.lastLocationUpdateTime > 0 && 
+        now - state.lastLocationUpdateTime < 120000 && 
+        !state.locationLoading) {
+        return Promise.resolve(state.userLocation);
+    }
     
     state.locationLoading = true;
-    if (showNotification) showToast('Detecting your location...', 'loading');
+    state.locationAttempts++;
+    
+    if (showNotification) {
+        showToast('Detecting your location...', 'loading', 10000);
+    }
     
     return new Promise((resolve, reject) => {
         if (!navigator.geolocation) {
@@ -174,6 +191,7 @@ async function getUserLocation(retries = 2, showNotification = true) {
                 state.locationLoading = false;
                 const userLoc = [position.coords.longitude, position.coords.latitude];
                 state.userLocation = userLoc;
+                state.lastLocationUpdateTime = now;
                 console.log('Location accuracy:', position.coords.accuracy, 'meters');
                 resolve(userLoc);
             },
@@ -186,7 +204,9 @@ async function getUserLocation(retries = 2, showNotification = true) {
                 else if (error.code === 2) errorMsg = 'Location unavailable. Try moving to an area with better GPS signal.';
                 else if (error.code === 3) errorMsg = 'Location request timed out. Please ensure location services are enabled and try again.';
                 
-                showToast(errorMsg, 'error');
+                if (state.locationAttempts <= 1) {
+                    showToast(errorMsg, 'error');
+                }
                 
                 if (error.code === 3 && retries > 0) {
                     setTimeout(() => getUserLocation(retries - 1, showNotification).then(resolve).catch(reject), 1000);
@@ -194,6 +214,11 @@ async function getUserLocation(retries = 2, showNotification = true) {
                     console.log('Using last known location as fallback');
                     resolve(state.userLocation);
                 } else {
+                    // If we can't get location, default to home delivery
+                    if (!state.deliveryTypeUserOverride) {
+                        state.deliveryType = 'home';
+                        updateDeliveryTypeUI();
+                    }
                     reject(error);
                 }
             },
@@ -234,30 +259,56 @@ async function updateMapWithUserLocation() {
         state.distanceToRestaurant = calculateDistance(userLoc, state.restaurantLocation);
         console.log('Distance to restaurant:', state.distanceToRestaurant, 'meters');
 
-        const isAtRestaurant = state.distanceToRestaurant <= THRESHOLD_DISTANCE;
-        state.deliveryType = isAtRestaurant ? 'restaurant' : 'home';
-        elements.deliverySwitchLabels.removeClass('active');
-        $(`.delivery-switch-label[data-delivery-type="${state.deliveryType}"]`).addClass('active');
-
-        if (isAtRestaurant) {
-            $('.delivery-details-restaurant').removeClass('inactive').addClass('active');
-            $('.delivery-details-home').removeClass('active').addClass('inactive');
-            $('.table-info').show();
+        // Only auto-determine delivery type if the user hasn't manually overridden it
+        if (state.deliveryTypeUserOverride === null) {
+            const isAtRestaurant = state.distanceToRestaurant <= THRESHOLD_DISTANCE;
+            state.deliveryType = isAtRestaurant ? 'restaurant' : 'home';
+        }
+        
+        updateDeliveryTypeUI();
+        updateDistanceDisplay(state.distanceToRestaurant);
+        
+        // Show automatic detection toast with option to override
+        if (state.deliveryType === 'restaurant' && state.distanceToRestaurant <= THRESHOLD_DISTANCE) {
             showToast('You are at the restaurant!', 'nearby');
-        } else {
-            $('.delivery-details-restaurant').removeClass('active').addClass('inactive');
-            $('.delivery-details-home').removeClass('inactive').addClass('active');
-            $('.table-info').hide();
-            showToast(`${formatDistance(state.distanceToRestaurant)} away`, 'far');
+        } else if (state.deliveryType === 'home' && state.distanceToRestaurant > THRESHOLD_DISTANCE) {
+            showToast(`${formatDistance(state.distanceToRestaurant)} away from restaurant`, 'far');
             updateDeliveryTime(state.distanceToRestaurant);
         }
-
-        updateDistanceDisplay(state.distanceToRestaurant);
-        updatePaymentOptions();
     } catch (err) {
         console.error('Geo error for map:', err);
         showToast('Error updating location', 'error');
+        // Default to home delivery if location fails
+        if (!state.deliveryTypeUserOverride) {
+            state.deliveryType = 'home';
+            updateDeliveryTypeUI();
+        }
     }
+}
+
+function updateDeliveryTypeUI() {
+    // Update delivery switch labels
+    elements.deliverySwitchLabels.removeClass('active manual-override');
+    const currentTypeLabel = $(`.delivery-switch-label[data-delivery-type="${state.deliveryType}"]`);
+    currentTypeLabel.addClass('active');
+    
+    // If user has manually overridden, show that visually
+    if (state.deliveryTypeUserOverride !== null) {
+        currentTypeLabel.addClass('manual-override');
+    }
+
+    // Update delivery details sections
+    if (state.deliveryType === 'restaurant') {
+        $('.delivery-details-restaurant').removeClass('inactive').addClass('active');
+        $('.delivery-details-home').removeClass('active').addClass('inactive');
+        $('.table-info').show();
+    } else {
+        $('.delivery-details-restaurant').removeClass('active').addClass('inactive');
+        $('.delivery-details-home').removeClass('inactive').addClass('active');
+        $('.table-info').hide();
+    }
+    
+    updatePaymentOptions();
 }
 
 function updateDistanceDisplay(dist) {
@@ -266,7 +317,7 @@ function updateDistanceDisplay(dist) {
         return;
     }
     
-    if (dist === Infinity) {
+    if (dist === Infinity || isNaN(dist)) {
         elements.distanceValue.html('<i class="fas fa-exclamation-circle"></i> Could not calculate distance');
         elements.distanceStatus.text('').removeClass('nearby far');
         return;
@@ -278,13 +329,14 @@ function updateDistanceDisplay(dist) {
     
     elements.distanceValue.html(distanceHtml);
     
-    const statusText = dist <= THRESHOLD_DISTANCE
+    const isNearby = dist <= THRESHOLD_DISTANCE;
+    const statusText = isNearby
         ? '<i class="fas fa-check-circle"></i> You\'re at the restaurant!'
         : '<i class="fas fa-truck"></i> Delivery recommended';
     
     elements.distanceStatus.html(statusText)
-        .toggleClass('nearby', dist <= THRESHOLD_DISTANCE)
-        .toggleClass('far', dist > THRESHOLD_DISTANCE);
+        .toggleClass('nearby', isNearby)
+        .toggleClass('far', !isNearby);
 }
 
 function calculateCartTotal() {
@@ -422,13 +474,47 @@ function updateCheckoutButtonState() {
     }
 }
 
+function refreshLocation() {
+    // Clear the last location update time to force a new location fetch
+    state.lastLocationUpdateTime = 0;
+    showToast('Updating your location...', 'loading');
+    getUserLocation(1, false).then(() => {
+        updateMapWithUserLocation();
+    }).catch(err => {
+        console.error("Error refreshing location:", err);
+        showToast('Could not update your location', 'error');
+    });
+}
+
 function setupEventHandlers() {
-    elements.deliverySwitchLabels.on('click', function () {
-        const wanted = $(this).data('delivery-type');
-        if (state.deliveryType === wanted) return;
-        alert("Delivery type is determined by your location. You cannot manually switch to 'Eat-in' unless you're near the restaurant.");
-        elements.deliverySwitchLabels.removeClass('active');
-        $(`.delivery-switch-label[data-delivery-type="${state.deliveryType}"]`).addClass('active');
+    // Add a new refresh location button
+    const refreshButton = $('<button id="refreshLocation" class="btn btn-sm btn-outline-primary mb-2" style="margin-left: 10px;"><i class="fas fa-sync-alt"></i> Refresh Location</button>');
+    $('#distanceValue').after(refreshButton);
+    
+    $('#refreshLocation').on('click', function(e) {
+        e.preventDefault();
+        refreshLocation();
+    });
+
+    elements.deliverySwitchLabels.on('click', function() {
+        const wantedType = $(this).data('delivery-type');
+        if (state.deliveryType === wantedType) return;
+        
+        // Allow manual override
+        state.deliveryTypeUserOverride = wantedType;
+        state.deliveryType = wantedType;
+        
+        // Show toast notification about manual override
+        if (wantedType === 'restaurant') {
+            if (state.distanceToRestaurant > THRESHOLD_DISTANCE) {
+                showToast('You are not near the restaurant, but we\'ll let you pick up in person if you wish.', 'info', 5000);
+            }
+        } else {
+            showToast('Switched to home delivery mode', 'info');
+        }
+        
+        updateDeliveryTypeUI();
+        if ('vibrate' in navigator) navigator.vibrate(50);
     });
 
     elements.openAddressModal.on('click', () => {
@@ -543,6 +629,9 @@ function setupEventHandlers() {
         const formData = {
             cart: JSON.stringify(cart),
             payment_method: state.selectedPaymentMethod,
+            delivery_type: state.deliveryType,
+            table_number: state.deliveryType === 'restaurant' ? state.tableNumber : '',
+            delivery_address: state.deliveryType === 'home' ? JSON.stringify(state.homeDeliveryAddress) : '',
             csrfmiddlewaretoken: $('input[name="csrfmiddlewaretoken"]').val()
         };
 
@@ -578,6 +667,23 @@ function setupEventHandlers() {
             }
         });
     });
+
+    // Close payment modal handlers
+    elements.closePaymentModal.on('click', () => elements.paymentModal.css('display', 'none'));
+    elements.continueToCheckout.on('click', () => elements.paymentModal.css('display', 'none'));
+    elements.tryAgainPayment.on('click', () => elements.paymentModal.css('display', 'none'));
+
+    // Add automatic location updates every 2 minutes
+    setInterval(() => {
+        if (document.visibilityState === 'visible' && !state.locationLoading) {
+            console.log("Periodic location update");
+            getUserLocation(1, false).then(() => {
+                updateMapWithUserLocation();
+            }).catch(err => {
+                console.error("Error updating location:", err);
+            });
+        }
+    }, 120000); // Every 2 minutes
 }
 
 document.addEventListener('DOMContentLoaded', () => {
