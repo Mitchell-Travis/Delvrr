@@ -1329,6 +1329,7 @@ function setupEventHandlers() {
     });
 }
 
+
     // 4. Add a better function to help debug order placement errors
 function debugOrder() {
     try {
