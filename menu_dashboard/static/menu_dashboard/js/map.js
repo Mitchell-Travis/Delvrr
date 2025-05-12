@@ -611,8 +611,6 @@ function updateMapWithUserLocation(force = false) {
         // Calculate and update distance
         state.distanceToRestaurant = calculateDistance(userLoc, state.restaurantLocation);
         
-        // FIX: Keep "You're at the restaurant" toast, but don't show duplicates
-        
         // Track previous delivery type to detect changes
         const prevDeliveryType = state.deliveryType;
         
@@ -627,25 +625,24 @@ function updateMapWithUserLocation(force = false) {
             }
         }
         
-        // FIX: Show "You're at the restaurant" toast once per page load
-        // Use a separate flag to track if we've shown this toast before
+        // Show toast only in certain circumstances to avoid duplication
         if (!state.hasShownLocationToast) {
+            // First time after page load
             if (state.deliveryType === 'restaurant') {
                 showToast('You are at the restaurant!', 'nearby', 2000);
-                state.hasShownLocationToast = true;
-            } else if (state.deliveryType === 'home') {
+            } else {
                 showToast(`${formatDistance(state.distanceToRestaurant)} from restaurant`, 'far', 2000);
-                state.hasShownLocationToast = true;
             }
+            state.hasShownLocationToast = true;
         } else if (force) {
-            // Only show on manual refresh or when forcing an update
+            // Manual refresh requested
             if (state.deliveryType === 'restaurant') {
                 showToast('You are at the restaurant!', 'nearby', 2000);
             } else {
                 showToast(`${formatDistance(state.distanceToRestaurant)} from restaurant`, 'far', 2000);
             }
         } else if (prevDeliveryType !== state.deliveryType) {
-            // Show when delivery type actually changes
+            // Delivery type changed
             if (state.deliveryType === 'restaurant') {
                 showToast('You are at the restaurant!', 'nearby', 2000);
             } else {
@@ -1268,25 +1265,17 @@ function setupEventHandlers() {
         }
         loadingOverlayShownAt = Date.now();
 
-        // FIX: Don't send table_number when it's not needed
-        // Only include table_number for restaurant delivery
+        // CRITICAL FIX: Based on your Django view, it expects a simple table_number field
+        // This field should be empty or null for home delivery
         const formData = {
             cart: JSON.stringify(cart),
             payment_method: state.selectedPaymentMethod,
-            delivery_type: state.deliveryType,
             csrfmiddlewaretoken: $('input[name="csrfmiddlewaretoken"]').val()
         };
         
-        // Only add table_number for restaurant delivery
-        if (state.deliveryType === 'restaurant') {
-            formData.table_number = state.tableNumber;
-        }
+        // Only add table_number for restaurant delivery, otherwise send empty string
+        formData.table_number = state.deliveryType === 'restaurant' ? state.tableNumber : '';
         
-        // Only add delivery_address for home delivery
-        if (state.deliveryType === 'home') {
-            formData.delivery_address = JSON.stringify(state.homeDeliveryAddress);
-        }
-
         console.log('Sending order data:', formData);
         
         const restaurantSlug = elements.checkoutButton.attr('data-restaurant-name-slug');
