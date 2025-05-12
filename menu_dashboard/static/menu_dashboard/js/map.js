@@ -1278,59 +1278,45 @@ function setupEventHandlers() {
         const hashedSlug = elements.checkoutButton.attr('data-restaurant-hashed-slug');
         const checkoutUrl = `/menu/${restaurantSlug}/${hashedSlug}/checkout/`;
 
-        // FIX: Use a redirect flag to prevent double alerts and redirects
-        let isRedirecting = false;
-
         $.ajax({
-            url: checkoutUrl,
+            url: window.location.pathname,
             type: 'POST',
             data: formData,
             headers: { 'X-CSRFToken': $('input[name="csrfmiddlewaretoken"]').val() },
             success: function(response) {
                 console.log('Order response:', response);
-                isRedirecting = true;
-                
                 if (response.order_id) {
                     const orderId = response.order_id;
-                    const successUrl = `/menu/${restaurantSlug}/${hashedSlug}/${orderId}/order_success/`;
-                    
+                    // Try to use a generic order_success URL if available
+                    let successUrl = `/orders/${orderId}/success/`;
+                    // If your backend expects a different pattern, adjust here
+                    if (response.success_url) successUrl = response.success_url;
                     // Ensure minimum load time for better UX
                     const elapsed = Date.now() - loadingOverlayShownAt;
                     const remaining = Math.max(0, MIN_LOADING_DURATION - elapsed);
-                    
-                    // No alert - just redirect
                     setTimeout(function() {
-                        // Keep loading overlay visible until redirect
                         localStorage.removeItem('cart');
                         window.location.href = successUrl;
                     }, remaining);
-                } else {
-                    console.error('Order response missing order_id:', response);
-                    if (elements.loadingOverlay) {
-                        elements.loadingOverlay.animate({opacity: 0}, 300, function() {
-                            $(this).removeClass('active');
-                        });
-                    }
-                    
-                    // Only show error if we're not redirecting
-                    if (!isRedirecting) {
-                        alert('Failed to place order: ' + (response.message || 'Unknown error'));
-                    }
+                    return; // Stop here if successful
                 }
-            },
-            error: function(xhr, status, error) {
-                console.error('Order error:', xhr, status, error);
-                isRedirecting = false;
-                
+                // If we get here, order_id was missing (error)
+                console.error('Order response missing order_id:', response);
                 if (elements.loadingOverlay) {
                     elements.loadingOverlay.animate({opacity: 0}, 300, function() {
                         $(this).removeClass('active');
                     });
                 }
-                
-                // Get error message from response if possible
+                alert('Failed to place order: ' + (response.message || 'Unknown error'));
+            },
+            error: function(xhr, status, error) {
+                console.error('Order error:', xhr, status, error);
+                if (elements.loadingOverlay) {
+                    elements.loadingOverlay.animate({opacity: 0}, 300, function() {
+                        $(this).removeClass('active');
+                    });
+                }
                 let errorMsg = 'Error placing order';
-                
                 try {
                     if (xhr.responseJSON && xhr.responseJSON.error) {
                         errorMsg += ': ' + xhr.responseJSON.error;
@@ -1340,11 +1326,7 @@ function setupEventHandlers() {
                 } catch (e) {
                     console.error('Error parsing error response:', e);
                 }
-                
-                // Only show error if we haven't already redirected
-                if (!isRedirecting) {
-                    alert(errorMsg);
-                }
+                alert(errorMsg);
             }
         });
     });
