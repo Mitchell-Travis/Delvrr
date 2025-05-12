@@ -1228,72 +1228,104 @@ function setupEventHandlers() {
 
     // Checkout button handler
     if (elements.checkoutButton) {
-    elements.checkoutButton.on('click', function(e) {
-        e.preventDefault();
-        const cart = getCart();
-        if (!Object.keys(cart).length) return alert('Your cart is empty.');
-        if (!state.selectedPaymentMethod) return alert('Please select a payment method.');
-        
-        // Add visual feedback
-        $(this).addClass('pulse');
-        setTimeout(() => $(this).removeClass('pulse'), 1000);
-        
-        if (state.deliveryType === 'home' && state.selectedPaymentMethod === 'Cash on Delivery') {
-            if (!state.homeDeliveryAddress.full_name || !state.homeDeliveryAddress.phone_number || !state.homeDeliveryAddress.address) {
-                alert('Please enter your full delivery address details.');
-                if (elements.openAddressModal) elements.openAddressModal.focus();
-                return;
+        elements.checkoutButton.on('click', function(e) {
+            e.preventDefault();
+            const cart = getCart();
+            if (!Object.keys(cart).length) return alert('Your cart is empty.');
+            if (!state.selectedPaymentMethod) return alert('Please select a payment method.');
+            
+            // Add visual feedback
+            $(this).addClass('pulse');
+            setTimeout(() => $(this).removeClass('pulse'), 1000);
+            
+            if (state.deliveryType === 'home' && state.selectedPaymentMethod === 'Cash on Delivery') {
+                if (!state.homeDeliveryAddress.full_name || !state.homeDeliveryAddress.phone_number || !state.homeDeliveryAddress.address) {
+                    alert('Please enter your full delivery address details.');
+                    if (elements.openAddressModal) elements.openAddressModal.focus();
+                    return;
+                }
+                if (!state.paymentVerified) {
+                    alert('Please verify your order details first.');
+                    if (elements.verifyOrder) elements.verifyOrder.focus();
+                    return;
+                }
+                if (!state.adminConfirmed && !state.adminConfirmationInProgress) {
+                    requestAdminConfirmation();
+                    return;
+                }
+                if (state.adminConfirmationInProgress && !state.adminConfirmed) {
+                    alert('Please wait for the restaurant to confirm your order.');
+                    return;
+                }
             }
-            if (!state.paymentVerified) {
-                alert('Please verify your order details first.');
-                if (elements.verifyOrder) elements.verifyOrder.focus();
-                return;
-            }
-            if (!state.adminConfirmed && !state.adminConfirmationInProgress) {
-                requestAdminConfirmation();
-                return;
-            }
-            if (state.adminConfirmationInProgress && !state.adminConfirmed) {
-                alert('Please wait for the restaurant to confirm your order.');
-                return;
-            }
-        }
 
-        // Show loading overlay with smooth transition
-        if (elements.loadingOverlay) {
-            elements.loadingOverlay.addClass('active').css('opacity', 0).animate({opacity: 1}, 300);
-        }
-        loadingOverlayShownAt = Date.now();
+            // Show loading overlay with smooth transition
+            if (elements.loadingOverlay) {
+                elements.loadingOverlay.addClass('active').css('opacity', 0).animate({opacity: 1}, 300);
+            }
+            loadingOverlayShownAt = Date.now();
 
-        const restaurantSlug = elements.checkoutButton.attr('data-restaurant-name-slug');
-        const hashedSlug = elements.checkoutButton.attr('data-restaurant-hashed-slug');
-        
-        // CRITICAL FIX: Skip AJAX entirely and just simulate a successful order
-        console.log('Skipping AJAX and simulating successful order');
-        
-        // Generate a random order ID for the success page
-        const timestamp = new Date().getTime();
-        const random = Math.floor(Math.random() * 10000);
-        const orderId = timestamp % 10000 + random;
-        
-        console.log('Generated order ID:', orderId);
-        
-        // Build success URL
-        const successUrl = `/menu/${restaurantSlug}/${hashedSlug}/${orderId}/order_success/`;
-        
-        // Ensure minimum loading time for better UX
-        const elapsed = Date.now() - loadingOverlayShownAt;
-        const remaining = Math.max(0, MIN_LOADING_DURATION - elapsed);
-        
-        // Just redirect directly to success page
-        setTimeout(function() {
-            console.log('Redirecting to:', successUrl);
-            localStorage.removeItem('cart');
-            cart = {}; // Clear global cart
-            window.location.href = successUrl;
-        }, remaining);
-    });
-}
+            // EXTREME FIX: Do not send table_number at all to avoid triggering 
+            // the table update code in the Django view
+            const formData = {
+                cart: JSON.stringify(cart),
+                payment_method: state.selectedPaymentMethod,
+                csrfmiddlewaretoken: $('input[name="csrfmiddlewaretoken"]').val()
+            };
+            
+            console.log('Sending order data (without table_number):', formData);
+            
+            const restaurantSlug = elements.checkoutButton.attr('data-restaurant-name-slug');
+            const hashedSlug = elements.checkoutButton.attr('data-restaurant-hashed-slug');
+            const checkoutUrl = `/menu/${restaurantSlug}/${hashedSlug}/checkout/`;
+
+            $.ajax({
+                url: checkoutUrl,
+                type: 'POST',
+                data: formData,
+                headers: { 'X-CSRFToken': $('input[name="csrfmiddlewaretoken"]').val() },
+                success: (response) => {
+                    if (response.order_id) {
+                        const orderId = response.order_id;
+                        const successUrl = `/menu/${restaurantSlug}/${hashedSlug}/${orderId}/order_success/`;
+                        
+                        // Ensure minimum load time for better UX
+                        const elapsed = Date.now() - loadingOverlayShownAt;
+                        const remaining = Math.max(0, MIN_LOADING_DURATION - elapsed);
+                        
+                        setTimeout(() => {
+                            // Keep loading overlay visible until redirect
+                            window.location.href = successUrl;
+                            localStorage.removeItem('cart');
+                        }, remaining);
+                    } else {
+                        console.error('Order failed:', response);
+                        if (elements.loadingOverlay) {
+                            elements.loadingOverlay.animate({opacity: 0}, 300, function() {
+                                $(this).removeClass('active');
+                            });
+                        }
+                        
+                        // Show a simple alert instead of toast
+                        alert('Failed to place order: ' + (response.message || 'Unknown error'));
+                    }
+                },
+                error: (xhr) => {
+                    console.error('Order error:', xhr);
+                    if (elements.loadingOverlay) {
+                        elements.loadingOverlay.animate({opacity: 0}, 300, function() {
+                            $(this).removeClass('active');
+                        });
+                    }
+                    
+                    // Show a simple alert instead of toast
+                    const msg = xhr.responseJSON?.message || xhr.statusText || 'Unknown error';
+                    alert('Error placing order: ' + msg);
+                }
+            });
+        });
+    }
+
 
     // 4. Add a better function to help debug order placement errors
 function debugOrder() {
