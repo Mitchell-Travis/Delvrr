@@ -435,6 +435,7 @@ async function getUserLocation(retries = 2, showNotification = true) {
     if (state.userLocation && 
         state.lastLocationUpdateTime > 0 && 
         now - state.lastLocationUpdateTime < LOCATION_CACHE_DURATION) {
+        console.log('Using cached location');
         return Promise.resolve(state.userLocation);
     }
     
@@ -447,6 +448,9 @@ async function getUserLocation(retries = 2, showNotification = true) {
         loadingToastId = showToast('Detecting your location...', 'loading', 0);
     }
     
+    // Reduce timeout to make it faster
+    const locationTimeout = 3000; // Reduced from 5000 to 3000ms
+    
     const locationPromise = new Promise((resolve, reject) => {
         if (!navigator.geolocation) {
             state.locationLoading = false;
@@ -456,7 +460,7 @@ async function getUserLocation(retries = 2, showNotification = true) {
         }
         
         navigator.geolocation.getCurrentPosition(
-            // Success handler
+            // Success handler - Make this a quick success
             (position) => {
                 state.locationLoading = false;
                 const userLoc = [position.coords.longitude, position.coords.latitude];
@@ -465,10 +469,9 @@ async function getUserLocation(retries = 2, showNotification = true) {
                 state.userLocation = userLoc;
                 state.lastLocationUpdateTime = now;
                 
-                // Update the loading toast
+                // Immediately remove loading toast without showing "Location found" message
                 if (loadingToastId) {
-                    updateToast(loadingToastId, 'Location found!', 'nearby');
-                    setTimeout(() => removeToast(loadingToastId), 1000);
+                    removeToast(loadingToastId);
                 }
                 
                 resolve(userLoc);
@@ -477,10 +480,9 @@ async function getUserLocation(retries = 2, showNotification = true) {
             (error) => {
                 state.locationLoading = false;
                 
-                // If high accuracy failed, try again with lower accuracy if we have retries left
                 if (retries > 0) {
                     if (loadingToastId) {
-                        updateToast(loadingToastId, 'Improving location accuracy...', 'loading');
+                        updateToast(loadingToastId, 'Retrying location detection...', 'loading');
                     }
                     
                     setTimeout(() => {
@@ -491,17 +493,17 @@ async function getUserLocation(retries = 2, showNotification = true) {
                             })
                             .catch(err => {
                                 if (loadingToastId) removeToast(loadingToastId);
-                                handleLocationError(err, loadingToastId, resolve, reject);
+                                handleLocationError(err, null, resolve, reject);
                             });
-                    }, 500);
+                    }, 300);
                 } else {
                     if (loadingToastId) removeToast(loadingToastId);
-                    handleLocationError(error, loadingToastId, resolve, reject);
+                    handleLocationError(error, null, resolve, reject);
                 }
             },
             { 
                 maximumAge: LOCATION_MAX_AGE, 
-                timeout: LOCATION_TIMEOUT, 
+                timeout: locationTimeout,
                 enableHighAccuracy: true 
             }
         );
@@ -575,6 +577,9 @@ function updateMapWithUserLocation(force = false) {
     if (state.locationUpdateQueued && !force) return;
     state.locationUpdateQueued = true;
     
+    // Skip showing toasts during initialization
+    const skipToasts = !force && state.locationAttempts <= 1;
+    
     getUserLocation(1, false).then(userLoc => {
         state.locationUpdateQueued = false;
         
@@ -590,19 +595,6 @@ function updateMapWithUserLocation(force = false) {
             state.userMarker = new mapboxgl.Marker({ element: userMarkerEl })
                 .setLngLat(userLoc)
                 .addTo(state.map);
-                
-            // Add a popup that shows on hover
-            state.userMarker.setPopup(
-                new mapboxgl.Popup({ closeButton: false, offset: 25 })
-                    .setHTML('<strong>Your location</strong>')
-            );
-            
-            userMarkerEl.addEventListener('mouseenter', () => {
-                state.userMarker.getPopup().addTo(state.map);
-            });
-            userMarkerEl.addEventListener('mouseleave', () => {
-                state.userMarker.getPopup().remove();
-            });
         }
 
         // Only adjust bounds if needed or not yet done
@@ -613,7 +605,7 @@ function updateMapWithUserLocation(force = false) {
                 
             state.map.fitBounds(bounds, { 
                 padding: { top: 50, bottom: 50, left: 50, right: 50 },
-                duration: 500 // Smooth animation
+                duration: 300 // Faster animation
             });
             
             state.mapBoundsAdjusted = true;
@@ -630,22 +622,31 @@ function updateMapWithUserLocation(force = false) {
             if (state.deliveryType !== newDeliveryType) {
                 state.deliveryType = newDeliveryType;
                 updateDeliveryTypeUI();
+                
+                // Only show toast when delivery type actually changes
+                if (!skipToasts) {
+                    if (isAtRestaurant) {
+                        showToast('You are at the restaurant!', 'nearby', 2000);
+                    } else {
+                        showToast(`${formatDistance(state.distanceToRestaurant)} from restaurant`, 'far', 2000);
+                    }
+                }
             }
         }
         
         updateDistanceDisplay(state.distanceToRestaurant);
         
-        // Show appropriate toast notification
-        if (state.deliveryType === 'restaurant' && state.distanceToRestaurant <= THRESHOLD_DISTANCE) {
-            showToast('You are at the restaurant!', 'nearby', 2000);
-        } else if (state.deliveryType === 'home' && state.distanceToRestaurant > THRESHOLD_DISTANCE) {
-            showToast(`${formatDistance(state.distanceToRestaurant)} from restaurant`, 'far', 2000);
+        // Update delivery time if needed
+        if (state.deliveryType === 'home') {
             updateDeliveryTime(state.distanceToRestaurant);
         }
     }).catch(err => {
         state.locationUpdateQueued = false;
         console.error('Error updating map:', err);
-        showToast('Error updating location', 'error');
+        
+        if (!skipToasts) {
+            showToast('Error updating location', 'error');
+        }
         
         // Default to home delivery if location fails and no override
         if (!state.deliveryTypeUserOverride) {
@@ -1264,8 +1265,7 @@ function setupEventHandlers() {
             const hashedSlug = elements.checkoutButton.attr('data-restaurant-hashed-slug');
             const checkoutUrl = `/menu/${restaurantSlug}/${hashedSlug}/checkout/`;
 
-            // Show a processing toast with the order details
-            showToast(`Processing your order...`, 'loading', 0);
+            // No processing toast - just use the loading overlay as you wanted
 
             $.ajax({
                 url: checkoutUrl,
@@ -1276,45 +1276,96 @@ function setupEventHandlers() {
                     if (response.order_id) {
                         const orderId = response.order_id;
                         const successUrl = `/menu/${restaurantSlug}/${hashedSlug}/${orderId}/order_success/`;
+                        
+                        // Ensure minimum load time for better UX
                         const elapsed = Date.now() - loadingOverlayShownAt;
                         const remaining = Math.max(0, MIN_LOADING_DURATION - elapsed);
                         
-                        // Show success toast
-                        showToast(`Order successfully placed!`, 'nearby', 2000);
-                        
                         setTimeout(() => {
-                            if (elements.loadingOverlay) {
-                                elements.loadingOverlay.animate({opacity: 0}, 300, function() {
-                                    $(this).removeClass('active');
-                                    window.location.href = successUrl;
-                                    localStorage.removeItem('cart');
-                                });
-                            } else {
-                                window.location.href = successUrl;
-                                localStorage.removeItem('cart');
-                            }
+                            // Keep loading overlay visible until redirect
+                            window.location.href = successUrl;
+                            localStorage.removeItem('cart');
                         }, remaining);
                     } else {
+                        console.error('Order failed:', response);
                         if (elements.loadingOverlay) {
                             elements.loadingOverlay.animate({opacity: 0}, 300, function() {
                                 $(this).removeClass('active');
                             });
                         }
-                        showToast(`Order failed: ${response.message || 'Unknown error'}`, 'error', 4000);
+                        
+                        // Show a simple alert instead of toast
+                        alert('Failed to place order: ' + (response.message || 'Unknown error'));
                     }
                 },
                 error: (xhr) => {
+                    console.error('Order error:', xhr);
                     if (elements.loadingOverlay) {
                         elements.loadingOverlay.animate({opacity: 0}, 300, function() {
                             $(this).removeClass('active');
                         });
                     }
-                    const msg = xhr.responseJSON?.message || xhr.statusText;
-                    showToast(`Error: ${msg}`, 'error', 4000);
+                    
+                    // Show a simple alert instead of toast
+                    const msg = xhr.responseJSON?.message || xhr.statusText || 'Unknown error';
+                    alert('Error placing order: ' + msg);
                 }
             });
         });
     }
+
+    // 4. Add a better function to help debug order placement errors
+function debugOrder() {
+    try {
+        const cart = getCart();
+        console.log('Current cart:', cart);
+        
+        if (!Object.keys(cart).length) {
+            console.error('Cart is empty');
+            return false;
+        }
+        
+        // Check if payment method is selected
+        if (!state.selectedPaymentMethod) {
+            console.error('No payment method selected');
+            return false;
+        }
+        
+        // Check address if home delivery
+        if (state.deliveryType === 'home') {
+            if (!state.homeDeliveryAddress.full_name || 
+                !state.homeDeliveryAddress.phone_number || 
+                !state.homeDeliveryAddress.address) {
+                console.error('Missing delivery address info');
+                return false;
+            }
+        }
+        
+        const restaurantSlug = elements.checkoutButton.attr('data-restaurant-name-slug');
+        const hashedSlug = elements.checkoutButton.attr('data-restaurant-hashed-slug');
+        
+        if (!restaurantSlug || !hashedSlug) {
+            console.error('Missing restaurant slug data');
+            return false;
+        }
+        
+        const formData = {
+            cart: JSON.stringify(cart),
+            payment_method: state.selectedPaymentMethod,
+            delivery_type: state.deliveryType,
+            table_number: state.deliveryType === 'restaurant' ? state.tableNumber : '',
+            delivery_address: state.deliveryType === 'home' ? JSON.stringify(state.homeDeliveryAddress) : '',
+            csrfmiddlewaretoken: $('input[name="csrfmiddlewaretoken"]').val()
+        };
+        
+        console.log('Order data looks good:', formData);
+        console.log('CSRF token:', $('input[name="csrfmiddlewaretoken"]').val());
+        return true;
+    } catch (e) {
+        console.error('Error during order debug:', e);
+        return false;
+    }
+}
 
     // Add periodic location updates for battery efficiency
     let lastVisibilityState = document.visibilityState;
