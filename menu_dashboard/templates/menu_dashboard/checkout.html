@@ -468,7 +468,7 @@
         #map {
             width: 100%;
             height: 100%;
-            border-radius: var(--radius-md);
+            border-radius: var(--radius-sm);
         }
 
         .map-actions {
@@ -1462,6 +1462,40 @@
                 padding: 10px 0;
             }
         }
+
+        /* Add compact styles for map actions */
+        .compact-map-actions {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-top: 8px;
+        }
+        .compact-map-actions .map-toggle,
+        .compact-map-actions .delivery-time,
+        .compact-map-actions .refresh-location-btn {
+            padding: 4px 10px;
+            font-size: 0.92em;
+            min-height: 32px;
+            height: 32px;
+            border-radius: 16px;
+            box-shadow: none;
+            margin: 0;
+        }
+        .compact-map-actions .refresh-location-btn {
+            background: var(--primary);
+            color: #fff;
+            border: none;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: background 0.2s;
+        }
+        .compact-map-actions .refresh-location-btn:hover {
+            background: var(--accent);
+        }
+        .compact-map-actions .refresh-location-btn i {
+            font-size: 1em;
+        }
     </style>
 </head>
 <body>
@@ -1516,7 +1550,7 @@
                                 <div id="map"></div>
                             </div>
 
-                            <div class="map-actions">
+                            <div class="map-actions compact-map-actions">
                                 <button class="map-toggle" onclick="toggleMap()">
                                     <i class="fas fa-map"></i>
                                     <span>View Map</span>
@@ -2055,7 +2089,7 @@
                     if (isAtRestaurant) {
                         showToast('You are at the restaurant! Order will be served here.', 'nearby', 3000);
                     } else {
-                        showToast(`You are ${formatDistance(state.distanceToRestaurant)} from restaurant. Delivery mode activated.`, 'far', 3000);
+                        showToast(`You are ${formatDistance(state.distanceToRestaurant)} from restaurant.`,'far', 3000);
                     }
                 }
                 
@@ -2540,47 +2574,36 @@
                         // Remove loading toast once map is ready
                         removeToast(loadingToastId);
                         
-                        showToast('Location services activated', 'nearby', 2000);
+                        // showToast('Location services activated', 'nearby', 2000);
                         
                         // Add location refresh button near the map
                         const mapActions = document.querySelector('.map-actions');
-                        if (mapActions) {
-                            const refreshButton = document.createElement('button');
-                            refreshButton.className = 'delivery-time';
-                            refreshButton.innerHTML = '<i class="fas fa-location-crosshairs"></i><span>Refresh Location</span>';
-                            refreshButton.onclick = function() {
-                                if (typeof refreshLocation === 'function') {
-                                    refreshLocation();
-                                } else {
-                                    // If refreshLocation doesn't exist, update map directly
-                                    showToast('Updating your location...', 'loading', 0);
-                                    
-                                    // Clear location cache to force refresh
-                                    if (typeof state !== 'undefined') {
-                                        state.lastLocationUpdateTime = 0;
-                                        state.mapBoundsAdjusted = false;
-                                    }
-                                    
-                                    // Call our override function with force=true
-                                    window.updateMapWithUserLocation(true);
+                        // Initialize map and location
+                    if (typeof initializeMap === 'function') {
+                        initializeMap()
+                            .then(() => {
+                                // Remove loading toast once map is ready
+                                removeToast(loadingToastId);
+                                
+                                showToast('Location services activated', 'nearby', 2000);
+                                
+                                // No refresh button will be added
+                            })
+                            .catch(err => {
+                                console.error('Map initialization error:', err);
+                                
+                                // Remove loading toast if there was an error
+                                removeToast(loadingToastId);
+                                
+                                showToast('Could not access your location. Please enable location services.', 'error', 5000);
+                                
+                                // Default to delivery mode when location fails
+                                if (typeof state !== 'undefined') {
+                                    state.deliveryType = 'home';
+                                    updateDeliveryTypeUI();
                                 }
-                            };
-                            mapActions.appendChild(refreshButton);
-                        }
-                    })
-                    .catch(err => {
-                        console.error('Map initialization error:', err);
-                        
-                        // Remove loading toast if there was an error
-                        removeToast(loadingToastId);
-                        
-                        showToast('Could not access your location. Please enable location services.', 'error', 5000);
-                        
-                        // Default to delivery mode when location fails
-                        if (typeof state !== 'undefined') {
-                            state.deliveryType = 'home';
-                            updateDeliveryTypeUI();
-                        }
+                            });
+                    }
                     });
             } else {
                 // If map initialization isn't available, remove loading toast

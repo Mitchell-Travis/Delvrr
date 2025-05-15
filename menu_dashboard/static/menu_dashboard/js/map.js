@@ -130,6 +130,14 @@ function initializeToastContainer() {
 
 function showToast(message, type = 'info', duration = 3000) {
     const container = initializeToastContainer();
+
+    // Prevent duplicate toasts: check if a toast with the same message and type exists
+    const existing = Array.from(container.querySelectorAll('.toast.' + type)).find(t => {
+        const span = t.querySelector('span');
+        return span && span.textContent === message;
+    });
+    if (existing) return null;
+
     const toastId = 'toast-' + (toastCounter++);
     
     // If there's already a loading toast and we're showing another one, remove the old one
@@ -1431,9 +1439,6 @@ function debugOrder() {
 document.addEventListener('DOMContentLoaded', () => {
     console.log('DOM Content Loaded - Starting initialization');
     
-    // Show initial loading indicator
-    const initialLoadingToast = showToast('Initializing order system...', 'loading', 0);
-    
     // Initialize all DOM elements
     elements = {
         checkoutButton: $('#checkoutButton'),
@@ -1478,7 +1483,6 @@ document.addEventListener('DOMContentLoaded', () => {
     getUserLocation(1, false)
         .then(userLoc => {
             console.log('Initial location obtained:', userLoc);
-            updateToast(initialLoadingToast, 'Loading map...', 'loading');
             
             // Then initialize map with this location
             return initializeMap()
@@ -1487,25 +1491,12 @@ document.addEventListener('DOMContentLoaded', () => {
                     // Map initialization will handle updating with user location
                 });
         })
-        .catch(err => {
-            console.error('Error getting initial location:', err);
-            updateToast(initialLoadingToast, 'Initializing map...', 'loading');
-            
-            // Try to initialize map anyway
-            return initializeMap();
-        })
         .then(() => {
             // Once map is initialized (with or without location), set up event handlers
-            updateToast(initialLoadingToast, 'Setup complete!', 'nearby');
-            setTimeout(() => removeToast(initialLoadingToast), 1000);
             setupEventHandlers();
         })
         .catch(err => {
             console.error('Error during initialization:', err);
-            updateToast(initialLoadingToast, 'Error during setup. Trying to continue...', 'error');
-            setTimeout(() => removeToast(initialLoadingToast), 3000);
-            
-            // Try to continue despite errors
             setupEventHandlers();
         });
 });
