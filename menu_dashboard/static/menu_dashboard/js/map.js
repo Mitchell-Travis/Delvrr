@@ -128,7 +128,7 @@ function initializeToastContainer() {
     return toastContainer;
 }
 
-function showToast(message, type = 'info', duration = 3000) {
+function showToast(message, type = 'info', duration = 3000, options = {}) {
     const container = initializeToastContainer();
 
     // Prevent duplicate toasts: check if a toast with the same message and type exists
@@ -139,34 +139,29 @@ function showToast(message, type = 'info', duration = 3000) {
     if (existing) return null;
 
     const toastId = 'toast-' + (toastCounter++);
-    
-    // If there's already a loading toast and we're showing another one, remove the old one
-    if (type === 'loading') {
-        const existingToasts = container.querySelectorAll('.toast.loading');
-        existingToasts.forEach(toast => toast.remove());
-    }
-    
     const toast = document.createElement('div');
     toast.id = toastId;
-    toast.className = `toast ${type}`;
-    
-    let icon = 'fa-info-circle';
-    if (type === 'loading') icon = 'fa-spinner';
-    else if (type === 'nearby') icon = 'fa-check-circle';
-    else if (type === 'far') icon = 'fa-truck';
-    else if (type === 'error') icon = 'fa-exclamation-circle';
-    
-    toast.innerHTML = `<i class="fas ${icon}"></i><span>${message}</span>`;
+    toast.className = `toast ${type}` + (options.minimal ? ' toast-minimal' : '');
+
+    // Only add icon if not minimal and not explicitly hidden
+    let innerHTML = '';
+    if (!options.noIcon && !options.minimal) {
+        let icon = 'fa-info-circle';
+        if (type === 'loading') icon = 'fa-spinner';
+        else if (type === 'nearby') icon = 'fa-check-circle';
+        else if (type === 'far') icon = 'fa-truck';
+        else if (type === 'error') icon = 'fa-exclamation-circle';
+        innerHTML = `<i class="fas ${icon}"></i>`;
+    }
+    innerHTML += `<span>${message}</span>`;
+    toast.innerHTML = innerHTML;
     container.appendChild(toast);
-    
     activeToasts[toastId] = toast;
-    
     if (duration > 0) {
         setTimeout(() => {
             removeToast(toastId);
         }, duration);
     }
-    
     return toastId;
 }
 
@@ -639,7 +634,7 @@ function updateMapWithUserLocation(force = false) {
             if (state.deliveryType === 'restaurant') {
                 showToast('You are at the restaurant!', 'nearby', 2000);
             } else {
-                showToast(`${formatDistance(state.distanceToRestaurant)} from restaurant`, 'far', 2000);
+                showToast('Delivery mode active', 'far', 2500, { noIcon: true, minimal: true });
             }
             state.hasShownLocationToast = true;
         } else if (force) {
@@ -647,14 +642,14 @@ function updateMapWithUserLocation(force = false) {
             if (state.deliveryType === 'restaurant') {
                 showToast('You are at the restaurant!', 'nearby', 2000);
             } else {
-                showToast(`${formatDistance(state.distanceToRestaurant)} from restaurant`, 'far', 2000);
+                showToast('Delivery mode active', 'far', 2500, { noIcon: true, minimal: true });
             }
         } else if (prevDeliveryType !== state.deliveryType) {
             // Delivery type changed
             if (state.deliveryType === 'restaurant') {
                 showToast('You are at the restaurant!', 'nearby', 2000);
             } else {
-                showToast(`${formatDistance(state.distanceToRestaurant)} from restaurant`, 'far', 2000);
+                showToast('Delivery mode active', 'far', 2500, { noIcon: true, minimal: true });
             }
         }
         
@@ -1500,3 +1495,19 @@ document.addEventListener('DOMContentLoaded', () => {
             setupEventHandlers();
         });
 });
+
+// Add minimal toast style
+const minimalToastStyle = document.createElement('style');
+minimalToastStyle.innerHTML = `
+.toast.toast-minimal {
+    background: #222;
+    color: #fff;
+    border-left: none;
+    font-size: 13px;
+    padding: 10px 16px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.10);
+    gap: 0;
+}
+.toast.toast-minimal i { display: none !important; }
+`;
+document.head.appendChild(minimalToastStyle);
