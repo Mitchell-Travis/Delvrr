@@ -775,7 +775,7 @@ function updateOrderDetails() {
         
         html += `
             <div class="order-item" data-item-id="${id}" data-item-price="${itemPrice.toFixed(2)}">
-                <img src="${img}" alt="${name}">
+                <img src="${img}" alt="${name}" class="order-item-image">
                 <div class="item-details">
                     <h3>${name}</h3>
                     <p>$${itemPrice.toFixed(2)}</p>
@@ -1229,7 +1229,6 @@ function setupEventHandlers() {
     // Checkout button handler
     if (elements.checkoutButton) {
         elements.checkoutButton.on('click', function(e) {
-            
             e.preventDefault();
             const cart = getCart();
             if (!Object.keys(cart).length) return alert('Your cart is empty.');
@@ -1273,14 +1272,9 @@ function setupEventHandlers() {
                 payment_method: state.selectedPaymentMethod,
                 csrfmiddlewaretoken: $('input[name="csrfmiddlewaretoken"]').val()
             };
-
-            // Only include table_number if we're in restaurant mode
-            if (state.deliveryType === 'restaurant') {
-                formData.table_number = state.tableNumber;
-            }
-
-            console.log('Sending order data:', formData);
-
+            
+            console.log('Sending order data (without table_number):', formData);
+            
             const restaurantSlug = elements.checkoutButton.attr('data-restaurant-name-slug');
             const hashedSlug = elements.checkoutButton.attr('data-restaurant-hashed-slug');
             const checkoutUrl = `/menu/${restaurantSlug}/${hashedSlug}/checkout/`;
@@ -1291,12 +1285,8 @@ function setupEventHandlers() {
                 data: formData,
                 headers: { 'X-CSRFToken': $('input[name="csrfmiddlewaretoken"]').val() },
                 success: (response) => {
-                    console.log('Order response received:', response);
-                    
-                    // Check if the response contains order_id (either directly or nested)
-                    const orderId = response.order_id || (response.success && response.order_id);
-                    
-                    if (orderId) {
+                    if (response.order_id) {
+                        const orderId = response.order_id;
                         const successUrl = `/menu/${restaurantSlug}/${hashedSlug}/${orderId}/order_success/`;
                         
                         // Ensure minimum load time for better UX

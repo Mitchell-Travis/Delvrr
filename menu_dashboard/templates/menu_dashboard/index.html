@@ -1129,40 +1129,18 @@ body {
   font-size: 16px;
 }
 
-.add-to-cart {
-  width: 32px;
-  height: 32px;
-  border-radius: 10px;
-  background-color: transparent;
-  color: #000000;
-  border: none;
-  display: none;
-  align-items: center;
-  justify-content: center;
-  cursor: pointer;
-  transition: all 0.25s ease;
-}
 
-.add-to-cart:hover {
-  transform: translateY(-2px);
-  color: #555555;
-}
-
-.add-to-cart:active {
-  transform: scale(0.9);
-}
-
-.add-to-cart i {
-  font-size: 18px;
-}
 
 /* ======== View All Grid Section ======== */
 .product-grid-container {
   padding: var(--space-md) var(--space-md) var(--space-lg);
   background-color: var(--background);
+  border-radius: var(--radius-lg) var(--radius-lg) 0 0;
+  margin-top: -8px;
   display: none; /* Hidden by default, shown when View All is clicked */
   animation: fadeIn 0.3s ease-in;
 }
+
 
 .product-grid {
   display: grid;
@@ -1289,10 +1267,44 @@ body {
   to { opacity: 0; transform: translateY(10px); }
 }
 
+
 /* Add to cart animation */
 .add-to-cart.added {
   background-color: var(--success-color);
   animation: addedPulse 0.5s ease;
+}
+
+.add-to-cart {
+  width: 36px; /* Smaller size */
+  height: 36px; /* Smaller size */
+  border-radius: 50%; /* Circular shape */
+  background-color: {{ primary_brand_color }}; /* Use your existing brand color variable */
+  color: white; /* White icon for contrast */
+  border: none;
+  display: none; /* Always display */
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.25s ease;
+  position: absolute; /* Positioned absolutely */
+  bottom: 10px; /* Closer to bottom edge */
+  right: 10px; /* Closer to right edge */
+  box-shadow: 0 2px 4px rgba(0,0,0,0.15); /* Subtle shadow */
+  z-index: 10;
+}
+
+.add-to-cart:hover {
+  transform: scale(1.08); /* Subtle scale effect */
+  opacity: 0.9; /* Slight opacity change */
+}
+
+.add-to-cart:active {
+  transform: scale(0.95); /* Keep your active state */
+}
+
+.add-to-cart i {
+  font-size: 18px; /* Keep original size */
+  color: white; /* White for visibility */
 }
 
 @keyframes addedPulse {
@@ -3622,8 +3634,21 @@ button {
 
  
 
+<!-- <style>
+  /* Override to remove line between search and category */
+  .category-nav {
+    border-bottom: none !important;
+    box-shadow: none !important;
+  }
+</style> -->
 
-
+<style>
+  /* Force grid view to match carousel with stronger overrides */
+  .product-grid-container {
+    margin-top: -8px !important;
+    border-radius: var(--radius-lg) var(--radius-lg) 0 0 !important;
+  }
+</style>
 
 </head>
    <body>
@@ -4073,19 +4098,19 @@ button {
                 </div>
                 {% if product.status != 'Unavailable' %}
                   <button class="add-to-cart"
-                          data-product-id="{{ product.id }}"
-                          data-name="{{ product.name }}"
-                          data-price="{% if product.variations_list %}
-                                        {% with dp=product.variations_list|get_default_price:'S' %}
-                                          {{ dp|default:product.get_display_price }}
-                                        {% endwith %}
-                                      {% else %}
-                                        {{ product.get_display_price }}
-                                      {% endif %}"
-                          data-price-by-percentage="{% if product.price_by_percentage %}true{% else %}false{% endif %}"
-                          data-image="{{ product.product_image.url }}">
-                    <i class="fas fa-shopping-cart"></i>
-                  </button>
+                        data-product-id="{{ product.id }}"
+                        data-name="{{ product.name }}"
+                        data-price="{% if product.variations_list %}
+                                      {% with dp=product.variations_list|get_default_price:'S' %}
+                                        {{ dp|default:product.get_display_price }}
+                                      {% endwith %}
+                                    {% else %}
+                                      {{ product.get_display_price }}
+                                    {% endif %}"
+                        data-price-by-percentage="{% if product.price_by_percentage %}true{% else %}false{% endif %}"
+                        data-image="{{ product.product_image.url }}">
+                  <i class="fas fa-plus"></i>
+                </button>
                 {% endif %}
               </div>
             </div>
