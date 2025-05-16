@@ -117,8 +117,10 @@
             color: var(--text-primary);
             background-color: var(--gray-50);
             overflow-x: hidden;
-            height: 100vh;
+/*            height: 100vh;*/
             width: 100vw;
+            height: auto;
+            min-height: 100%;
         }
 
         /* App container */
@@ -275,6 +277,7 @@
             overflow-y: auto;
             overflow-x: hidden;
             padding-bottom: calc(var(--footer-height) + var(--space-6));
+            overscroll-behavior-y: contain;
         }
 
         /* Delivery options */
@@ -1002,8 +1005,8 @@
 
         /* Footer */
         .app-footer {
-            position: fixed;
-            bottom: 0;
+             position: sticky;
+             bottom: 0;
             left: 0;
             right: 0;
             background: var(--surface);
@@ -1451,6 +1454,12 @@
                 font-size: 0.9em;
                 padding: 10px 0;
             }
+        }
+
+        @supports (-webkit-touch-callout: none) {
+          body, html {
+            height: -webkit-fill-available;
+          }
         }
 
         /* Add compact styles for map actions */
