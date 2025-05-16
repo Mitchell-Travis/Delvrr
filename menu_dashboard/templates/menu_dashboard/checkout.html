@@ -135,10 +135,8 @@
 
         /* Header */
         .app-header {
-            position: fixed;
+            position: sticky;
             top: 0;
-            left: 0;
-            right: 0;
             padding: calc(var(--safe-top) + var(--space-4)) var(--space-4) var(--space-4);
             background: var(--primary);
             z-index: 100;
@@ -146,8 +144,6 @@
             display: flex;
             align-items: center;
             background-image: linear-gradient(to right, rgba(255,255,255,0.05), transparent);
-            transform: translateZ(0);
-            will-change: transform;
         }
 
         .header-back {
@@ -279,11 +275,6 @@
             overflow-y: auto;
             overflow-x: hidden;
             padding-bottom: calc(var(--footer-height) + var(--space-6));
-            -webkit-overflow-scrolling: touch;
-            scroll-behavior: smooth;
-            position: relative;
-            height: 100%;
-            overscroll-behavior-y: contain;
         }
 
         /* Delivery options */
@@ -1315,17 +1306,7 @@
         .loading-dot {
             width: 10px;
             height: 10px;
-            background: var(--primary);
-            border-radius: 50%;
-            animation: loading 1.4s infinite ease-in-out both;
-        }
-
-        .loading-dot:nth-child(1) {
-            animation-delay: -0.32s;
-        }
-
-        .loading-dot:nth-child(2) {
-            animation-delay: -0.16s;
+ 
         }
 
         @keyframes loading {
@@ -1505,24 +1486,6 @@
         .compact-map-actions .refresh-location-btn i {
             font-size: 1em;
         }
-
-        /* Optimize mobile performance */
-        @media (max-width: 768px) {
-            .app-content {
-                -webkit-overflow-scrolling: touch;
-                overscroll-behavior-y: contain;
-                scroll-behavior: smooth;
-                transform: translateZ(0);
-                will-change: transform;
-            }
-            
-            .delivery-card,
-            .order-item,
-            .payment-method {
-                transform: translateZ(0);
-                will-change: transform;
-            }
-        }
     </style>
 </head>
 <body>
@@ -1577,7 +1540,7 @@
                                 <div id="map"></div>
                             </div>
 
-                            <div class="map-actions compact-map-actions">
+                            <div class="map-actions">
                                 <button class="map-toggle" onclick="toggleMap()">
                                     <i class="fas fa-map"></i>
                                     <span>View Map</span>
